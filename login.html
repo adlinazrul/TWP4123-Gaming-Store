@@ -15,7 +15,7 @@ input[type=text], input[type=password] {
 }
 
 button {
-  background-color: #04AA6D;
+  background-color: #C70039 ;
   color: white;
   padding: 14px 20px;
   margin: 8px 0;
@@ -63,11 +63,12 @@ span.psw {
      width: 100%;
   }
 }
+
 </style>
 </head>
 <body>
 
-<h2>Login Form</h2>
+<center><h2>Login Form</h2></center>
 
 <form action="/action_page.php" method="post">
   <div class="imgcontainer">
@@ -79,8 +80,9 @@ span.psw {
     <input type="text" placeholder="Enter Username" name="uname" required>
 
     <label for="psw"><b>Password</b></label>
-    <input type="password" placeholder="Enter Password" name="psw" required>
-        
+    <input type="password" id="password" placeholder="Enter Password" name="psw" required>
+    <input type="checkbox" id="showPassword" onclick="togglePassword()"> Show Password
+
     <button type="submit">Login</button>
     <label>
       <input type="checkbox" checked="checked" name="remember"> Remember me
@@ -93,5 +95,15 @@ span.psw {
   </div>
 </form>
 
+<script>
+  function togglePassword() {
+    var passwordInput = document.getElementById("password");
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+    } else {
+      passwordInput.type = "password";
+    }
+  }
+</script>
 </body>
 </html>
