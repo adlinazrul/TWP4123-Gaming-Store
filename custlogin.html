@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,13 +13,19 @@
             color: black;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         header {
             background: linear-gradient(45deg, red, darkred);
             color: white;
-            padding: 40px 20px;
+            padding: 20px;
             text-align: center;
             border-bottom: 5px solid black;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         h1, h2, h3 {
             font-family: 'Source Serif Pro', serif;
@@ -34,17 +41,24 @@
             padding: 10px 20px;
             border-radius: 15px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         .button:hover {
             background-color: darkred;
         }
         .form-container {
-            max-width: 600px;
-            margin: 50px auto;
+            max-width: 400px;
+            width: 100%;
+            margin: 20px;
             padding: 20px;
             border: 1px solid #ddd;
             border-radius: 15px;
             background-color: #f9f9f9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .form-container:hover {
+            transform: translateY(-5px);
         }
         .form-group {
             margin-bottom: 15px;
@@ -60,15 +74,20 @@
             border: 1px solid #ddd;
             border-radius: 15px;
             font-family: 'Source Serif Pro', serif;
+            transition: border-color 0.3s ease;
+        }
+        .form-group input:focus {
+            border-color: red;
+            outline: none;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Customer Login</h1>
-    </header>
-    <main>
-        <div class="form-container">
+    <div class="form-container">
+        <header>
+            <h1>Customer Login</h1>
+        </header>
+        <main>
             <form>
                 <div class="form-group">
                     <label for="email">Email</label>
@@ -80,7 +99,7 @@
                 </div>
                 <button type="submit" class="button">Login</button>
             </form>
-        </div>
-    </main>
+        </main>
+    </div>
 </body>
 </html>
