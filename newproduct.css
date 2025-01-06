@@ -4,6 +4,7 @@
    --red:#d03b3b;
    --black:#333;
    --white:#fff;
+   --green:#1DA440;
    --bg-color:#eee;
    --box-shadow:0 .5rem 1rem rgba(0,0,0,.1);
    --border:.1rem solid var(--black);
@@ -31,7 +32,7 @@ html{
    margin-top: 1rem;
    font-size: 1.7rem;
    padding:1rem 3rem;
-   background: var(--red);
+   background: var(--green);
    color:var(--white);
    text-align: center;
 }
@@ -120,7 +121,7 @@ html{
 }
 
 .product-display .product-display-table .btn:last-child{
-   background: crimson;
+    background: crimson;
 }
 
 .product-display .product-display-table .btn:last-child:hover{
