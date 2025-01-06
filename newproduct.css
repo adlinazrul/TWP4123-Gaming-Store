@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600&display=swap');
 
 :root{
-   --green:#27ae60;
+   --red:#d03b3b;
    --black:#333;
    --white:#fff;
    --bg-color:#eee;
@@ -31,7 +31,7 @@ html{
    margin-top: 1rem;
    font-size: 1.7rem;
    padding:1rem 3rem;
-   background: var(--green);
+   background: var(--red);
    color:var(--white);
    text-align: center;
 }
