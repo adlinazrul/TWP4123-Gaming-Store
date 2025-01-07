@@ -8,75 +8,77 @@
     <title>Order Management System</title>
 </head>
 <body>
-    <div class="header">
-        <h2>Order Management System</h2>
-    </div>
-    
-    <div class="gap"> 
-        <p><a class="action-button" href="#">Home</a></p>
-    </div>
-    
-    <div class="orderIt"><b>Order Management</b></div>
-    
-    <div class="table-container">
-        <h2>Orders List</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Order Item</th>
-                    <th>Item Price</th>
-                    <th>Item Quantity</th>
-                    <th>Total Cost</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Product A</td>
-                    <td>$10.00</td>
-                    <td>2</td>
-                    <td>$20.00</td>
-                    <td>
-                        <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
-                        <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Product B</td>
-                    <td>$15.00</td>
-                    <td>1</td>
-                    <td>$15.00</td>
-                    <td>
-                        <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
-                        <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Product C</td>
-                    <td>$20.00</td>
-                    <td>3</td>
-                    <td>$60.00</td>
-                    <td>
-                        <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
-                        <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Product D</td>
-                    <td>$25.00</td>
-                    <td>4</td>
-                    <td>$100.00</td>
-                    <td>
-                        <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
-                        <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="footer">
+    <div class="container">
+        <header>
+            <h1>Order Management System</h1>
+        </header>
         
+        <div class="gap"> 
+            <p><a class="action-button" href="admindashboard.html">Dashboard</a></p>
+        </div>
+        
+        <main>
+            <section id="order-list">
+                <h2>Orders List</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order Item</th>
+                            <th>Item Price (RM)</th>
+                            <th>Item Quantity</th>
+                            <th>Total Cost (RM)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Gaming Mouse</td>
+                            <td>RM 49.99</td>
+                            <td>2</td>
+                            <td>RM 99.98</td>
+                            <td>
+                                <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
+                                <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Mechanical Keyboard</td>
+                            <td>RM 89.99</td>
+                            <td>1</td>
+                            <td>RM 89.99</td>
+                            <td>
+                                <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
+                                <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Gaming Headset</td>
+                            <td>RM 69.99</td>
+                            <td>3</td>
+                            <td>RM 209.97</td>
+                            <td>
+                                <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
+                                <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Game Controller</td>
+                            <td>RM 39.99</td>
+                            <td>4</td>
+                            <td>RM 159.96</td>
+                            <td>
+                                <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
+                                <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+        
+        <footer>
+            <p>&copy;  Gaming Store</p>
+        </footer>
     </div>
 
     <!-- Modal -->
@@ -114,3 +116,6 @@
                 modal.style.display = "none";
             }
         }
+    </script>
+</body>
+</html>
