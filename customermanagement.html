@@ -29,7 +29,8 @@
                 <label for="address">Address:</label>
                 <input type="text" id="address" required><br>
                 
-                <button type="submit">Update Customer</button>
+                <button type="submit">Add Customer</button>
+                <button type="button" id="cancelButton">Cancel</button> <!-- Cancel button -->
             </form>
         </section>
 
@@ -43,7 +44,6 @@
                         <th>Email</th>
                         <th>Phone Number</th>
                         <th>Address</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="customerTable">
@@ -51,8 +51,14 @@
                 </tbody>
             </table>
         </section>
+
+        <section id="customer-details" style="display: none;">
+            <h2>Customer Details</h2>
+            <div id="details"></div>
+            <button onclick="hideDetails()">Close</button>
+        </section>
     </div>
 
-    <script src="managestaff.js"></script>
+    <script src="customermanagement.js"></script>
 </body>
 </html>
