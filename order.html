@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="order.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Order Management System</title>
+</head>
+<body>
+    <div class="header">
+        <h2>Order Management System</h2>
+    </div>
+    
+    <div class="gap"> 
+        <p><a class="action-button" href="#">Home</a></p>
+    </div>
+    
+    <div class="orderIt"><b>Order Management</b></div>
+    
+    <div class="table-container">
+        <h2>Orders List</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order Item</th>
+                    <th>Item Price</th>
+                    <th>Item Quantity</th>
+                    <th>Total Cost</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Product A</td>
+                    <td>$10.00</td>
+                    <td>2</td>
+                    <td>$20.00</td>
+                    <td>
+                        <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
+                        <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Product B</td>
+                    <td>$15.00</td>
+                    <td>1</td>
+                    <td>$15.00</td>
+                    <td>
+                        <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
+                        <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Product C</td>
+                    <td>$20.00</td>
+                    <td>3</td>
+                    <td>$60.00</td>
+                    <td>
+                        <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
+                        <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Product D</td>
+                    <td>$25.00</td>
+                    <td>4</td>
+                    <td>$100.00</td>
+                    <td>
+                        <a class="action-button" href="#"><i class="fas fa-pencil-alt"></i></a>
+                        <a class="action-button" href="#"><i class="fas fa-trash-alt"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2023 Orderit. All rights reserved.</p>
+    </div>
+
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Modal Header</h2>
+            <p>Some text in the Modal..</p>
+        </div>
+    </div>
+
+    <script>
+        // Get the modal
+        var modal = document.getElementById("myModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks the button, open the modal 
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
