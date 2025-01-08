@@ -1,5 +1,5 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     background: white;
@@ -15,6 +15,13 @@ body {
     background: rgba(255, 255, 255, 0.8);
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+.back-button {
+    background-color: white; /* White background */
+    color: white;
+    padding: 20px;
+    font-size: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 h1, h2 {
