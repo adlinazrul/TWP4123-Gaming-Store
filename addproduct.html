@@ -1,75 +1,118 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
    <meta charset="UTF-8">
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>add product</title>
+   <title>Add Product</title>
 
-   <!-- font awesome cdn link  -->
+   <!-- Font Awesome CDN link -->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-   <!-- custom css file link  -->
+   <!-- Custom CSS file link -->
    <link rel="stylesheet" href="newproduct.css">
 
+   <style>
+      /* Add custom styles for the product images */
+      .product-display-table img {
+          width: 80px; /* Set a fixed width for images */
+          height: auto; /* Maintain aspect ratio */
+      }
+
+      /* Style for Edit and Delete buttons */
+      .btn {
+          background-color: red; /* Red background */
+          color: white; /* White text */
+          border: none; /* No border */
+          padding: 5px 10px; /* Padding for the button */
+          cursor: pointer; /* Pointer cursor on hover */
+          border-radius: 5px; /* Rounded corners */
+          transition: background-color 0.3s; /* Smooth transition */
+      }
+
+      .btn:hover {
+          background-color: darkred; /* Darker red on hover */
+      }
+   </style>
 </head>
 <body>
 
-
-   
 <div class="container">
 
    <div class="admin-product-form-container">
-
       <form action="<?php $_SERVER['PHP_SELF'] ?>" method="post" enctype="multipart/form-data">
          <h3>Add a new product</h3>
-         <input type="text" placeholder="enter product name" name="product_name" class="box">
-         <input type="number" placeholder="enter product price" name="product_price" class="box">
-         <input type="number" placeholder="enter product quantity" name="product_quantity" class="box">
-         <input type="text" placeholder="enter discription" name="product_discription" class="box">
-         <input type="file" accept="image/png, image/jpeg, image/jpg" name="product_image" class="box">
-         <input type="submit" class="btn" name="add_product" value="add product">
-         
+         <input type="text" placeholder="Enter product name" name="product_name" class="box" required>
+         <input type="number" placeholder="Enter product price" name="product_price" class="box" required>
+         <input type="number" placeholder="Enter product quantity" name="product_quantity" class="box" required>
+         <input type="text" placeholder="Enter description" name="product_description" class="box" required>
+         <input type="file" accept="image/png, image/jpeg, image/jpg" name="product_image" class="box" required>
+         <input type="submit" class="btn" name="add_product" value="Add Product">
       </form>
-
    </div>
 
-   <?php
-
-   $select = mysqli_query($conn, "SELECT * FROM products");
-   
-   ?>
    <div class="product-display">
+      <h2>Product List</h2>
       <table class="product-display-table">
          <thead>
-         <tr>
-            <th>product image</th>
-            <th>product name</th>
-            <th>product price</th>
-            <th>product quantity</th>
-            <th>product description</th>
-            <th>action</th>
-         </tr>
+            <tr>
+               <th>Product Image</th>
+               <th>Product Name</th>
+               <th>Product Price</th>
+               <th>Product Quantity</th>
+               <th>Product Description</th>
+               <th>Action</th>
+            </tr>
          </thead>
-         <?php while($row = mysqli_fetch_assoc($select)){ ?>
-         <tr>
-            <td><img src="uploaded_img/<?php echo $row['image']; ?>" height="100" alt=""></td>
-            <td><?php echo $row['name']; ?></td>
-            <td><?php echo $row['price']; ?></td>
-            <td><?php echo $row['quantity']; ?></td>
-            <td><?php echo $row['description']; ?></td>
-            <td>
-                <a href="admin_update.php?edit=<?php echo $row['id']; ?>" class="btn"> <i class="fas fa-edit"></i> edit </a>
-                <a href="admin_page.php?delete=<?php echo $row['id']; ?>" class="btn"> <i class="fas fa-trash"></i> delete </a>
-            </td>
-         </tr>
-      <?php } ?>
+         <tbody>
+            <tr>
+               <td><img src="image/gamingmouse.jpg" alt="Gaming Mouse"></td>
+               <td>Gaming Mouse</td>
+               <td>RM 49.99</td>
+               <td>75</td>
+               <td>High precision gaming mouse.</td>
+               <td>
+                  <button class="btn">Edit</button>
+                  <button class="btn">Delete</button>
+               </td>
+            </tr>
+            <tr>
+               <td><img src="image/gamingkeyboard.jpg" alt="Mechanical Keyboard"></td>
+               <td>Mechanical Keyboard</td>
+               <td>RM 89.99</td>
+               <td>50</td>
+               <td>Durable mechanical keyboard with RGB lighting.</td>
+               <td>
+                  <button class="btn">Edit</button>
+                  <button class="btn">Delete</button>
+               </td>
+            </tr>
+            <tr>
+               <td><img src="image/gamingheadset.jpg" alt="Gaming Headset"></td>
+               <td>Gaming Headset</td>
+               <td>RM 69.99</td>
+               <td>30</td>
+               <td>Comfortable headset with surround sound.</td>
+               <td>
+                  <button class="btn">Edit</button>
+                  <button class="btn">Delete</button>
+               </td>
+            </tr>
+            <tr>
+               <td><img src="image/gamingcontroller.jpg" alt="Game Controller"></td>
+               <td>Game Controller</td>
+               <td>RM 39.99</td>
+               <td>100</td>
+               <td>Wireless game controller for consoles.</td>
+               <td>
+                  <button class="btn">Edit</button>
+                  <button class="btn">Delete</button>
+               </td>
+            </tr>
+         </tbody>
       </table>
    </div>
-
 </div>
-
-
 </body>
 </html>
+                 

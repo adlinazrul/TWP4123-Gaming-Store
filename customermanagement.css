@@ -6,7 +6,8 @@ body {
 }
 
 .container {
-    width: 80%;
+    width: 70%; /* Adjusted width for better fit on laptop screens */
+    max-width: 1200px; /* Maximum width to prevent stretching on large screens */
     margin: 40px auto;
     overflow: hidden;
     padding: 20px;
