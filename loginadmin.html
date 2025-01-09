@@ -2,7 +2,7 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body {font-family: Arial, Helvetica, sans-serif;}
+body {font-family: Arial, sans-serif;}
 form {border: 3px solid #f1f1f1;}
 
 input[type=text], input[type=password] {
@@ -15,7 +15,7 @@ input[type=text], input[type=password] {
 }
 
 button {
-  background-color: #C70039 ;
+  background-color: #C70039;
   color: white;
   padding: 14px 20px;
   margin: 8px 0;
@@ -40,8 +40,10 @@ button:hover {
 }
 
 img.avatar {
-  width: 40%;
-  border-radius: 50%;
+  width: 150px; /* Set width to 150px */
+  height: 150px; /* Set height to 150px */
+  border-radius: 50%; /* Make it circular */
+  object-fit: cover; /* Ensure proper aspect ratio */
 }
 
 .container {
@@ -63,7 +65,6 @@ span.psw {
      width: 100%;
   }
 }
-
 </style>
 </head>
 <body>
