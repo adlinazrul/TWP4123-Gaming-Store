@@ -8,10 +8,12 @@
     <link rel="stylesheet" href="customermanagement.css">
 </head>
 <body>
+    <h1></h1>
+    <center><button class="back-button">Back to Dashboard</button></center>
     <div class="container">
         <h1>Member Management System</h1>
         
-        <section id="add-customer">
+        <section id="add-member">
             <h2>Add Member</h2>
             <form id="addForm">
                 <label for="cust_id">Member ID:</label>
@@ -34,7 +36,7 @@
             </form>
         </section>
 
-        <section id="view-customers">
+        <section id="view-members">
             <h2>Member List</h2>
             <table>
                 <thead>
@@ -44,15 +46,20 @@
                         <th>Email</th>
                         <th>Phone Number</th>
                         <th>Address</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id="customerTable">
+                <tbody id="memberTable">
                     <tr>
                         <td>1</td>
                         <td>John Doe</td>
                         <td>john.doe@example.com</td>
                         <td>013-4567890</td>
                         <td>33 Dahlia Court, George Town, Penang</td>
+                        <td>
+                            <button>Edit</button>
+                            <button>Delete</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>2</td>
@@ -60,6 +67,10 @@
                         <td>jane.smith@example.com</td>
                         <td>012-9876543</td>
                         <td>92 Tanjung Street, Seremban, Negeri Sembilan</td>
+                        <td>
+                            <button>Edit</button>
+                            <button>Delete</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>3</td>
@@ -67,6 +78,10 @@
                         <td>michael.tan@example.com</td>
                         <td>017-5432167</td>
                         <td>89 Lotus Street, Alor Setar, Kedah</td>
+                        <td>
+                            <button>Edit</button>
+                            <button>Delete</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>4</td>
@@ -74,15 +89,23 @@
                         <td>aisha.rahman@example.com</td>
                         <td>012-7654321</td>
                         <td>67 Cempaka Boulevard, Kota Kinabalu, Sabah</td>
+                        <td>
+                            <button>Edit</button>
+                            <button>Delete</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </section>
 
-        <section id="customer-details" style="display: none;">
-            <h2>Member Details</h2>
-            <div id="details"></div>
-            <button onclick="hideDetails()">Close</button>
+        <section id="admin-list">
+            <h2>Admin List</h2>
+            <ul>
+                <li>John Doe</li>
+                <li>Jane Smith</li>
+                <li>Michael Tan</li>
+                <li>Aisha Rahman</li>
+            </ul>
         </section>
     </div>
 
