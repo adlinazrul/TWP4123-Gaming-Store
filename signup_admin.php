@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Passwords do not match.");
     }
 
-    // Hash the password
+    // Hash the password for security
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     // Prepare SQL query
@@ -20,7 +20,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("sss", $email, $username, $hashed_password);
 
     if ($stmt->execute()) {
-        echo "Signup successful! <a href='login.html'>Login here</a>";
+        // Redirect to the admin dashboard upon successful signup
+        header("Location: admin_dashboard.php");
+        exit(); // Ensure script stops executing after redirection
     } else {
         echo "Error: " . $stmt->error;
     }
