@@ -17,14 +17,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Prepare SQL query
     $stmt = $conn->prepare("INSERT INTO admins (email, username, password) VALUES (?, ?, ?)");
+    if (!$stmt) {
+        die("Error in preparing SQL: " . $conn->error);
+    }
     $stmt->bind_param("sss", $email, $username, $hashed_password);
 
     if ($stmt->execute()) {
-        // Redirect to the admin dashboard upon successful signup
-        header("Location: admin_dashboard.php");
+        // Redirect to admin dashboard if signup is successful
+        header("Location: admin_dashboard.html");
         exit(); // Ensure script stops executing after redirection
     } else {
-        echo "Error: " . $stmt->error;
+        die("Error executing query: " . $stmt->error); // Display SQL error if any
     }
 
     $stmt->close();
