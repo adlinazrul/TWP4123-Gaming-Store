@@ -48,7 +48,44 @@
                     </tr>
                 </thead>
                 <tbody id="employeeTable">
-                    <!-- Staff details will be dynamically inserted here -->
+                <?php
+            // Fetch data from the database
+            $servername = "localhost";
+            $username = "root";  // Your database username
+            $password = "";  // Your database password
+            $dbname = "gaming_store";  // Your database name
+
+            // Create a connection
+            $conn = new mysqli($servername, $username, $password, $dbname);
+
+            // Check connection
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            // SQL to fetch staff data
+            $sql = "SELECT * FROM admin_staff";
+            $result = $conn->query($sql);
+
+            if ($result->num_rows > 0) {
+                // Output data for each row
+                while($row = $result->fetch_assoc()) {
+                    echo "<tr>";
+                    echo "<td>" . $row['id'] . "</td>";
+                    echo "<td>" . $row['username'] . "</td>";
+                    echo "<td>" . $row['email'] . "</td>";
+                    echo "<td>" . $row['position'] . "</td>";
+                    echo "<td>" . $row['salary'] . "</td>";
+                    echo "<td><img src='uploads/" . $row['image'] . "' width='50' height='50'></td>";
+                    echo "<td><button>Edit</button> <button>Delete</button></td>";
+                    echo "</tr>";
+                }
+            } else {
+                echo "<tr><td colspan='7'>No staff found</td></tr>";
+            }
+
+            $conn->close();
+            ?>
                 </tbody>
             </table>
         </section>
