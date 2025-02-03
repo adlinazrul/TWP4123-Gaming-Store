@@ -1,45 +1,41 @@
 <?php
-include 'db_connect.php';
+// Include database connection
+include('db_connect.php');
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "gaming_store";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Collect form data
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Get data from form submission
     $email = $_POST['email'];
     $username = $_POST['username'];
-    $password = $_POST['psw'];
-    $passwordRepeat = $_POST['psw-repeat'];
+    $password = $_POST['psw'];  // The raw password from the form
 
-    // Validation (you can add more here)
-    if ($password == $passwordRepeat) {
-        // Here you would connect to your database and save the user data
-        // Example:
-        // $conn = new mysqli('localhost', 'username', 'password', 'database');
-        // if ($conn->connect_error) {
-        //     die("Connection failed: " . $conn->connect_error);
-        // }
-        // $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        // $sql = "INSERT INTO users (email, username, password) VALUES ('$email', '$username', '$hashedPassword')";
-        // if ($conn->query($sql) === TRUE) {
-        //     echo "New record created successfully";
-        // } else {
-        //     echo "Error: " . $sql . "<br>" . $conn->error;
-        // }
-        // $conn->close();
+    // Hash the password before storing it (security measure)
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // After successful sign up, redirect to the admin dashboard
-        header("Location: admindashboard.html");
-        exit(); // Always call exit after header redirect to stop further execution
+    // Prepare SQL query to insert data into the database
+    $sql = "INSERT INTO admin_users (email, username, password) VALUES (?, ?, ?)";
+
+    // Initialize prepared statement
+    if ($stmt = $conn->prepare($sql)) {
+        // Bind parameters
+        $stmt->bind_param("sss", $email, $username, $hashed_password);
+
+        // Execute the statement
+        if ($stmt->execute()) {
+            // Redirect to admin dashboard after successful signup
+            header('Location: admindashboard.html');
+            exit();
+        } else {
+            // Handle error if execution fails
+            echo "Error: " . $stmt->error;
+        }
+
+        // Close the prepared statement
+        $stmt->close();
     } else {
-        echo "Passwords do not match!";
+        echo "Error: " . $conn->error;
     }
 }
+
+// Close the database connection
+$conn->close();
 ?>
