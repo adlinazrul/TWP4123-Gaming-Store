@@ -94,42 +94,49 @@
     }
 
     /* Overlay background */
+/* Overlay (grey effect) */
 #menuOverlay {
-    display: none; /* Hidden by default */
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Grey overlay */
-    z-index: 1000;
+    background: rgba(0, 0, 0, 0.5); /* Grey transparent background */
+    display: none;
+    transition: opacity 0.3s ease-in-out;
 }
 
-/* Sliding menu */
+/* Sliding menu (appear from left side) */
 #menuContainer {
     position: fixed;
     top: 0;
-    right: -300px; /* Start offscreen */
+    left: -300px; /* Start offscreen on the left */
     width: 300px;
     height: 100%;
     background: white;
-    box-shadow: -3px 0 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 3px 0 5px rgba(0, 0, 0, 0.2);
     padding: 20px;
-    transition: right 0.3s ease-in-out; /* Slide animation */
-}
-
-/* Show menu when overlay is active */
-#menuOverlay:target #menuContainer {
-    right: 0; /* Slide in */
+    transition: left 0.3s ease-in-out; /* Slide animation */
 }
 
 /* Close button */
 #closeMenu {
-    font-size: 24px;
+    font-size: 30px;
     cursor: pointer;
-    float: right;
+    display: block;
+    text-align: right;
     margin-bottom: 10px;
 }
+
+/* Show menu when overlay is active */
+#menuOverlay.active {
+    display: block;
+}
+
+#menuOverlay.active #menuContainer {
+    left: 0; /* Slide in */
+}
+
 
 
     </style>
@@ -142,28 +149,16 @@
                 <i class="fas fa-bars" id="menuIcon"></i>
             </div>
             
-            <!-- Menu Overlay -->
             <div id="menuOverlay">
                 <div id="menuContainer">
                     <span id="closeMenu">&times;</span> <!-- Close button -->
-                    <div id="menuContent"></div> <!-- Menu content will be loaded here -->
+                    <div id="menuContent">
+                        <!-- Menu content from menu.html will be loaded here -->
+                    </div>
                 </div>
             </div>
             
-            <script>
-                document.getElementById("menuIcon").addEventListener("click", function () {
-                    document.getElementById("menuOverlay").style.display = "block";
-                    fetch("menu.html") // Load menu.html content
-                        .then(response => response.text())
-                        .then(data => {
-                            document.getElementById("menuContent").innerHTML = data;
-                        });
-                });
             
-                document.getElementById("closeMenu").addEventListener("click", function () {
-                    document.getElementById("menuOverlay").style.display = "none";
-                });
-            </script>
             
             <div class="nav-links">
                 <a href="#nintendo">Nintendo</a>
@@ -241,5 +236,49 @@
             <p>&copy; 2025 Online Gaming Store. All rights reserved.</p>
         </div>
     </section>
+    <script>
+   document.addEventListener("DOMContentLoaded", function () {
+    let menuOverlay = document.getElementById("menuOverlay");
+    let menuContainer = document.getElementById("menuContainer");
+    let menuIcon = document.getElementById("menuIcon");
+    let closeMenu = document.getElementById("closeMenu");
+
+    // Open menu
+    menuIcon.addEventListener("click", function () {
+        menuOverlay.style.display = "block";
+        setTimeout(() => {
+            menuOverlay.classList.add("active");
+        }, 10); // Small delay for animation
+
+        // Load menu.html content dynamically
+        fetch("menu.html")
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("menuContent").innerHTML = data;
+            });
+    });
+
+    // Close menu when clicking "X"
+    closeMenu.addEventListener("click", function (e) {
+        e.stopPropagation(); // Prevent event from bubbling
+        menuOverlay.classList.remove("active");
+        setTimeout(() => {
+            menuOverlay.style.display = "none";
+        }, 300); // Wait for animation to finish
+    });
+
+    // Close menu when clicking outside of menu container
+    menuOverlay.addEventListener("click", function (e) {
+        if (e.target === menuOverlay) {
+            menuOverlay.classList.remove("active");
+            setTimeout(() => {
+                menuOverlay.style.display = "none";
+            }, 300);
+        }
+    });
+});
+
+</script>
+
 </body>
 </html>
