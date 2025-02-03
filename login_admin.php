@@ -25,9 +25,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Verify the entered password with the stored hashed password
         if (password_verify($password, $user['password'])) {
             // Password is correct, set session and redirect to dashboard
-            $_SESSION['username'] = $username; // You can store additional user info here
+            $_SESSION['username'] = $username; // Store username in session
             header("Location: admindashboard.html"); // Redirect to admin dashboard
-            exit();
+            exit(); // Stop further execution
         } else {
             // Incorrect password
             echo "Invalid password. Please try again.";
