@@ -10,36 +10,36 @@ $dbname = "gaming_store";
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 // Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
-// Check if form is submitted
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Collect form data
     $email = $_POST['email'];
     $username = $_POST['username'];
-    $password = $_POST['psw'];  // Assuming plain text password
-    $password_repeat = $_POST['psw-repeat'];
+    $password = $_POST['psw'];
+    $passwordRepeat = $_POST['psw-repeat'];
 
-    // Check if passwords match
-    if ($password !== $password_repeat) {
-        die("Passwords do not match.");
-    }
+    // Validation (you can add more here)
+    if ($password == $passwordRepeat) {
+        // Here you would connect to your database and save the user data
+        // Example:
+        // $conn = new mysqli('localhost', 'username', 'password', 'database');
+        // if ($conn->connect_error) {
+        //     die("Connection failed: " . $conn->connect_error);
+        // }
+        // $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        // $sql = "INSERT INTO users (email, username, password) VALUES ('$email', '$username', '$hashedPassword')";
+        // if ($conn->query($sql) === TRUE) {
+        //     echo "New record created successfully";
+        // } else {
+        //     echo "Error: " . $sql . "<br>" . $conn->error;
+        // }
+        // $conn->close();
 
-    // Hash the password for security
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-    // SQL query to insert the data into the database
-    $sql = "INSERT INTO admins (email, username, password) VALUES ('$email', '$username', '$hashed_password')";
-
-    if ($conn->query($sql) === TRUE) {
-        // Redirect to admin dashboard
+        // After successful sign up, redirect to the admin dashboard
         header("Location: admindashboard.html");
-        exit();  // Make sure to stop further script execution
+        exit(); // Always call exit after header redirect to stop further execution
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        echo "Passwords do not match!";
     }
-
-    $conn->close();
 }
 ?>
