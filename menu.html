@@ -17,7 +17,9 @@
             background-color: #d03b3b;
             color: white;
             padding: 20px;
-            position: relative;
+            position: fixed; /* Changed to fixed so the menu stays on screen */
+            top: 0;
+            left: 0;
             width: 300px;
             height: 100vh;
             border-radius: 8px;
@@ -25,6 +27,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            z-index: 1000;
         }
         .menu .close-icon {
             position: absolute;
@@ -86,7 +89,7 @@
 </head>
 <body>
     <div class="menu">
-        <i class="fas fa-times close-icon"></i>
+        <i class="fas fa-times close-icon" onclick="closeMenu()"></i>
         <h1>Menu</h1>
         <ul>
             <li class="dropdown">
@@ -106,5 +109,11 @@
             <li><a href="loginadmin.html">Login Admin</a></li>
         </ul>
     </div>
+
+    <script>
+        function closeMenu() {
+            document.querySelector('.menu').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
