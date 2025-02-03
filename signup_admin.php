@@ -1,10 +1,24 @@
 <?php
 include 'db_connect.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "gaming_store";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Check if form is submitted
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $username = $_POST['username'];
-    $password = $_POST['psw'];
+    $password = $_POST['psw'];  // Assuming plain text password
     $password_repeat = $_POST['psw-repeat'];
 
     // Check if passwords match
@@ -15,22 +29,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Hash the password for security
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    // Prepare SQL query
-    $stmt = $conn->prepare("INSERT INTO admins (email, username, password) VALUES (?, ?, ?)");
-    if (!$stmt) {
-        die("Error in preparing SQL: " . $conn->error);
-    }
-    $stmt->bind_param("sss", $email, $username, $hashed_password);
+    // SQL query to insert the data into the database
+    $sql = "INSERT INTO admins (email, username, password) VALUES ('$email', '$username', '$hashed_password')";
 
-    if ($stmt->execute()) {
-        // Redirect to admin dashboard if signup is successful
-        header("Location: admin_dashboard.html");
-        exit(); // Ensure script stops executing after redirection
+    if ($conn->query($sql) === TRUE) {
+        // Redirect to admin dashboard
+        header("Location: admindashboard.html");
+        exit();  // Make sure to stop further script execution
     } else {
-        die("Error executing query: " . $stmt->error); // Display SQL error if any
+        echo "Error: " . $sql . "<br>" . $conn->error;
     }
 
-    $stmt->close();
     $conn->close();
 }
 ?>
