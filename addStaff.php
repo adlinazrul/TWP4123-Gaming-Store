@@ -1,40 +1,44 @@
 <?php
-include 'db_connection.php';
+$servername = "localhost";
+$username = "root";  // Your database username
+$password = "";  // Your database password
+$dbname = "gaming_store";  // Your database name
 
+// Create a connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (!isset($_POST["emp_id"]) || !isset($_POST["username"]) || !isset($_POST["email"]) || 
-        !isset($_POST["position"]) || !isset($_POST["salary"]) || !isset($_POST["password"])) {
-        echo json_encode(["success" => false, "message" => "Missing form data"]);
-        exit();
-    }
+    // Get form data
+    $username = $_POST['username'];
+    $email = $_POST['email'];
+    $position = $_POST['position'];
+    $salary = $_POST['salary'];
+    $password = $_POST['password'];
 
-    $emp_id = $_POST["emp_id"];
-    $username = $_POST["username"];
-    $email = $_POST["email"];
-    $position = $_POST["position"];
-    $salary = $_POST["salary"];
-    $password = password_hash($_POST["password"], PASSWORD_BCRYPT);
-
-    // Handle Image Upload
-    $imagePath = "";
-    if (!empty($_FILES["image"]["name"])) {
-        $imageName = basename($_FILES["image"]["name"]);
-        $imagePath = "uploads/" . $imageName;
-        move_uploaded_file($_FILES["image"]["tmp_name"], $imagePath);
-    }
-
-    // Insert Data into Database
-    $sql = "INSERT INTO admin_users (emp_id, username, email, position, salary, password, image) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("isssiss", $emp_id, $username, $email, $position, $salary, $password, $imagePath);
-
-    if ($stmt->execute()) {
-        echo json_encode(["success" => true]);
+    // Image upload handling
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        $image = $_FILES['image']['name'];
+        move_uploaded_file($_FILES['image']['tmp_name'], 'uploads/' . $image);
     } else {
-        echo json_encode(["success" => false, "message" => "Database error"]);
+        $image = NULL; // No image uploaded
     }
-} else {
-    echo json_encode(["success" => false, "message" => "Invalid request"]);
+
+    // Prepare the SQL query to insert the data into the table
+    $sql = "INSERT INTO admin_staff (username, email, position, salary, password, image)
+            VALUES ('$username', '$email', '$position', '$salary', '$password', '$image')";
+
+    if ($conn->query($sql) === TRUE) {
+        echo "New record created successfully!";
+    } else {
+        echo "Error: " . $sql . "<br>" . $conn->error;
+    }
+
+    $conn->close();
 }
 ?>
