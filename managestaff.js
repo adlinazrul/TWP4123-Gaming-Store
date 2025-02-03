@@ -1,5 +1,5 @@
 document.getElementById("addForm").addEventListener("submit", function(event) {
-    event.preventDefault(); // Stop page reload
+    event.preventDefault();
 
     let formData = new FormData(this);
 
@@ -7,10 +7,10 @@ document.getElementById("addForm").addEventListener("submit", function(event) {
         method: "POST",
         body: formData
     })
-    .then(response => response.text()) // Get PHP response
+    .then(response => response.text())
     .then(data => {
-        console.log("Response from server:", data); // Debugging
-        alert(data); // Show message
+        console.log("Response from server:", data);
+        alert(data);
         fetchStaff(); // Refresh table
     })
     .catch(error => console.error("Error:", error));
