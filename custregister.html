@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,17 +8,17 @@
     <style>
         body {
             font-family: 'Source Serif Pro', serif;
-            background-color: white;
-            color: black;
+            background-color: #f0f0f0;
+            color: #333;
             margin: 0;
             padding: 0;
         }
         header {
-            background: linear-gradient(45deg, red, darkred);
+            background: linear-gradient(45deg, #ff4b2b, #ff416c);
             color: white;
             padding: 40px 20px;
             text-align: center;
-            border-bottom: 5px solid black;
+            border-bottom: 5px solid #333;
         }
         h1, h2, h3 {
             font-family: 'Source Serif Pro', serif;
@@ -29,15 +28,16 @@
         }
         .button {
             font-family: 'Source Sans Pro', sans-serif;
-            background-color: red;
+            background-color: #ff4b2b;
             color: white;
             border: none;
             padding: 10px 20px;
             border-radius: 15px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         .button:hover {
-            background-color: darkred;
+            background-color: #ff416c;
         }
         .form-container {
             max-width: 600px;
@@ -45,7 +45,8 @@
             padding: 20px;
             border: 1px solid #ddd;
             border-radius: 15px;
-            background-color: #f9f9f9;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         .form-group {
             margin-bottom: 15px;
@@ -54,6 +55,7 @@
             display: block;
             font-family: 'Source Sans Pro', sans-serif;
             margin-bottom: 5px;
+            font-weight: bold;
         }
         .form-group input {
             width: 100%;
@@ -61,6 +63,7 @@
             border: 1px solid #ddd;
             border-radius: 15px;
             font-family: 'Source Serif Pro', serif;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -70,7 +73,7 @@
     </header>
     <main>
         <div class="form-container">
-            <form>
+            <form action="customer_registration.php" method="post">
                 <div class="form-group">
                     <label for="first-name">First Name</label>
                     <input type="text" id="first-name" name="first-name" required>
@@ -82,6 +85,10 @@
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" id="phone" name="phone" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
