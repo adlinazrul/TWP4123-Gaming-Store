@@ -20,7 +20,7 @@ $phone = $_POST['phone'];
 $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Hash the password
 
 // Insert data into the database
-$sql = "INSERT INTO customers (first_name, last_name, email, phone, password) VALUES ('$first_name', '$last_name', '$email', '$phone', '$password')";
+$sql "INSERT INTO customers (first_name, last_name, email, phone, password) VALUES ('$first_name', '$last_name', '$email', '$phone', '$password')";
 
 if ($conn->query($sql) === TRUE) {
     echo "New customer registered successfully";

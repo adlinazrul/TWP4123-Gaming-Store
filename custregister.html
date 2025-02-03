@@ -21,10 +21,10 @@
             border-bottom: 5px solid #333;
         }
         h1, h2, h3 {
-            font-family: 'Source Serif Pro', serif;
+            Serif Pro', serif;
         }
         p {
-            font-family: 'Source Serif Pro', serif;
+            font-family: 'Source Sans Pro', serif;
         }
         .button {
             font-family: 'Source Sans Pro', sans-serif;
@@ -65,6 +65,34 @@
             font-family: 'Source Serif Pro', serif;
             box-sizing: border-box;
         }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        .popup h2 {
+            margin-top: 0;
+        }
+        .popup .close {
+            background-color: #ff4b2b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .popup .close:hover {
+            background-color: #ff416c;
+        }
     </style>
 </head>
 <body>
@@ -73,7 +101,7 @@
     </header>
     <main>
         <div class="form-container">
-            <form action="customer_registration.php" method="post">
+            <form id="registrationForm" action="register_customer.php" method="post">
                 <div class="form-group">
                     <label for="first-name">First Name</label>
                     <input type="text" id="first-name" name="first-name" required>
@@ -86,9 +114,7 @@
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required>
                 </div>
-                <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="text" id="phone" name="phone" required>
+                <div class=" id="phone" name="phone" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
@@ -102,5 +128,37 @@
             </form>
         </div>
     </main>
+    <div class="popup" id="popup">
+        <h2>Registration Successful</h2>
+        <p>Your registration was successful. Welcome!</p>
+        <button class="close" onclick="closePopup()">Close</button>
+    </div>
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            var formData = new FormData(this);
+
+            fetch('register_customer.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes('New customer registered successfully')) {
+                    document.getElementById('popup').style.display = 'block';
+                } else {
+                    alert('Registration failed: ' + data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
