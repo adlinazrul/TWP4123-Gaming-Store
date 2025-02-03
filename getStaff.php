@@ -1,22 +1,13 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "staff_db";
+include 'db_connection.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-$sql = "SELECT id, name, position, salary, image FROM staff";
+$sql = "SELECT emp_id, username, email, position, salary, image FROM admin_users";
 $result = $conn->query($sql);
 
-$staffArray = [];
+$staff = [];
 while ($row = $result->fetch_assoc()) {
-    $staffArray[] = $row;
+    $staff[] = $row;
 }
 
-echo json_encode($staffArray);
-$conn->close();
+echo json_encode($staff);
 ?>
