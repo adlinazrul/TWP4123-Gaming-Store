@@ -8,7 +8,11 @@ document.getElementById("addForm").addEventListener("submit", function (event) {
     formData.append("position", document.getElementById("position").value);
     formData.append("salary", document.getElementById("salary").value);
     formData.append("password", document.getElementById("password").value);
-    formData.append("image", document.getElementById("image").files[0]);
+
+    let imageFile = document.getElementById("image").files[0];
+    if (imageFile) {
+        formData.append("image", imageFile);
+    }
 
     fetch("addStaff.php", {
         method: "POST",
@@ -16,10 +20,10 @@ document.getElementById("addForm").addEventListener("submit", function (event) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data); // Debugging: Check server response
+        console.log(data);
         if (data.success) {
             alert("Staff added successfully!");
-            fetchEmployees(); // 🔥 Refresh staff list after adding
+            fetchEmployees(); // Refresh table
         } else {
             alert("Error: " + data.message);
         }

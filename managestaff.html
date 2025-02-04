@@ -15,21 +15,19 @@
         
         <section id="add-employee">
             <h2>Add Admin</h2>
-            <form id="addForm">
-                <label for="emp_id">Staff ID:</label>
-                <input type="number" id="emp_id" required><br>
+            <form id="addForm" method="POST" enctype="multipart/form-data" action="addStaff.php">
                 <label for="username">Username:</label>
-                <input type="text" id="username" required><br>
+                <input type="text" id="username" name="username" required><br>
                 <label for="email">Email:</label>
-                <input type="email" id="email" required><br>
+                <input type="email" id="email" name="email" required><br>
                 <label for="position">Position:</label>
-                <input type="text" id="position" required><br>
+                <input type="text" id="position" name="position" required><br>
                 <label for="salary">Salary:</label>
-                <input type="number" id="salary" required><br>
+                <input type="number" id="salary" name="salary" required><br>
                 <label for="password">Password:</label>
-                <input type="password" id="password" required><br>
+                <input type="password" id="password" name="password" required><br>
                 <label for="image">Image:</label>
-                <input type="file" id="image" required><br>
+                <input type="file" id="image" name="image" required><br>
                 <button type="submit">Add Staff</button>
             </form>
         </section>
@@ -49,12 +47,49 @@
                     </tr>
                 </thead>
                 <tbody id="employeeTable">
-                    <!-- Staff details will be dynamically inserted here -->
+                    <?php
+                    // Database connection
+                    $servername = "localhost";
+                    $username = "root";  // Your database username
+                    $password = "";  // Your database password
+                    $dbname = "gaming_store";  // Your database name
+        
+                    // Create a connection
+                    $conn = new mysqli($servername, $username, $password, $dbname);
+        
+                    // Check connection
+                    if ($conn->connect_error) {
+                        die("Connection failed: " . $conn->connect_error);
+                    }
+        
+                    // SQL to fetch staff data
+                    $sql = "SELECT * FROM admin_staff";
+                    $result = $conn->query($sql);
+        
+                    if ($result->num_rows > 0) {
+                        // Output data for each row
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>";
+                            echo "<td>" . $row['id'] . "</td>";
+                            echo "<td>" . $row['username'] . "</td>";
+                            echo "<td>" . $row['email'] . "</td>";
+                            echo "<td>" . $row['position'] . "</td>";
+                            echo "<td>" . $row['salary'] . "</td>";
+                            // Display the image if it exists
+                            echo "<td><img src='uploads/" . $row['image'] . "' width='50' height='50'></td>";
+                            // Add Edit and Delete actions (these can be linked to other pages for functionality)
+                            echo "<td><button>Edit</button> <button>Delete</button></td>";
+                            echo "</tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='7'>No staff found</td></tr>";
+                    }
+        
+                    $conn->close();
+                    ?>
                 </tbody>
             </table>
         </section>
     </div>
-
-    <script src="managestaff.js"></script>
 </body>
 </html>
