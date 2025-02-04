@@ -48,45 +48,68 @@
                 </thead>
                 <tbody id="employeeTable">
                     <?php
-                    // Database connection
-                    $servername = "localhost";
-                    $username = "root";  // Your database username
-                    $password = "";  // Your database password
-                    $dbname = "gaming_store";  // Your database name
-        
-                    // Create a connection
-                    $conn = new mysqli($servername, $username, $password, $dbname);
-        
-                    // Check connection
-                    if ($conn->connect_error) {
-                        die("Connection failed: " . $conn->connect_error);
-                    }
-        
-                    // SQL to fetch staff data
-                    $sql = "SELECT * FROM admin_staff";
-                    $result = $conn->query($sql);
-        
-                    if ($result->num_rows > 0) {
-                        // Output data for each row
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>" . $row['id'] . "</td>";
-                            echo "<td>" . $row['username'] . "</td>";
-                            echo "<td>" . $row['email'] . "</td>";
-                            echo "<td>" . $row['position'] . "</td>";
-                            echo "<td>" . $row['salary'] . "</td>";
-                            // Display the image if it exists
-                            echo "<td><img src='uploads/" . $row['image'] . "' width='50' height='50'></td>";
-                            // Add Edit and Delete actions (these can be linked to other pages for functionality)
-                            echo "<td><button>Edit</button> <button>Delete</button></td>";
-                            echo "</tr>";
+                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                        error_reporting(E_ALL);
+                        ini_set('display_errors', 1);
+                    
+                        $servername = "localhost";
+                        $username = "root";
+                        $password = "";
+                        $dbname = "gaming_store";
+                        $conn = new mysqli($servername, $username, $password, $dbname);
+                    
+                        if ($conn->connect_error) {
+                            die("Connection failed: " . $conn->connect_error);
                         }
-                    } else {
-                        echo "<tr><td colspan='7'>No staff found</td></tr>";
+                    
+                        $username = $_POST['username'];
+                        $email = $_POST['email'];
+                        $position = $_POST['position'];
+                        $salary = $_POST['salary'];
+                        $password = $_POST['password'];
+                    
+                        // Handle file upload
+                        if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
+                            $imageName = $_FILES['image']['name'];
+                            $imageTmpName = $_FILES['image']['tmp_name'];
+                            $imageSize = $_FILES['image']['size'];
+                            $imageError = $_FILES['image']['error'];
+                            $imageType = $_FILES['image']['type'];
+                    
+                            // Ensure valid image type (optional check)
+                            $allowed = array("jpg", "jpeg", "png", "gif");
+                            $imageExt = strtolower(pathinfo($imageName, PATHINFO_EXTENSION));
+                    
+                            if (in_array($imageExt, $allowed)) {
+                                $imageNewName = uniqid('', true) . "." . $imageExt;
+                                $imageUploadPath = 'uploads/' . $imageNewName;
+                    
+                                if (move_uploaded_file($imageTmpName, $imageUploadPath)) {
+                                    echo "Image uploaded successfully.<br>";
+                                } else {
+                                    echo "Error uploading image.<br>";
+                                }
+                            } else {
+                                echo "Invalid image type.<br>";
+                            }
+                        } else {
+                            echo "No image uploaded or there was an error with the upload.<br>";
+                        }
+                    
+                        // Insert data into the database
+                        $sql = "INSERT INTO admin_staff (username, email, position, salary, password, image) 
+                                VALUES ('$username', '$email', '$position', '$salary', '$password', '$imageNewName')";
+                    
+                        if ($conn->query($sql) === TRUE) {
+                            echo "New staff added successfully";
+                        } else {
+                            echo "Error: " . $sql . "<br>" . $conn->error;
+                        }
+                    
+                        $conn->close();
                     }
-        
-                    $conn->close();
                     ?>
+                    
                 </tbody>
             </table>
         </section>
