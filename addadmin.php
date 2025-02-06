@@ -31,7 +31,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             VALUES ('$username', '$email', '$position', '$salary', '$password', '$image_name')";
     
     if ($conn->query($sql) === TRUE) {
-        echo "<script>alert('Admin added successfully!'); window.location.href='add_admin.php';</script>";
+        header("Location: add_admin.php?success=1");
+        exit;
     } else {
         echo "<script>alert('Error: " . $conn->error . "');</script>";
     }
