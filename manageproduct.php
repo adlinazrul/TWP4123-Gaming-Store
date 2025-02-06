@@ -13,6 +13,8 @@ $result = mysqli_query($conn, $sql);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Management - Gaming Store Admin</title>
+    <center><button><a href="admindashboard.html" class="back-button">Back to Dashboard</a></button></center>
+    <br>
     <link rel="stylesheet" href="manageproduct.css">
     <style>
         /* Add some basic styles for the table */
@@ -36,6 +38,25 @@ $result = mysqli_query($conn, $sql);
             width: 50px; /* Set a fixed width for images */
             height: auto; /* Maintain aspect ratio */
         }
+
+        
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #c0392b; /* Dark Red */
+            color: white !important; /* Force white text */
+            border: none;
+            border-radius: 5px;
+            text-decoration: none; /* Remove underline */
+            text-align: center;
+        }
+
+    .back-button:hover {
+        background-color: #a93226; /* Darker red on hover */
+    }
+
+
     </style>
 </head>
 <body>
