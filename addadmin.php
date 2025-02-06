@@ -58,36 +58,28 @@ $result = $conn->query($sql);
         <h1>Admin Management System</h1>
 
         <section id="add-employee">
-    <h2>Add Admin</h2>
-    <?php if (isset($_GET['success'])): ?>
-        <p style="color: green;">Admin added successfully!</p>
-    <?php elseif (isset($error_msg)): ?>
-        <p style="color: red;"><?= $error_msg; ?></p>
-    <?php endif; ?>
+            <h2>Add Admin</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <label>Username:</label>
+                <input type="text" name="username" required><br>
 
-    <form method="POST" enctype="multipart/form-data">
-        <label>Username:</label>
-        <input type="text" name="username" required><br>
+                <label>Email:</label>
+                <input type="email" name="email" required><br>
 
-        <label>Email:</label>
-        <input type="email" name="email" required><br>
+                <label>Position:</label>
+                <input type="text" name="position" required><br>
 
-        <label>Position:</label>
-        <input type="text" name="position" required><br>
+                <label>Salary:</label>
+                <input type="number" name="salary" required><br>
 
-        <label>Salary:</label>
-        <input type="number" name="salary" required><br>
+                <label>Password:</label>
+                <input type="password" name="password" required><br>
 
-        <label>Password:</label>
-        <input type="password" name="password" required><br>
+                <label>Image:</label>
+                <input type="file" name="image" accept="image/*" required><br>
 
-        <label>Image:</label>
-        <input type="file" name="image" accept="image/*" required><br>
-
-        <button type="submit">Add Admin</button>
-    </form>
-</section>
-
+                <button type="submit">Add Admin</button>
+            </form>
         </section>
 
         <section id="view-employees">
