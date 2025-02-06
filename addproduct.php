@@ -1,22 +1,24 @@
 <?php
 include 'product.php';
 
-// Handle form submission
+// Your existing PHP code to handle form submission
 if (isset($_POST['add_product'])) {
     $name = $_POST['product_name'];
     $price = $_POST['product_price'];
     $quantity = $_POST['product_quantity'];
     $description = $_POST['product_description'];
 
-    // Handle file upload                         
+    // Handle file upload
     $image = $_FILES['product_image']['name'];
     $target_dir = "uploads/";
     $target_file = $target_dir . basename($image);
-    
-    if (move_uploaded_file($_FILES['product_image']['tmp_name'], $target_file)) {
-        $sql = "INSERT INTO products (name, price, quantity, description, image) 
-                VALUES ('$name', '$price', '$quantity', '$description', '$target_file')";
 
+    if (move_uploaded_file($_FILES['product_image']['tmp_name'], $target_file)) {
+        // Corrected SQL query to insert product data
+        $sql = "INSERT INTO products (product_name, product_price, product_quantity, product_description, product_image) 
+                VALUES ('$name', '$price', '$quantity', '$description', '$target_file')";
+        
+        // Execute query using PHP's mysqli query method
         if ($conn->query($sql) === TRUE) {
             echo "<script>alert('Product added successfully!');</script>";
         } else {
