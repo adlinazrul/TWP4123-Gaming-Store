@@ -1,6 +1,6 @@
 <?php
 $servername = "localhost";
-$username = "root"; // Change if needed
+$username = "root";
 $password = "";
 $dbname = "gaming_store";
 
@@ -22,23 +22,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Handle file upload
     $target_dir = "uploads/";
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0777, true);
+    }
+
     $image_name = basename($_FILES["image"]["name"]);
     $target_file = $target_dir . $image_name;
-    move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
 
-    // Insert into database
-    $sql = "INSERT INTO admin_list (username, email, position, salary, password, image) 
-            VALUES ('$username', '$email', '$position', '$salary', '$password', '$image_name')";
-    
-    if ($conn->query($sql) === TRUE) {
-        echo "<script>alert('Admin added successfully!'); window.location.href='add_admin.php';</script>";
+    if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
+        // Insert into database
+        $sql = "INSERT INTO admin_users (username, email, position, salary, password, image) 
+                VALUES ('$username', '$email', '$position', '$salary', '$password', '$image_name')";
+        
+        if ($conn->query($sql) === TRUE) {
+            header("Location: add_admin.php?success=1");
+            exit();
+        } else {
+            error_log("Error: " . $conn->error);
+            echo "<script>alert('Database Error: " . $conn->error . "');</script>";
+        }
     } else {
-        echo "<script>alert('Error: " . $conn->error . "');</script>";
+        echo "<script>alert('File upload failed.');</script>";
     }
 }
 
 // Fetch existing admin users
-$sql = "SELECT * FROM admin_list";
+$sql = "SELECT * FROM admin_users";
 $result = $conn->query($sql);
 ?>
 
@@ -59,6 +68,10 @@ $result = $conn->query($sql);
 
         <section id="add-employee">
             <h2>Add Admin</h2>
+            <?php if (isset($_GET['success'])): ?>
+                <p style="color: green;">Admin added successfully!</p>
+            <?php endif; ?>
+
             <form method="POST" enctype="multipart/form-data">
                 <label>Username:</label>
                 <input type="text" name="username" required><br>
