@@ -74,7 +74,7 @@ $result = $conn->query("SELECT * FROM products");
          <tbody>
             <?php while ($row = $result->fetch_assoc()) { ?>
             <tr>
-                <<img src="uploads/<?= basename($row['image']); ?>" width="80">
+               <td><img src="uploads/<?= basename($row['image']); ?>" width="80"></td>
                <td><?= $row['product_name']; ?></td>
                 <td>RM <?= number_format($row['product_price'], 2); ?></td>
                 <td><?= $row['product_quantity']; ?></td>
