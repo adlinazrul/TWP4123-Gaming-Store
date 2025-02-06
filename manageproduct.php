@@ -52,7 +52,7 @@ $result = mysqli_query($conn, $sql);
                         <tr>
                             <th>Image</th>
                             <th>Product Name</th>
-                            <th>Category</th>
+                            <th>Description</th>
                             <th>Price (RM)</th>
                             <th>Stock</th>
                             <th>Actions</th>
@@ -63,7 +63,7 @@ $result = mysqli_query($conn, $sql);
                         <tr>
                             <td><img src="<?= $row['product_image']; ?>" alt="Product Image"></td>
                             <td><?= $row['product_name']; ?></td>
-                            <td><?= $row['category']; ?></td>
+                            <td><?= $row['product_description']; ?></td>
                             <td>RM <?= number_format($row['product_price'], 2); ?></td>
                             <td><?= $row['product_quantity']; ?></td>
                             <td>
