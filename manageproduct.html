@@ -51,54 +51,31 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><img src="image/gamingmouse.jpg" alt="Gaming Mouse"></td> <!-- Image for Gaming Mouse -->
-                            <td>Gaming Mouse</td>
-                            <td>Accessories</td>
-                            <td>RM 49.99</td>
-                            <td>75</td>
-                            <td>Black, Red</td> <!-- Colors for Gaming Mouse -->
-                            <td>
-                                <button>Edit</button>
-                                <button>Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><img src="image/gamingkeyboard.jpg" alt="Mechanical Keyboard"></td> <!-- Image for Mechanical Keyboard -->
-                            <td>Mechanical Keyboard</td>
-                            <td>Accessories</td>
-                            <td>RM 89.99</td>
-                            <td>50</td>
-                            <td>Black, White</td> <!-- Colors for Mechanical Keyboard -->
-                            <td>
-                                <button>Edit</button>
-                                <button>Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><img src="image/gamingheadset.jpg" alt="Gaming Headset"></td> <!-- Image for Gaming Headset -->
-                            <td>Gaming Headset</td>
-                            <td>Accessories</td>
-                            <td>RM 69.99</td>
-                            <td>30</td>
-                            <td>Black, Blue</td> <!-- Colors for Gaming Headset -->
-                            <td>
-                                <button>Edit</button>
-                                <button>Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><img src="image/gamingcontroller.jpg" alt="Game Controller"></td> <!-- Image for Game Controller -->
-                            <td>Game Controller</td>
-                            <td>Consoles</td>
-                            <td>RM 39.99</td>
-                            <td>100</td>
-                            <td>Black, White</td> <!-- Colors for Game Controller -->
-                            <td>
-                                <button>Edit</button>
-                                <button>Delete</button>
-                            </td>
-                        </tr>
+                        <?php
+                        // Assuming you've already connected to your database
+                        $sql = "SELECT * FROM products";
+                        $result = mysqli_query($conn, $sql);
+
+                        if (mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                // Retrieve product details
+                                echo '<tr>';
+                                echo '<td><img src="uploads/' . basename($row['product_image']) . '" alt="' . $row['product_name'] . '"></td>';
+                                echo '<td>' . $row['product_name'] . '</td>';
+                                echo '<td>' . $row['product_category'] . '</td>';
+                                echo '<td>RM ' . number_format($row['product_price'], 2) . '</td>';
+                                echo '<td>' . $row['product_quantity'] . '</td>';
+                                echo '<td>' . $row['product_colors'] . '</td>';
+                                echo '<td>';
+                                echo '<a href="editproduct.php?id=' . $row['id'] . '"><button>Edit</button></a> ';
+                                echo '<a href="deleteproduct.php?id=' . $row['id'] . '" onclick="return confirm(\'Are you sure you want to delete this product?\')"><button>Delete</button></a>';
+                                echo '</td>';
+                                echo '</tr>';
+                            }
+                        } else {
+                            echo '<tr><td colspan="7">No products found.</td></tr>';
+                        }
+                        ?>
                     </tbody>
                 </table>
             </section>
