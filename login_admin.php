@@ -11,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['psw'];
 
     // SQL query to fetch the user with the entered username
-    $sql = "SELECT * FROM admin_users WHERE username = ?";
+    $sql = "SELECT * FROM admin_list WHERE username = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $username); // "s" means the parameter is a string
     $stmt->execute();
