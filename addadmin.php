@@ -24,20 +24,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $target_dir = "uploads/";
     $image_name = basename($_FILES["image"]["name"]);
     $target_file = $target_dir . $image_name;
+    move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
+
+    // Insert into database
+    $sql = "INSERT INTO admin_list (username, email, position, salary, password, image) 
+            VALUES ('$username', '$email', '$position', '$salary', '$password', '$image_name')";
     
-    if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-        // Insert into database
-        $sql = "INSERT INTO admin_list (username, email, position, salary, password, image) 
-                VALUES ('$username', '$email', '$position', '$salary', '$password', '$image_name')";
-        
-        if ($conn->query($sql) === TRUE) {
-            header("Location: add_admin.php?success=1");
-            exit;
-        } else {
-            $error_msg = "Error: " . $conn->error;
-        }
+    if ($conn->query($sql) === TRUE) {
+        echo "<script>alert('Admin added successfully!'); window.location.href='add_admin.php';</script>";
     } else {
-        $error_msg = "Failed to upload image.";
+        echo "<script>alert('Error: " . $conn->error . "');</script>";
     }
 }
 
@@ -62,36 +58,36 @@ $result = $conn->query($sql);
         <h1>Admin Management System</h1>
 
         <section id="add-employee">
-            <h2>Add Admin</h2>
-            <?php if (isset($_GET['success'])): ?>
-                <p style="color: green;">Admin added successfully!</p>
-            <?php elseif (isset($_GET['deleted'])): ?>
-                <p style="color: red;">Admin deleted successfully!</p>
-            <?php elseif (isset($error_msg)): ?>
-                <p style="color: red;"><?= $error_msg; ?></p>
-            <?php endif; ?>
+    <h2>Add Admin</h2>
+    <?php if (isset($_GET['success'])): ?>
+        <p style="color: green;">Admin added successfully!</p>
+    <?php elseif (isset($error_msg)): ?>
+        <p style="color: red;"><?= $error_msg; ?></p>
+    <?php endif; ?>
 
-            <form method="POST" enctype="multipart/form-data">
-                <label>Username:</label>
-                <input type="text" name="username" required><br>
+    <form method="POST" enctype="multipart/form-data">
+        <label>Username:</label>
+        <input type="text" name="username" required><br>
 
-                <label>Email:</label>
-                <input type="email" name="email" required><br>
+        <label>Email:</label>
+        <input type="email" name="email" required><br>
 
-                <label>Position:</label>
-                <input type="text" name="position" required><br>
+        <label>Position:</label>
+        <input type="text" name="position" required><br>
 
-                <label>Salary:</label>
-                <input type="number" name="salary" required><br>
+        <label>Salary:</label>
+        <input type="number" name="salary" required><br>
 
-                <label>Password:</label>
-                <input type="password" name="password" required><br>
+        <label>Password:</label>
+        <input type="password" name="password" required><br>
 
-                <label>Image:</label>
-                <input type="file" name="image" accept="image/*" required><br>
+        <label>Image:</label>
+        <input type="file" name="image" accept="image/*" required><br>
 
-                <button type="submit">Add Admin</button>
-            </form>
+        <button type="submit">Add Admin</button>
+    </form>
+</section>
+
         </section>
 
         <section id="view-employees">
