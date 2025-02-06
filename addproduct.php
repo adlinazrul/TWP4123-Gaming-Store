@@ -8,7 +8,7 @@ if (isset($_POST['add_product'])) {
     $quantity = $_POST['product_quantity'];
     $description = $_POST['product_description'];
 
-    // Handle file upload
+    // Handle file upload                         
     $image = $_FILES['product_image']['name'];
     $target_dir = "uploads/";
     $target_file = $target_dir . basename($image);
@@ -73,10 +73,11 @@ $result = $conn->query("SELECT * FROM products");
             <?php while ($row = $result->fetch_assoc()) { ?>
             <tr>
                <td><img src="<?= $row['image']; ?>" width="80"></td>
-               <td><?= $row['name']; ?></td>
-               <td>RM <?= number_format($row['price'], 2); ?></td>
-               <td><?= $row['quantity']; ?></td>
-               <td><?= $row['description']; ?></td>
+               <td><?= $row['product_name']; ?></td>
+                <td>RM <?= number_format($row['product_price'], 2); ?></td>
+                <td><?= $row['product_quantity']; ?></td>
+                <td><?= $row['product_description']; ?></td>
+
             </tr>
             <?php } ?>
          </tbody>
