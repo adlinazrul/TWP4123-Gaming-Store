@@ -1,6 +1,6 @@
 <?php
 $servername = "localhost";
-$username = "root"; // Change if using different DB credentials
+$username = "root"; // Change if needed
 $password = "";
 $dbname = "gaming_store";
 
@@ -12,15 +12,27 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle form submission
+// Debug: Print received POST data
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $position = $_POST['position'];
-    $salary = $_POST['salary'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT); // Hashing password
+    echo "<pre>";
+    print_r($_POST); // Check if position and salary are received
+    echo "</pre>";
 
-    // Image upload handling
+    $username = $_POST['username'] ?? null;
+    $email = $_POST['email'] ?? null;
+    $position = $_POST['position'] ?? null;
+    $salary = $_POST['salary'] ?? null;
+    $password = $_POST['password'] ?? null;
+
+    // Check for missing values
+    if (!$username || !$email || !$position || !$salary || !$password) {
+        die("Missing required fields.");
+    }
+
+    // Hash password
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
+
+    // Handle file upload
     $target_dir = "uploads/";
     $image_name = basename($_FILES["image"]["name"]);
     $target_file = $target_dir . $image_name;
@@ -28,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Insert into database
     $sql = "INSERT INTO admin_users (username, email, position, salary, password, image)
-            VALUES ('$username', '$email', '$position', '$salary', '$password', '$image_name')";
+            VALUES ('$username', '$email', '$position', '$salary', '$hashed_password', '$image_name')";
 
     if ($conn->query($sql) === TRUE) {
         echo "Admin added successfully!";
