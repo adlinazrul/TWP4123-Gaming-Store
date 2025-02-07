@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "your_database");
+$conn = new mysqli("localhost", "root", "", "gaming_store");
 $result = $conn->query("SELECT * FROM members");
 $members = [];
 while ($row = $result->fetch_assoc()) {
