@@ -20,13 +20,13 @@
             <input type="email" id="email" required><br>
 
             <label>Membership Type:</label>
-            <select id="membership_type" required>
+            <select id="membership" required>
                 <option value="Standard">Standard</option>
                 <option value="Premium">Premium</option>
             </select><br>
 
             <label>Subscription Fee (RM):</label>
-            <input type="number" id="subscription_fee" value="10.00" readonly required><br>
+            <input type="number" id="fee" value="10.00" readonly required><br>
 
             <label>Select Bank:</label>
             <select id="bank" required>
@@ -41,8 +41,8 @@
     </div>
 
     <script>
-        document.getElementById("membership_type").addEventListener("change", function() {
-            document.getElementById("subscription_fee").value = this.value === "Premium" ? "20.00" : "10.00";
+        document.getElementById("membership").addEventListener("change", function() {
+            document.getElementById("fee").value = this.value === "Premium" ? "20.00" : "10.00";
         });
 
         document.getElementById("addForm").addEventListener("submit", function(event) {
