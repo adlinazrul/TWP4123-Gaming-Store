@@ -23,16 +23,24 @@
                 <input type="email" id="email" required><br>
 
                 <label>Membership Type:</label>
-                <input type="text" id="membership" required><br>
+                <select id="membership" required>
+                    <option value="Standard">Standard</option>
+                    <option value="Premium">Premium</option>
+                </select><br>
 
                 <label>Subscription Fee (RM):</label>
-                <input type="number" id="fee" required><br>
+                <input type="number" id="fee" value="10.00" readonly required><br>
 
                 <label>Password:</label>
                 <input type="password" id="password" required><br>
 
-                <label>Profile Image:</label>
-                <input type="file" id="image" accept="image/*" required><br>
+                <label>Select Bank:</label>
+                <select id="bank" required>
+                    <option value="Maybank">Maybank</option>
+                    <option value="CIMB">CIMB</option>
+                    <option value="Public Bank">Public Bank</option>
+                    <option value="RHB">RHB</option>
+                </select><br>
 
                 <button type="submit">Add Member</button>
             </form>
@@ -48,7 +56,7 @@
                         <th>Email</th>
                         <th>Membership Type</th>
                         <th>Subscription Fee (RM)</th>
-                        <th>Profile Image</th>
+                        <th>Bank</th>
                     </tr>
                 </thead>
                 <tbody id="memberTable">
@@ -62,6 +70,12 @@
         document.addEventListener("DOMContentLoaded", function() {
             let form = document.getElementById("addForm");
             let memberTable = document.getElementById("memberTable");
+            let membershipSelect = document.getElementById("membership");
+            let feeInput = document.getElementById("fee");
+
+            membershipSelect.addEventListener("change", function() {
+                feeInput.value = membershipSelect.value === "Premium" ? "20.00" : "10.00";
+            });
 
             function loadMembers() {
                 fetch("fetchMembers.php")
@@ -76,7 +90,7 @@
                                 <td>${member.email}</td>
                                 <td>${member.membership}</td>
                                 <td>RM ${member.fee}</td>
-                                <td><img src="uploads/${member.image}" width="50"></td>
+                                <td>${member.bank}</td>
                             `;
                             memberTable.appendChild(newRow);
                         });
