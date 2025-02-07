@@ -1,5 +1,5 @@
 <?php
-include 'db_connectsupport.php';
+include "db_connect1.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = $_POST["name"];
