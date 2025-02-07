@@ -1,11 +1,9 @@
 <?php
-include 'db_connectmember.php'; // Ensure this file connects to your database correctly
+// Include the database connection file
+include 'db_connectmember.php'; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Debugging: Check what data is being received
-    error_log(print_r($_POST, true));
-
-    // Fetch form data
+    // Fetch the form data
     $username = isset($_POST['username']) ? $_POST['username'] : '';
     $email = isset($_POST['email']) ? $_POST['email'] : '';
     $membership = isset($_POST['membership']) ? $_POST['membership'] : '';
@@ -14,10 +12,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Validate fields
     if (empty($username) || empty($email) || empty($membership) || empty($fee) || empty($bank)) {
-        die("Error: All fields are required!");
+        echo "Error: All fields are required!";
+        exit;
     }
 
-    // Prepare and bind
+    // Prepare and bind the SQL query
     $stmt = $conn->prepare("INSERT INTO member (username, email, membership, fee, bank) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("sssss", $username, $email, $membership, $fee, $bank);
 
