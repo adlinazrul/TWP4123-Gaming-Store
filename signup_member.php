@@ -2,6 +2,9 @@
 include 'db_connectmember.php'; // Ensure this file connects to your database correctly
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Debugging: Check what data is being received
+    error_log(print_r($_POST, true));
+
     // Fetch form data
     $username = isset($_POST['username']) ? $_POST['username'] : '';
     $email = isset($_POST['email']) ? $_POST['email'] : '';
