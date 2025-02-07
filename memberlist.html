@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member List</title>
+    <link rel="stylesheet" href="managestaff.css">
+</head>
+<body>
+
+    <center><button class="back-button" onclick="window.location.href='admindashboard.html'">Back to Dashboard</button></center>
+
+    <div class="container">
+        <h1>Member List</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Membership Type</th>
+                    <th>Subscription Fee (RM)</th>
+                    <th>Bank</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="memberTable">
+                <!-- Data will be loaded from database -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function loadMembers() {
+            fetch("fetchMembers.php")
+                .then(response => response.json())
+                .then(data => {
+                    let table = document.getElementById("memberTable");
+                    table.innerHTML = ""; // Clear table
+
+                    data.forEach(member => {
+                        let row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${member.id}</td>
+                            <td>${member.fullname}</td>
+                            <td>${member.email}</td>
+                            <td>${member.membership}</td>
+                            <td>RM ${member.fee}</td>
+                            <td>${member.bank}</td>
+                            <td>
+                                <button onclick="editMember(${member.id})">Edit</button>
+                                <button onclick="deleteMember(${member.id})">Delete</button>
+                            </td>
+                        `;
+                        table.appendChild(row);
+                    });
+                });
+        }
+
+        function editMember(id) {
+            let newEmail = prompt("Enter new email:");
+            if (newEmail) {
+                fetch("edit_member.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id, email: newEmail })
+                })
+                .then(response => response.text())
+                .then(() => loadMembers());
+            }
+        }
+
+        function deleteMember(id) {
+            if (confirm("Are you sure you want to delete this member?")) {
+                fetch("delete_member.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id })
+                })
+                .then(response => response.text())
+                .then(() => loadMembers());
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadMembers);
+    </script>
+
+</body>
+</html>

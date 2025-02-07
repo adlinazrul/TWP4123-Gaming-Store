@@ -2,32 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Management System</title>
     <link rel="stylesheet" href="managestaff.css">
 </head>
 <body>
+
     <center><button class="back-button" onclick="window.location.href='admindashboard.html'">Back to Dashboard</button></center>
-    
+
     <div class="container">
         <h1>Admin Management System</h1>
-        
+
         <section id="add-employee">
             <h2>Add Admin</h2>
-            <form id="addForm" method="POST" enctype="multipart/form-data" action="addStaff.php">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required><br>
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required><br>
-                <label for="position">Position:</label>
-                <input type="text" id="position" name="position" required><br>
-                <label for="salary">Salary:</label>
-                <input type="number" id="salary" name="salary" required><br>
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required><br>
-                <label for="image">Image:</label>
-                <input type="file" id="image" name="image" required><br>
+            <form id="addForm" enctype="multipart/form-data">
+                <label>Username:</label>
+                <input type="text" id="username" required><br>
+
+                <label>Email:</label>
+                <input type="email" id="email" required><br>
+
+                <label>Position:</label>
+                <input type="text" id="position" required><br>
+
+                <label>Salary:</label>
+                <input type="number" id="salary" required><br>
+
+                <label>Password:</label>
+                <input type="password" id="password" required><br>
+
+                <label>Image:</label>
+                <input type="file" id="image" accept="image/*" required><br>
+
                 <button type="submit">Add Staff</button>
             </form>
         </section>
@@ -41,55 +47,62 @@
                         <th>Username</th>
                         <th>Email</th>
                         <th>Position</th>
-                        <th>Salary</th>
+                        <th>Salary (RM)</th>
                         <th>Image</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="employeeTable">
-                    <?php
-                    // Database connection
-                    $servername = "localhost";
-                    $username = "root";  // Your database username
-                    $password = "";  // Your database password
-                    $dbname = "gaming_store";  // Your database name
-        
-                    // Create a connection
-                    $conn = new mysqli($servername, $username, $password, $dbname);
-        
-                    // Check connection
-                    if ($conn->connect_error) {
-                        die("Connection failed: " . $conn->connect_error);
-                    }
-        
-                    // SQL to fetch staff data
-                    $sql = "SELECT * FROM admin_staff";
-                    $result = $conn->query($sql);
-        
-                    if ($result->num_rows > 0) {
-                        // Output data for each row
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>" . $row['id'] . "</td>";
-                            echo "<td>" . $row['username'] . "</td>";
-                            echo "<td>" . $row['email'] . "</td>";
-                            echo "<td>" . $row['position'] . "</td>";
-                            echo "<td>" . $row['salary'] . "</td>";
-                            // Display the image if it exists
-                            echo "<td><img src='uploads/" . $row['image'] . "' width='50' height='50'></td>";
-                            // Add Edit and Delete actions (these can be linked to other pages for functionality)
-                            echo "<td><button>Edit</button> <button>Delete</button></td>";
-                            echo "</tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='7'>No staff found</td></tr>";
-                    }
-        
-                    $conn->close();
-                    ?>
+                    <!-- Data will be loaded from MySQL -->
                 </tbody>
             </table>
         </section>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let form = document.getElementById("addForm");
+            let employeeTable = document.getElementById("employeeTable");
+
+            function loadAdmins() {
+                fetch("fetchAdmins.php")
+                    .then(response => response.json())
+                    .then(data => {
+                        employeeTable.innerHTML = ""; // Clear table
+                        data.forEach(admin => {
+                            let newRow = document.createElement("tr");
+                            newRow.innerHTML = `
+                                <td>${admin.id}</td>
+                                <td>${admin.username}</td>
+                                <td>${admin.email}</td>
+                                <td>${admin.position}</td>
+                                <td>RM ${admin.salary}</td>
+                                <td><img src="uploads/${admin.image}" width="50"></td>
+                            `;
+                            employeeTable.appendChild(newRow);
+                        });
+                    });
+            }
+
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+                let formData = new FormData(form);
+
+                fetch("addAdmin.php", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    form.reset();
+                    loadAdmins();
+                })
+                .catch(error => console.error("Error:", error));
+            });
+
+            loadAdmins(); // Load data on page load
+        });
+    </script>
+
 </body>
 </html>
