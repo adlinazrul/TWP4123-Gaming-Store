@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Prepare and bind the SQL query
-    $stmt = $conn->prepare("INSERT INTO member (username, email, membership, fee, bank) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO members (username, email, membership, fee, bank) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("sssss", $username, $email, $membership, $fee, $bank);
 
     // Execute the query
