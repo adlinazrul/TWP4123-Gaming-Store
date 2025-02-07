@@ -1,52 +1,25 @@
 <?php
-// Load environment variables
-require 'vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+// Ensure form submission method is POST
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = $_POST["email"];
+    $contact = $_POST["contact"];
+    $address = $_POST["address"];
+    $payment_method = $_POST["payment_method"];
 
-// Database connection
-$servername = $_ENV['DB_HOST']; // Corrected
-$username = $_ENV['DB_USERNAME'];
-$password = $_ENV['DB_PASSWORD'];
-$dbname = $_ENV['DB_NAME']; // Corrected
+    // Optional: Handle credit card or bank details
+    if ($payment_method == "credit-card") {
+        $cc_number = $_POST["cc-number"];
+        $cc_name = $_POST["cc-name"];
+        $cc_expiry = $_POST["cc-expiry"];
+        $cc_cvv = $_POST["cc-cvv"];
+    } elseif ($payment_method == "bank") {
+        $bank_name = $_POST["bank-name"];
+    }
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Retrieve and sanitize form data
-$email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-$contact = filter_var($_POST['contact'], FILTER_SANITIZE_STRING);
-$address = filter_var($_POST['address'], FILTER_SANITIZE_STRING);
-$payment_method = filter_var($_POST['payment_method'], FILTER_SANITIZE_STRING);
-$total_amount = 54.99; // Fixed total amount for now
-
-// Handle payment details based on method
-$cc_number = isset($_POST['cc-number']) ? filter_var($_POST['cc-number'], FILTER_SANITIZE_STRING) : null;
-$cc_name = isset($_POST['cc-name']) ? filter_var($_POST['cc-name'], FILTER_SANITIZE_STRING) : null;
-$cc_expiry = isset($_POST['cc-expiry']) ? filter_var($_POST['cc-expiry'], FILTER_SANITIZE_STRING) : null;
-$cc_cvv = isset($_POST['cc-cvv']) ? filter_var($_POST['cc-cvv'], FILTER_SANITIZE_STRING) : null;
-$bank_name = isset($_POST['bank-name']) ? filter_var($_POST['bank-name'], FILTER_SANITIZE_STRING) : null;
-
-// Use a prepared statement
-$sql = "INSERT INTO payments (email, contact, address, payment_method, cc_number, cc_name, cc_expiry, cc_cvv, bank_name, total_amount) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("sssssssssd", $email, $contact, $address, $payment_method, $cc_number, $cc_name, $cc_expiry, $cc_cvv, $bank_name, $total_amount);
-
-// Execute the statement
-if ($stmt->execute()) {
-    echo "Payment successful!";
+    // Validate and store/process payment info (Dummy response for now)
+    echo "<h2>Payment Successful!</h2>";
+    echo "Thank you, <b>$email</b>. Your payment via <b>$payment_method</b> has been processed!";
 } else {
-    echo "Error: " . $stmt->error;
+    echo "Invalid request!";
 }
-
-// Close connection
-$stmt->close();
-$conn->close();
 ?>
