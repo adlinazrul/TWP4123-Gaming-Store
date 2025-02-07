@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;700&family=Source+Serif+Pro:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
         body {
             font-family: 'Source Serif Pro', serif;
@@ -25,12 +25,6 @@
             border-bottom: 5px solid black;
             border-radius: 15px 15px 0 0;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        h1, h2, h3 {
-            font-family: 'Source Serif Pro', serif;
-        }
-        p {
-            font-family: 'Source Serif Pro', serif;
         }
         .button {
             font-family: 'Source Sans Pro', sans-serif;
@@ -54,43 +48,40 @@
             border-radius: 15px;
             background-color: #f9f9f9;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-        .form-container:hover {
-            transform: translateY(-5px);
         }
         .form-group {
             margin-bottom: 15px;
+            text-align: center;
         }
         .form-group label {
             display: block;
-            font-family: 'Source Sans Pro', sans-serif;
             margin-bottom: 5px;
         }
-        .form-group input, .form-group select {
+        .form-group input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 15px;
-            font-family: 'Source Serif Pro', serif;
             transition: border-color 0.3s ease;
         }
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus {
             border-color: red;
             outline: none;
         }
+        /* Profile Picture Section */
         .profile-picture {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             margin-bottom: 15px;
         }
         .profile-picture img {
             border-radius: 50%;
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             object-fit: cover;
             border: 2px solid red;
+            margin-bottom: 10px;
         }
         .profile-picture input {
             display: none;
@@ -107,6 +98,7 @@
         .profile-picture label:hover {
             background-color: darkred;
         }
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -115,31 +107,21 @@
             top: 0;
             width: 100%;
             height: 100%;
-            overflow: auto;
             background-color: rgba(0, 0, 0, 0.5);
             justify-content: center;
             align-items: center;
         }
         .modal-content {
             background-color: white;
-            margin: auto;
             padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
         }
         .close {
-            color: #aaa;
             float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
+            font-size: 20px;
             cursor: pointer;
         }
     </style>
@@ -150,73 +132,79 @@
             <h1>Edit Profile</h1>
         </header>
         <main>
-            <form action="custeditprofile.php" method="post" enctype="multipart/form-data"></form>
+            <form action="custeditprofile.php" method="post" enctype="multipart/form-data">
+                <!-- Profile Picture Upload -->
                 <div class="profile-picture">
-                    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAJQAqQMBIgACEQEDEQH/xAAbAAEAAwEBAQEAAAAAAAAAAAAAAQMEBQIGB//EADEQAQACAQIDBQYFBQAAAAAAAAABAgMEESExUQUSQWGRExQyQnGhM1JigZIiI1Nywf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A/cQAAAAAARuCR4nLWPF4nPHhX7guFHt5/L9yM3Wv3BeK4y16vcTExwBIAAAAAAAAAAABuiZ2jdRkyTbhHIHu+aI4V4z1U2tNp4yhAACAACSJmJ3iZQAvpn8L+q2GN7x3mnCOMKNQisxaN45JAAAAAAABXlt3a+cgrzX33rXkqBABICrJnx4/jtET08WbV6qY3x454xwmYYec7g6XvuHf5vRbj1GLJO1bxE9J4OQKjuIc/SavuW7mSd68ono6CKAAsxX7ttvlaYYmjBfeO7PhyUWgAAAAAM2a29/Jomdo3ZAQAgK9Tk9lgtaOfh9VjL2jO2CP9v8Akg5wCoAAOposntMEb86zs5bd2ZP4nTgDaJQij1S3dtEvIDaPOOd6RL0oAAAA8ZZ2pafJlasv4dvoygAICrVU9pgtEc44wtAcQatXpvZzN8cb08Y6MqoAAOl2fSaYO9MbTaWTS6ec9omeFI5+bqRERG0co5CpQCAADTg+BYrwfB+6xQAAAB5vG9ZhlbGS8d20xIPICAJUZtVixTMcbW6QC7w8GfJo8V53jes+TPbX38KViPNHv2XpT0UWe4cfxJ2+izHosdONt7z5s/v2XpT0PfsvSnoDoxG0bRtsOfGvyRzpWWjDrMWSYid6W8+XqDQJQgAmImZiIBpxRtSHtERtEeSVAAAABTnr83Rci0bxtIMaU2r3Ld37q8t/Z47X/LHIGbW6ma/28c7T80x4Of4kzM8bTvPUEAAAAAAbNHqtrRjyT/T4T0dBw/o62lye0wVmeccJFWrcFd573RXETado5tVKxWsRAPQAAAAAAAPGSkWjpPVzu0YmunmJ4cYh1FOp09NRjml9/KY8AfOjRqdHl08/1RNq/miOH7s4gAAAAAA6HZm80vH6uDLp9Nk1FtsdeEc7Tyh2tJpaaam0cbTxmZFWY6d3jPNYAAAAAAAAAAAImN42Ys/ZuHJxpvjn9PL0bgHEydmainw928eU8We+mz0+LFf0fRgPmfZ5P8d/4vVdPmtyxX/jL6QBw8fZuovzitI/VLbg7LxU2nLM5J6cobwHmtYrG1YiI6RD0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/2Q==" alt="Profile Picture" id="profile-img">
-                    <input type="file" id="profile-pic" name="profile-pic" accept="image/*" onchange="loadFile(event)">
-                    <label for="profile-pic">Change Picture</label>
+                    <img id="profilePreview" src=wan.img/custeditprofile.jpg >
+                    <input type="file" id="profilePicture" name="profilePicture" accept="image/*" onchange="previewImage(event)">
+                    <label for="profilePicture">Change Profile Picture</label>
                 </div>
+
                 <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name" name="name" required>
                 </div>
+
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">Email:</label>
                     <input type="email" id="email" name="email" required>
                 </div>
+
                 <div class="form-group">
-                    <label for="phone">Phone Number</label>
+                    <label for="phone">Phone Number:</label>
                     <input type="tel" id="phone" name="phone" required>
                 </div>
-                <button type="button" class="button" onclick="openModal()">Change Password</button>
-                <button type="submit" class="button">Save Changes</button>
+
+                <div class="form-group">
+                    <button type="button" class="button" onclick="openPasswordModal()">Change Password</button>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="button">Save Changes</button>
+                </div>
             </form>
         </main>
     </div>
 
+    <!-- Change Password Modal -->
     <div id="passwordModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
+            <span class="close" onclick="closePasswordModal()">&times;</span>
             <h2>Change Password</h2>
-            <form>
+            <form action="custeditprofile.php" method="post">
                 <div class="form-group">
-                    <label for="old-password">Old Password</label>
-                    <input type="password" id="old-password" name="old-password" required>
+                    <label for="oldPassword">Old Password:</label>
+                    <input type="password" id="oldPassword" name="oldPassword" required>
                 </div>
                 <div class="form-group">
-                    <label for="new-password">New Password</label>
-                    <input type="password" id="new-password" name="new-password" required>
+                    <label for="newPassword">New Password:</label>
+                    <input type="password" id="newPassword" name="newPassword" required>
                 </div>
                 <div class="form-group">
-                    <label for="confirm-new-password">Confirm New Password</label>
-                    <input type="password" id="confirm-new-password" name="confirm-new-password" required>
+                    <label for="confirmPassword">Re-enter New Password:</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
                 </div>
-                <button type="submit" class="button">Update Password</button>
+                <button type="submit" class="button">Save</button>
             </form>
         </div>
     </div>
 
     <script>
-        function loadFile(event) {
-            var output = document.getElementById('profile-img');
-            output.src = URL.createObjectURL(event.target.files[0]);
-            output.onload = function() {
-                URL.revokeObjectURL(output.src) // free memory
-            }
+        function openPasswordModal() {
+            document.getElementById("passwordModal").style.display = "flex";
         }
 
-        function openModal() {
-            document.getElementById('passwordModal').style.display = 'flex';
+        function closePasswordModal() {
+            document.getElementById("passwordModal").style.display = "none";
         }
 
-        function closeModal() {
-            document.getElementById('passwordModal').style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('passwordModal')) {
-                closeModal();
-            }
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function(){
+                var output = document.getElementById('profilePreview');
+                output.src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
         }
     </script>
 </body>
