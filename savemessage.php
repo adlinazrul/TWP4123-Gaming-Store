@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $message = $_POST["message"];
 
     // Insert into database
-    $sql = "INSERT INTO messages (name, email, subject, message) VALUES (?, ?, ?, ?)";
+    $sql = "INSERT INTO cust_service (name, email, subject, message) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ssss", $name, $email, $subject, $message);
 
