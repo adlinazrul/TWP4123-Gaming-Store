@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Management System</title>
+    <title>Add Member</title>
     <link rel="stylesheet" href="managestaff.css">
 </head>
 <body>
@@ -11,110 +11,54 @@
     <center><button class="back-button" onclick="window.location.href='admindashboard.html'">Back to Dashboard</button></center>
 
     <div class="container">
-        <h1>Member Management System</h1>
+        <h1>Add Member</h1>
+        <form id="addForm">
+            <label>Username:</label>
+            <input type="text" id="username" required><br>
 
-        <section id="add-member">
-            <h2>Add Member</h2>
-            <form id="addForm" enctype="multipart/form-data">
-                <label>Full Name:</label>
-                <input type="text" id="fullname" required><br>
+            <label>Email:</label>
+            <input type="email" id="email" required><br>
 
-                <label>Email:</label>
-                <input type="email" id="email" required><br>
+            <label>Membership Type:</label>
+            <select id="membership" required>
+                <option value="Standard">Standard</option>
+                <option value="Premium">Premium</option>
+            </select><br>
 
-                <label>Membership Type:</label>
-                <select id="membership" required>
-                    <option value="Standard">Standard</option>
-                    <option value="Premium">Premium</option>
-                </select><br>
+            <label>Subscription Fee (RM):</label>
+            <input type="number" id="fee" value="10.00" readonly required><br>
 
-                <label>Subscription Fee (RM):</label>
-                <input type="number" id="fee" value="10.00" readonly required><br>
+            <label>Select Bank:</label>
+            <select id="bank" required>
+                <option value="Maybank">Maybank</option>
+                <option value="CIMB">CIMB</option>
+                <option value="Public Bank">Public Bank</option>
+                <option value="RHB">RHB</option>
+            </select><br>
 
-                <label>Password:</label>
-                <input type="password" id="password" required><br>
-
-                <label>Select Bank:</label>
-                <select id="bank" required>
-                    <option value="Maybank">Maybank</option>
-                    <option value="CIMB">CIMB</option>
-                    <option value="Public Bank">Public Bank</option>
-                    <option value="RHB">RHB</option>
-                </select><br>
-
-                <button type="submit">Add Member</button>
-            </form>
-        </section>
-
-        <section id="view-members">
-            <h2>Member List</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Full Name</th>
-                        <th>Email</th>
-                        <th>Membership Type</th>
-                        <th>Subscription Fee (RM)</th>
-                        <th>Bank</th>
-                    </tr>
-                </thead>
-                <tbody id="memberTable">
-                    <!-- Data will be loaded from MySQL -->
-                </tbody>
-            </table>
-        </section>
+            <button type="submit">Add Member</button>
+        </form>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            let form = document.getElementById("addForm");
-            let memberTable = document.getElementById("memberTable");
-            let membershipSelect = document.getElementById("membership");
-            let feeInput = document.getElementById("fee");
+        document.getElementById("membership").addEventListener("change", function() {
+            document.getElementById("fee").value = this.value === "Premium" ? "20.00" : "10.00";
+        });
 
-            membershipSelect.addEventListener("change", function() {
-                feeInput.value = membershipSelect.value === "Premium" ? "20.00" : "10.00";
-            });
+        document.getElementById("addForm").addEventListener("submit", function(event) {
+            event.preventDefault();
 
-            function loadMembers() {
-                fetch("fetchMembers.php")
-                    .then(response => response.json())
-                    .then(data => {
-                        memberTable.innerHTML = ""; // Clear table
-                        data.forEach(member => {
-                            let newRow = document.createElement("tr");
-                            newRow.innerHTML = `
-                                <td>${member.id}</td>
-                                <td>${member.fullname}</td>
-                                <td>${member.email}</td>
-                                <td>${member.membership}</td>
-                                <td>RM ${member.fee}</td>
-                                <td>${member.bank}</td>
-                            `;
-                            memberTable.appendChild(newRow);
-                        });
-                    });
-            }
+            let formData = new FormData(this);
 
-            form.addEventListener("submit", function(event) {
-                event.preventDefault();
-                let formData = new FormData(form);
-
-                fetch("signup_member.php", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(response => response.text())
-                .then(data => {
-                    alert(data);
-                    form.reset();
-                    loadMembers();
-                })
-                .catch(error => console.error("Error:", error));
-            });
-
-            loadMembers(); // Load data on page load
+            fetch("signup_member.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                window.location.href = "success.html"; // Redirect to success page
+            })
+            .catch(error => console.error("Error:", error));
         });
     </script>
 
