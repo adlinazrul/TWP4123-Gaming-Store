@@ -2,6 +2,9 @@
 include 'db_connectmember.php'; // Ensure this file connects to your database correctly
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Debugging: Check what data is being received
+    error_log(print_r($_POST, true));
+
     // Fetch form data
     $username = isset($_POST['username']) ? $_POST['username'] : '';
     $email = isset($_POST['email']) ? $_POST['email'] : '';
@@ -15,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Prepare and bind
-    $stmt = $conn->prepare("INSERT INTO members (username, email, membership, fee, bank) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO member (username, email, membership, fee, bank) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("sssss", $username, $email, $membership, $fee, $bank);
 
     // Execute the query
