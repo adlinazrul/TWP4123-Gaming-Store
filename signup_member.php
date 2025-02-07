@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Prepare the SQL query to insert data into the members table
-    $sql = "INSERT INTO members (username, email, membership_type, subscription_fee, bank) 
+    $sql = "INSERT INTO members (username, email, membership, fee, bank) 
             VALUES ('$username', '$email', '$membership', '$fee', '$bank')";
 
     // Check if query was successful
