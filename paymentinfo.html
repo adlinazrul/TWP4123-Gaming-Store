@@ -174,12 +174,14 @@
     </div>
     
     <script>
-        document.getElementById('payment-method').addEventListener('change', function() {
-            var creditCardSection = document.getElementById('credit-card-section');
-            var bankSection = document.getElementById('bank-section');
-            creditCardSection.style.display = this.value === 'credit-card' ? 'block' : 'none';
-            bankSection.style.display = this.value === 'bank' ? 'block' : 'none';
-        });
+        document.getElementById('payment_method').addEventListener('change', function() {
+    var creditCardSection = document.getElementById('credit-card-section');
+    var bankSection = document.getElementById('bank-section');
+    
+    creditCardSection.style.display = this.value === 'credit-card' ? 'block' : 'none';
+    bankSection.style.display = this.value === 'bank' ? 'block' : 'none';
+});
+
     </script>
 
 <footer>
