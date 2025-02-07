@@ -87,7 +87,6 @@
             border-radius: 5px;
             margin-top: 10px;
         }
-
         footer {
             background-color: #c80815;
             color: white;
@@ -118,7 +117,7 @@
     
     <div class="container">
         <h2>Payment Information</h2>
-        <form action="connectinfo.php" method="post">
+        <form id="payment-form" action="connectinfo.php" method="post">
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" required>
 
@@ -137,23 +136,22 @@
             </select>
 
             <div id="credit-card-section" style="display: none;">
-                
                 <label for="cc-number">Credit Card Number:</label>
-                <input type="text" id="cc-number" name="cc-number" required>
+                <input type="text" id="cc-number" name="cc-number">
 
                 <label for="cc-name">Cardholder Name:</label>
-                <input type="text" id="cc-name" name="cc-name" required>
+                <input type="text" id="cc-name" name="cc-name">
 
                 <label for="cc-expiry">Expiry Date (MM/YY):</label>
-                <input type="text" id="cc-expiry" name="cc-expiry" required>
+                <input type="text" id="cc-expiry" name="cc-expiry">
 
                 <label for="cc-cvv">CVV/CVC:</label>
-                <input type="text" id="cc-cvv" name="cc-cvv" required>
+                <input type="text" id="cc-cvv" name="cc-cvv">
             </div>
 
             <div id="bank-section" style="display: none;">
                 <label for="bank-name">Choose Your Bank:</label>
-                <select id="bank-name" name="bank-name" required>
+                <select id="bank-name" name="bank-name">
                     <option value="cimb">CIMB</option>
                     <option value="maybank">Maybank</option>
                     <option value="bank-islam">Bank Islam</option>
@@ -174,19 +172,36 @@
     </div>
     
     <script>
-    document.getElementById('payment_method').addEventListener('change', function() {
-    var creditCardSection = document.getElementById('credit-card-section');
-    var bankSection = document.getElementById('bank-section');
-    
-    creditCardSection.style.display = this.value === 'credit-card' ? 'block' : 'none';
-    bankSection.style.display = this.value === 'bank' ? 'block' : 'none';
-});
+        document.getElementById('payment_method').addEventListener('change', function() {
+            var creditCardSection = document.getElementById('credit-card-section');
+            var bankSection = document.getElementById('bank-section');
+            
+            creditCardSection.style.display = this.value === 'credit-card' ? 'block' : 'none';
+            bankSection.style.display = this.value === 'bank' ? 'block' : 'none';
+        });
 
+        document.getElementById("payment-form").addEventListener("submit", function(event) {
+            var email = document.getElementById("email").value.trim();
+            var contact = document.getElementById("contact").value.trim();
+            var address = document.getElementById("address").value.trim();
+            var paymentMethod = document.getElementById("payment_method").value;
+
+            if (email === "" || contact === "" || address === "" || paymentMethod === "choose_payment") {
+                event.preventDefault();
+                alert("Please fill out all required fields.");
+            } else {
+                console.log("Form submitted successfully.");
+            }
+        });
+
+        document.querySelector(".pay-now").addEventListener("click", function() {
+            console.log("Pay Now button clicked.");
+        });
     </script>
 
-<footer>
-    <p>&copy; 2025 Online Gaming Store. All rights reserved.</p>
-</footer>
+    <footer>
+        <p>&copy; 2025 Online Gaming Store. All rights reserved.</p>
+    </footer>
 
 </body>
 </html>
