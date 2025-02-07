@@ -12,24 +12,24 @@
 
     <div class="container">
         <h1>Add Member</h1>
-        <form id="addForm">
+        <form id="addForm" enctype="multipart/form-data">
             <label>Username:</label>
-            <input type="text" id="username" required><br>
+            <input type="text" id="username" name="username" required><br>
 
             <label>Email:</label>
-            <input type="email" id="email" required><br>
+            <input type="email" id="email" name="email" required><br>
 
             <label>Membership Type:</label>
-            <select id="membership" required>
+            <select id="membership" name="membership" required>
                 <option value="Standard">Standard</option>
                 <option value="Premium">Premium</option>
             </select><br>
 
             <label>Subscription Fee (RM):</label>
-            <input type="number" id="fee" value="10.00" readonly required><br>
+            <input type="number" id="fee" name="fee" value="10.00" readonly required><br>
 
             <label>Select Bank:</label>
-            <select id="bank" required>
+            <select id="bank" name="bank" required>
                 <option value="Maybank">Maybank</option>
                 <option value="CIMB">CIMB</option>
                 <option value="Public Bank">Public Bank</option>
@@ -41,23 +41,28 @@
     </div>
 
     <script>
+        // Update fee based on membership selection
+        document.getElementById("membership").addEventListener("change", function() {
+            document.getElementById("fee").value = this.value === "Premium" ? "20.00" : "10.00";
+        });
+
+        // Handle form submission
         document.getElementById("addForm").addEventListener("submit", function(event) {
-    event.preventDefault();
+            event.preventDefault();
 
-    let formData = new FormData(this);
-    console.log("Form Data:", formData);  // Log the form data for debugging
+            let formData = new FormData(this);
 
-    fetch("signup_member.php", {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.text())
-    .then(data => {
-        window.location.href = "success.html"; // Redirect to success page
-    })
-    .catch(error => console.error("Error:", error));
-    });
-
+            fetch("signup_member.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data); // Show the server response
+                window.location.href = "success.html"; // Redirect to success page
+            })
+            .catch(error => console.error("Error:", error));
+        });
     </script>
 
 </body>
