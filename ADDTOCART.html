@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Online Gaming Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial, sans-serif';
+            background-color: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #d03b3b;
+            color: white;
+            padding: 20px 0;
+        }
+        .nav-menu {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-family: 'Arial, sans-serif';
+        }
+        .icons-left, .icons-right {
+            display: flex;
+            gap: 20px;
+        }
+        .icons-left i, .icons-right i {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .cart-page {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 40px;
+            border: 1px solid black;
+            background-color: white;
+        }
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid black;
+            padding-bottom: 10px;
+        }
+        .cart-items {
+            margin-top: 20px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid black;
+            padding: 10px 0;
+        }
+        .cart-item img {
+            max-width: 100px;
+        }
+        .cart-item-details {
+            flex-grow: 1;
+            margin-left: 20px;
+        }
+        .cart-item-price {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .cart-item-price span {
+            font-weight: bold;
+        }
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .cart-item-quantity button {
+            padding: 5px 10px;
+            background-color: #d03b3b;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .cart-total {
+            text-align: right;
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .checkout-button {
+            display: block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #d03b3b;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="nav-menu">
+            <div class="icons-left">
+                <i class="fas fa-search"></i>
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="nav-links">
+                <a href="#nintendo">Nintendo</a>
+                <a href="#playstation">PlayStation</a>
+                <a href="#xbox">Xbox</a>
+                <a href="#accessories">Accessories</a>
+                <a href="#vr">VR</a>
+            </div>
+            <div class="icons-right">
+                <i class="fas fa-user"></i>
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+        </nav>
+    </header>
+
+    <section class="cart-page">
+        <div class="cart-header">
+            <i class="fas fa-shopping-cart"></i>
+            <a href="index.html">Home</a>
+        </div>
+        <div class="cart-items">
+            <div class="cart-item">
+                <img src="image/gamingmouse.jpg" alt="Product 1">
+                <div class="cart-item-details">
+                    <h3>Popular Product 1</h3>
+                    <p>Description of popular product 1.</p>
+                </div>
+                <div class="cart-item-price">
+                    <div class="cart-item-controls">
+                        <input type="checkbox">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <span>$49.99</span>
+                    <div class="cart-item-quantity">
+                        <button onclick="decreaseQuantity(this)">-</button>
+                        <span>1</span>
+                        <button onclick="increaseQuantity(this)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="cart-item">
+                <img src="image/gamingkeyboard.jpg" alt="Product 2">
+                <div class="cart-item-details">
+                    <h3>Top Selling Item 1</h3>
+                    <p>Description of top selling item 1.</p>
+                </div>
+                <div class="cart-item-price">
+                    <div class="cart-item-controls">
+                        <input type="checkbox">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <span>$59.99</span>
+                    <div class="cart-item-quantity">
+                        <button onclick="decreaseQuantity(this)">-</button>
+                        <span>1</span>
+                        <button onclick="increaseQuantity(this)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="cart-item">
+                <img src="image/gamingheadset.jpg" alt="Product 3">
+                <div class="cart-item-details">
+                    <h3>Upcoming Release 1</h3>
+                    <p>Description of upcoming release 1.</p>
+                </div>
+                <div class="cart-item-price">
+                    <div class="cart-item-controls">
+                        <input type="checkbox">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <span>$69.99</span>
+                    <div class="cart-item-quantity">
+                        <button onclick="decreaseQuantity(this)">-</button>
+                        <span>1</span>
+                        <button onclick="increaseQuantity(this)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="cart-total">
+            Total: $179.97
+            <a href="checkout.html" class="checkout-button">Checkout</a>
+        </div>
+    </section>
+
+    <script>
+        function increaseQuantity(button) {
+            const quantitySpan = button.previousElementSibling;
+            let quantity = parseInt(quantitySpan.textContent);
+            quantity++;
+            quantitySpan.textContent = quantity;
+        }
+
+        function decreaseQuantity(button) {
+            const quantitySpan = button.nextElementSibling;
+            let quantity = parseInt(quantitySpan.textContent);
+            if (quantity > 1) {
+                quantity--;
+                quantitySpan.textContent = quantity;
+            }
+        }
+    </script>
+</body>
+</html>

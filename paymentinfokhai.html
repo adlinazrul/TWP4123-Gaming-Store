@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Online Gaming Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Serif';
+            background-color: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #c80815;
+            color: white;
+            padding: 20px 0;
+        }
+        .nav-menu {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-family: 'Sans';
+        }
+        .nav-links a.active {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .icons-left, .icons-right {
+            display: flex;
+            gap: 20px;
+        }
+        .icons-left i, .icons-right i {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .payment-form {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 40px;
+            border: 1px solid #c80815;
+            background-color: white;
+        }
+        .payment-form h2 {
+            font-family: 'Serif';
+            margin-bottom: 20px;
+        }
+        .payment-form label {
+            display: block;
+            font-family: 'Serif';
+            margin-bottom: 10px;
+        }
+        .payment-form input,
+        .payment-form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-family: 'Serif';
+        }
+        .order-summary {
+            margin-top: 20px;
+            border-top: 1px solid #c80815;
+            padding-top: 20px;
+        }
+        .order-summary p {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Serif';
+            margin-bottom: 10px;
+        }
+        .order-summary .total {
+            font-weight: bold;
+        }
+        .pay-now {
+            background-color: #c80815;
+            color: white;
+            padding: 10px 20px;
+            font-family: 'Serif';
+            cursor: pointer;
+            border: none;
+            width: 50%;
+            text-align: center;
+            display: block;
+            margin: 20px auto;
+        }
+        footer {
+            background-color: #c80815;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="nav-menu">
+            <div class="icons-left">
+                <i class="fas fa-search"></i>
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="nintendo.html" class="active">Nintendo</a>
+                <a href="#playstation">PlayStation</a>
+                <a href="#xbox">Xbox</a>
+                <a href="#accessories">Accessories</a>
+                <a href="#vr">VR</a>
+            </div>
+            <div class="icons-right">
+                <i class="fas fa-user"></i>
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+        </nav>
+    </header>
+
+    <section class="payment-form">
+        <h2>Payment Information</h2>
+        <form>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="contact">Contact Number:</label>
+            <input type="tel" id="contact" name="contact" required>
+
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address" required>
+
+            <label for="payment-method">Payment Method:</label>
+            <select id="payment-method" name="payment-method" required>
+                <option value="credit-card">Credit Card</option>
+                <option value="bank">Bank Transfer</option>
+                <option value="touch-n-go">Touch 'n Go</option>
+            </select>
+
+            <div id="credit-card-section" style="display: none;">
+                <label for="cc-number">Credit Card Number:</label>
+                <input type="text" id="cc-number" name="cc-number" required>
+
+                <label for="cc-name">Cardholder Name:</label>
+                <input type="text" id="cc-name" name="cc-name" required>
+
+                <label for="cc-expiry">Expiry Date (MM/YY):</label>
+                <input type="text" id="cc-expiry" name="cc-expiry" required>
+
+                <label for="cc-cvv">CVV/CVC:</label>
+                <input type="text" id="cc-cvv" name="cc-cvv" required>
+            </div>
+
+            <div id="bank-section" style="display: none;">
+                <label for="bank-name">Choose Your Bank:</label>
+                <select id="bank-name" name="bank-name" required>
+                    <option value="bank1">Bank 1</option>
+                    <option value="bank2">Bank 2</option>
+                    <option value="bank3">Bank 3</option>
+                </select>
+            </div>
+
+            <div class="order-summary">
+                <h3>Order Summary</h3>
+                <img src="image/gamingheadset.jpg" alt="Product Image" style="width: 100px; height: 100px;">
+                <p><strong>Product Name</strong></p>
+                <p><span>Subtotal:</span> <span>$49.99</span></p>
+                <p><span>Shipping Fee:</span> <span>$5.00</span></p>
+                <p class="total"><span>Total:</span> <span>$54.99</span></p>
+            </div>
+
+            <button type="submit" class="pay-now">Pay Now</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Online Gaming Store. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.getElementById('payment-method').addEventListener('change', function() {
+            var creditCardSection = document.getElementById('credit-card-section');
+            var bankSection = document.getElementById('bank-section');
+            if (this.value === 'credit-card') {
+                creditCardSection.style.display = 'block';
+                bankSection.style.display = 'none';
+            } else if (this.value === 'bank') {
+                creditCardSection.style.display = 'none';
+                bankSection.style.display = 'block';
+            } else {
+                creditCardSection.style.display = 'none';
+                bankSection.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

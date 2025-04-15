@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report - Online Gaming Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial, sans-serif';
+            background-color: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #d03b3b;
+            color: white;
+            padding: 20px 0;
+        }
+        .nav-menu {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-family: 'Arial, sans-serif';
+        }
+        .nav-links a#reports {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .icons-left, .icons-right {
+            display: flex;
+            gap: 20px;
+        }
+        .icons-left i, .icons-right i {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .report-section {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 40px;
+            border: 1px solid #d03b3b;
+            background-color: white;
+        }
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .report-table th, .report-table td {
+            border: 1px solid #d03b3b;
+            padding: 10px;
+            text-align: left;
+        }
+        .footer-rights {
+            margin-top: 20px;
+            text-align: center;
+            background-color: #d03b3b;
+            color: white;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="nav-menu">
+            <div class="icons-left">
+                <i class="fas fa-search"></i>
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="nav-links">
+                <a href="#dashboard">Dashboard</a>
+                <a href="#sales">Sales</a>
+                <a href="#products">Products</a>
+                <a href="#customers">Customers</a>
+                <a href="#reports" id="reports">Reports</a>
+            </div>
+            <div class="icons-right">
+                <i class="fas fa-user"></i>
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+        </nav>
+    </header>
+
+    <section class="report-section">
+        <h2>Sales Report</h2>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Units Sold</th>
+                    <th>Total Revenue</th>
+                    <th>Profit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Popular Product 1</td>
+                    <td>150</td>
+                    <td>$4500</td>
+                    <td>$2000</td>
+                </tr>
+                <tr>
+                    <td>Top Selling Item 1</td>
+                    <td>200</td>
+                    <td>$6000</td>
+                    <td>$3000</td>
+                </tr>
+                <tr>
+                    <td>Upcoming Release 1</td>
+                    <td>100</td>
+                    <td>$3000</td>
+                    <td>$1500</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <div class="footer-rights">
+        <p>&copy; 2025 Online Gaming Store. All rights reserved.</p>
+    </div>
+</body>
+</html>

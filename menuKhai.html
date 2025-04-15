@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Gaming Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial, sans-serif';
+            background-color: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+        .menu {
+            background-color: #d03b3b;
+            color: white;
+            padding: 20px;
+            position: relative;
+            width: 300px;
+            height: 100vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .menu .close-icon {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        .menu h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .menu li {
+            padding: 15px 0;
+            border-bottom: 1px solid white;
+        }
+        .menu li:last-child {
+            border-bottom: none;
+        }
+        .menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            display: block;
+        }
+        .dropdown {
+            position: relative;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #d03b3b;
+            min-width: 250px;
+            z-index: 1;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .dropdown-content a {
+            padding: 10px 15px;
+            border-bottom: 1px solid white;
+        }
+        .dropdown-content a:last-child {
+            border-bottom: none;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu">
+        <i class="fas fa-times close-icon"></i>
+        <h1>Menu</h1>
+        <ul>
+            <li class="dropdown">
+                <a href="#">All Products</a>
+                <div class="dropdown-content">
+                    <a href="#nintendo">Nintendo</a>
+                    <a href="#playstation">PlayStation</a>
+                    <a href="#xbox">Xbox</a>
+                    <a href="#accessories">Gaming Accessories</a>
+                    <a href="#trading-card-game">Trading Card Game</a>
+                    <a href="#pc">PC</a>
+                    <a href="#vr">Virtual Reality</a>
+                </div>
+            </li>
+            <li><a href="#order-history">Order History</a></li>
+            <li><a href="#need-help">Need Help</a></li>
+        </ul>
+    </div>
+</body>
+</html>
