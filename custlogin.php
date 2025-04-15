@@ -1,8 +1,7 @@
 <?php
 include "db_connect1.php"; // Make sure this file contains your database connection details
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") 
-
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"];
     $password = $_POST["password"];
 
@@ -20,7 +19,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             echo "Login successful! Welcome, " . $row["first_name"] . " " . $row["last_name"];
         } else {
             echo "Invalid password.";
-        } else {
+        }
+    } else {
         echo "No account found with that email.";
     }
 

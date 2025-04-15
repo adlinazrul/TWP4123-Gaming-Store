@@ -81,16 +81,16 @@
             border-color: red;
             outline: none;
         }
-        .register-link {
+        .register-link, .customer-support {
             text-align: center;
             margin-top: 20px;
         }
-        .register-link a {
+        .register-link a, .customer-support a {
             color: red;
             text-decoration: none;
             font-family: 'Source Sans Pro', sans-serif;
         }
-        .register-link a:hover {
+        .register-link a:hover, .customer-support a:hover {
             text-decoration: underline;
         }
     </style>
@@ -101,7 +101,7 @@
     </header>
     <div class="form-container">
         <div class="form-content">
-            <form action="custlogin.php" method="POST"></form>
+            <form action="custlogin.php" method="POST">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required>
@@ -114,6 +114,9 @@
             </form>
             <div class="register-link">
                 <p>Don't have an account? <a href="custregister.html">Register here</a></p>
+            </div>
+            <div class="customer-support">
+                <p>Having troubles? <a href="custservice.html">Contact Us</a></p>
             </div>
         </div>
     </div>
