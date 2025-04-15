@@ -16,7 +16,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $row = $result->fetch_assoc();
         // Verify the password
         if (password_verify($password, $row["password"])) {
-            echo "Login successful! Welcome, " . $row["first_name"] . " " . $row["last_name"];
+            // Start the session and set session variables
+            session_start();
+            $_SESSION['email'] = $email;
+            $_SESSION['first_name'] = $row["first_name"];
+            $_SESSION['last_name'] = $row["last_name"];
+
+            // Redirect to index.html
+            header("Location: index.html");
+            exit();
         } else {
             echo "Invalid password.";
         }
