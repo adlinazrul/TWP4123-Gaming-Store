@@ -63,10 +63,29 @@ $result = $conn->query($sql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Management System</title>
     <link rel="stylesheet" href="managestaff.css">
+
+
+    <style>
+    .back-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .back-button:hover {
+        background-color: #0056b3;
+    }
+    </style>
 </head>
 <body>
 
-    <center><button class="back-button" onclick="window.location.href='admindashboard.php'">Back to Dashboard</button></center>
+    <button class="back-button" onclick="window.location.href='admindashboard.html'">Back to Dashboard</button>
 
     <div class="container">
         <h1>Admin Management System</h1>
