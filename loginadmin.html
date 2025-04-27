@@ -7,27 +7,14 @@
       background-image: url('image/backgroundad.jpg');
       background-size: cover;
       background-position: center;
-      background-attachment: fixed; /* Ensures the background doesn't repeat */
+      background-attachment: fixed; /* Ensures the background stays in place */
       height: 100vh;
       margin: 0;
     }
 
-    .blurred-background {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-image: url('image/backgroundad.jpg');
-      background-size: cover;
-      background-position: center;
-      z-index: -1;
-      filter: blur(8px); /* Apply the blur effect */
-    }
-
     form {
       border: 3px solid #f1f1f1;
-      background-color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.8); /* Slight transparency */
       border-radius: 8px;
       width: 300px;
       padding: 20px;
@@ -113,8 +100,6 @@
   </style>
 </head>
 <body>
-  <div class="blurred-background"></div>
-
   <h1>Gaming Store</h1>
   <h2>Login Form</h2>
 
