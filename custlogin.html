@@ -9,7 +9,7 @@
         body {
             font-family: 'Source Serif Pro', serif;
             background-color: white;
-            color: black;
+            color: rgb(0, 0, 0);
             margin: 0;
             padding: 0;
             height: 100vh;
@@ -19,9 +19,9 @@
         header {
             background: linear-gradient(45deg, red, darkred);
             color: white;
-            padding: 20px;
+            padding : 20px;
             text-align: center;
-            border-bottom: 5px solid black;
+            border-bottom: 5px solid rgb(0, 0, 0);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         h1, h2, h3 {
@@ -81,16 +81,19 @@
             border-color: red;
             outline: none;
         }
-        .register-link, .customer-support {
+        .links {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 10px;
         }
-        .register-link a, .customer-support a {
-            color: red;
+        .links p {
+            margin: 5px 0;
+        }
+        .links a {
+            color: red; 
             text-decoration: none;
             font-family: 'Source Sans Pro', sans-serif;
         }
-        .register-link a:hover, .customer-support a:hover {
+        .links a:hover {
             text-decoration: underline;
         }
     </style>
@@ -112,11 +115,11 @@
                 </div>
                 <button type="submit" class="button">Login</button>
             </form>
-            <div class="register-link">
+            <div class="links">
                 <p>Don't have an account? <a href="custregister.html">Register here</a></p>
-            </div>
-            <div class="customer-support">
                 <p>Having troubles? <a href="custservice.html">Contact Us</a></p>
+                <p>Want to update your profile? <a href="custeditprofile.html">Edit Profile</a></p>
+                <p>Forgotten your password? <a href="forgotpass.html">Forgot Password</a></p>
             </div>
         </div>
     </div>
