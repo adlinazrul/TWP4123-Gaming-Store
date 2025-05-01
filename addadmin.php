@@ -66,10 +66,10 @@ $result = $conn->query($sql);
 <section id="sidebar">
 	<a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
 	<ul class="side-menu top">
-		<li><a href="#"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
+		<li><a href="admindashboard.html"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
 		<li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
 		<li><a href="order.html"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
-		<li class="active"><a href="addmember.html"><i class='bx bxs-message-dots'></i><span class="text">Message</span></a></li>
+		<li class="active"><i class='bx bxs-message-dots'></i><span class="text">Message</span></a></li>
 		<li><a href="admindashboard.php"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
 	</ul>
 	<ul class="side-menu">
