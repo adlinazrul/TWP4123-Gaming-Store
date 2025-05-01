@@ -137,7 +137,7 @@ $result = mysqli_query($conn, $sql);
 			<li>
 				<a href="addadmin.php">
 					<i class='bx bxs-group'></i>
-					<span class="text">Team</span>
+					<span class="text">Admin</span>
 				</a>
 			</li>
 		</ul>
