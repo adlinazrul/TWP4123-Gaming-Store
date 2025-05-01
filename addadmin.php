@@ -1,162 +1,167 @@
 <?php
 $servername = "localhost";
-$username = "root"; // Change if needed
+$username = "root";
 $password = "";
 $dbname = "gaming_store";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+	die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $position = $_POST['position'];
-    $salary = $_POST['salary'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT); // Secure password
+	$username = $_POST['username'];
+	$email = $_POST['email'];
+	$position = $_POST['position'];
+	$salary = $_POST['salary'];
+	$password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
-    // Handle file upload
-    $target_dir = "uploads/";
-    $image_name = basename($_FILES["image"]["name"]);
-    $target_file = $target_dir . $image_name;
-    move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
+	$target_dir = "uploads/";
+	$image_name = basename($_FILES["image"]["name"]);
+	$target_file = $target_dir . $image_name;
+	move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
 
-    // **Check if email already exists**
-    $check_email = "SELECT * FROM admin_list WHERE email = ?";
-    $stmt = $conn->prepare($check_email);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+	$check_email = "SELECT * FROM admin_list WHERE email = ?";
+	$stmt = $conn->prepare($check_email);
+	$stmt->bind_param("s", $email);
+	$stmt->execute();
+	$result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        echo "<script>alert('Error: Email already exists!'); window.location.href='add_admin.php';</script>";
-    } else {
-        // Insert into database
-        $sql = "INSERT INTO admin_list (username, email, position, salary, password, image) 
-                VALUES (?, ?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssss", $username, $email, $position, $salary, $password, $image_name);
-        
-        if ($stmt->execute()) {
-            echo "<script>alert('Admin added successfully!'); window.location.href='add_admin.php';</script>";
-        } else {
-            echo "<script>alert('Error: " . $stmt->error . "');</script>";
-        }
-    }
-    $stmt->close();
+	if ($result->num_rows > 0) {
+		echo "<script>alert('Error: Email already exists!'); window.location.href='admindashboard.php';</script>";
+	} else {
+		$sql = "INSERT INTO admin_list (username, email, position, salary, password, image) 
+		        VALUES (?, ?, ?, ?, ?, ?)";
+		$stmt = $conn->prepare($sql);
+		$stmt->bind_param("ssssss", $username, $email, $position, $salary, $password, $image_name);
+		
+		if ($stmt->execute()) {
+			echo "<script>alert('Admin added successfully!'); window.location.href='admindashboard.php';</script>";
+		} else {
+			echo "<script>alert('Error: " . $stmt->error . "');</script>";
+		}
+	}
+	$stmt->close();
 }
 
-// Fetch existing admin users
 $sql = "SELECT * FROM admin_list";
 $result = $conn->query($sql);
 ?>
 
+<!-- Below is the original admindashboard HTML -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Management System</title>
-    <link rel="stylesheet" href="managestaff.css">
-
-
-    <style>
-    .back-button {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        padding: 10px 15px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-
-    .back-button:hover {
-        background-color: #0056b3;
-    }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+	<link rel="stylesheet" href="admindashboard.css">
+	<title>Admin</title>
 </head>
 <body>
 
-    <button class="back-button" onclick="window.location.href='admindashboard.html'">Back to Dashboard</button>
+<section id="sidebar">
+	<a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
+	<ul class="side-menu top">
+		<li class="active"><a href="#"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
+		<li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
+		<li><a href="order.html"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
+		<li><a href="addmember.html"><i class='bx bxs-message-dots'></i><span class="text">Message</span></a></li>
+		<li><a href="admindashboard.php"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
+	</ul>
+	<ul class="side-menu">
+		<li><a href="#"><i class='bx bxs-cog'></i><span class="text">Settings</span></a></li>
+		<li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
+	</ul>
+</section>
 
-    <div class="container">
-        <h1>Admin Management System</h1>
+<section id="content">
+	<nav>
+		<i class='bx bx-menu'></i>
+		<a href="managecategory.html" class="nav-link">Categories</a>
+		<form action="#">
+			<div class="form-input">
+				<input type="search" placeholder="Search...">
+				<button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
+			</div>
+		</form>
+		<a href="#" class="notification"><i class='bx bxs-bell'></i></a>
+		<a href="#" class="profile"><img src="image/adlina.jpg"></a>
+	</nav>
 
-        <section id="add-employee">
-            <h2>Add Admin</h2>
-            <form method="POST" enctype="multipart/form-data">
-                <label>Username:</label>
-                <input type="text" name="username" required><br>
+	<!-- MAIN CONTENT REPLACED -->
+	<main>
+		<div class="container">
+			<h1>Admin Management System</h1>
 
-                <label>Email:</label>
-                <input type="email" name="email" required><br>
+			<section id="add-employee">
+				<h2>Add Admin</h2>
+				<form method="POST" enctype="multipart/form-data">
+					<label>Username:</label>
+					<input type="text" name="username" required><br>
 
-                <label>Position:</label>
-                <input type="text" name="position" required><br>
+					<label>Email:</label>
+					<input type="email" name="email" required><br>
 
-                <label>Salary:</label>
-                <input type="number" name="salary" required><br>
+					<label>Position:</label>
+					<input type="text" name="position" required><br>
 
-                <label>Password:</label>
-                <input type="password" name="password" required><br>
+					<label>Salary:</label>
+					<input type="number" name="salary" required><br>
 
-                <label>Image:</label>
-                <input type="file" name="image" accept="image/*" required><br>
+					<label>Password:</label>
+					<input type="password" name="password" required><br>
 
-                <button type="submit">Add Admin</button>
-            </form>
-        </section>
+					<label>Image:</label>
+					<input type="file" name="image" accept="image/*" required><br>
 
-        <section id="view-employees">
-            <h2>Admin List</h2>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Position</th>
-                        <th>Salary</th>
-                        <th>Image</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($row = $result->fetch_assoc()) { ?>
-                        <tr>
-                            <td><?= $row['id'] ?></td>
-                            <td><?= $row['username'] ?></td>
-                            <td><?= $row['email'] ?></td>
-                            <td><?= $row['position'] ?></td>
-                            <td>RM <?= number_format($row['salary'], 2) ?></td>
-                            <td><img src="uploads/<?= $row['image'] ?>" width="50"></td>
-                            <td><button onclick="deleteAdmin(<?= $row['id'] ?>)">Delete</button></td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </section>
-    </div>
+					<button type="submit">Add Admin</button>
+				</form>
+			</section>
 
-    <script>
-        function deleteAdmin(id) {
-            if (confirm("Are you sure you want to delete this admin?")) {
-                window.location.href = "delete_admin.php?id=" + id;
-            }
-        }
-    </script>
+			<section id="view-employees">
+				<h2>Admin List</h2>
+				<table border="1">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Username</th>
+							<th>Email</th>
+							<th>Position</th>
+							<th>Salary</th>
+							<th>Image</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php while ($row = $result->fetch_assoc()) { ?>
+							<tr>
+								<td><?= $row['id'] ?></td>
+								<td><?= $row['username'] ?></td>
+								<td><?= $row['email'] ?></td>
+								<td><?= $row['position'] ?></td>
+								<td>RM <?= number_format($row['salary'], 2) ?></td>
+								<td><img src="uploads/<?= $row['image'] ?>" width="50"></td>
+								<td><button onclick="deleteAdmin(<?= $row['id'] ?>)">Delete</button></td>
+							</tr>
+						<?php } ?>
+					</tbody>
+				</table>
+			</section>
+		</div>
+	</main>
+</section>
+
+<script>
+function deleteAdmin(id) {
+	if (confirm("Are you sure you want to delete this admin?")) {
+		window.location.href = "delete_admin.php?id=" + id;
+	}
+}
+</script>
 
 </body>
 </html>
 
-<?php
-$conn->close();
-?>
+<?php $conn->close(); ?>
