@@ -130,7 +130,7 @@ $result = mysqli_query($conn, $sql);
 			</li>
 			<li>
 				<a href="customer_list.php">
-					<i class='bx bxs-message-dots'></i>
+					<i class='bx bxs-user'></i>
 					<span class="text">Customer</span>
 				</a>
 			</li>
