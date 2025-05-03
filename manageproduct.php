@@ -1,261 +1,234 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "gaming_store";
+// Include your database connection
+include 'database.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $position = $_POST['position'];
-    $salary = $_POST['salary'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
-
-    $target_dir = "uploads/";
-    $image_name = basename($_FILES["image"]["name"]);
-    $target_file = $target_dir . $image_name;
-    move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
-
-    $check_email = "SELECT * FROM admin_list WHERE email = ?";
-    $stmt = $conn->prepare($check_email);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        echo "<script>alert('Error: Email already exists!'); window.location.href='admindashboard.php';</script>";
-    } else {
-        $sql = "INSERT INTO admin_list (username, email, position, salary, password, image) 
-                VALUES (?, ?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssss", $username, $email, $position, $salary, $password, $image_name);
-
-        if ($stmt->execute()) {
-            echo "<script>alert('Admin added successfully!'); window.location.href='admindashboard.php';</script>";
-        } else {
-            echo "<script>alert('Error: " . $stmt->error . "');</script>";
-        }
-    }
-    $stmt->close();
-}
-
-$sql = "SELECT * FROM admin_list";
-$result = $conn->query($sql);
+// Fetch products from the database
+$sql = "SELECT * FROM products";
+$result = mysqli_query($conn, $sql);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin</title>
-    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="manageadmin.css">
-    <style>
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-            padding: 20px;
-        }
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+	<link rel="stylesheet" href="admindashboard.css">
+	<title>Admin - Product Management</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #f4f6f8;
+			margin: 0;
+		}
 
-        #add-employee, #view-employees {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
+		h1 {
+			margin: 30px 0 10px;
+			font-size: 32px;
+			color: #333;
+		}
 
-        form {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 15px;
-            align-items: center;
-        }
+		h2 {
+			margin-bottom: 15px;
+		}
 
-        form label {
-            text-align: right;
-            font-weight: bold;
-        }
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			background-color: #fff;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+		}
 
-        form input[type="text"],
-        form input[type="email"],
-        form input[type="number"],
-        form input[type="password"],
-        form input[type="file"] {
-            width: 100%;
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
+		th, td {
+			padding: 12px 15px;
+			text-align: left;
+			border-bottom: 1px solid #ddd;
+		}
 
-        form button[type="submit"] {
-            grid-column: 2;
-            padding: 10px 20px;
-            background-color: #ef4444;  /* Red color */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+		th {
+			background-color: #c0392b;
+			color: white;
+		}
 
-        form button[type="submit"]:hover {
-            background-color: #dc2626;  /* Darker red on hover */
-        }
+		img {
+			width: 50px;
+			height: auto;
+		}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+		.add-product {
+			background-color: #c0392b;
+			color: white;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			margin-bottom: 20px;
+		}
 
-        table th, table td {
-            padding: 12px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
+		.add-product:hover {
+			background-color: #a93226;
+		}
 
-        table img {
-            border-radius: 5px;
-        }
+		.action-buttons {
+			display: flex;
+			gap: 10px;
+		}
 
-        table button {
-            padding: 5px 10px;
-            background-color: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+		.action-buttons a button {
+			padding: 6px 12px;
+			font-size: 14px;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			color: white;
+			transition: background-color 0.3s ease;
+		}
 
-        table button:hover {
-            background-color: #dc2626;
-        }
-    </style>
+		.action-buttons a:first-child button {
+			background-color: #e74c3c;
+		}
+
+		.action-buttons a:first-child button:hover {
+			background-color: #c0392b;
+		}
+
+		.action-buttons a:last-child button {
+			background-color: #d63031;
+		}
+
+		.action-buttons a:last-child button:hover {
+			background-color: #b71c1c;
+		}
+	</style>
 </head>
 <body>
 
-<section id="sidebar">
-    <a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
-    <ul class="side-menu top">
-        <li><a href="admindashboard.html"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
-        <li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
-        <li><a href="order.html"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
-        <li><a href="#"><i class='bx bxs-message-dots'></i><span class="text">Message</span></a></li>
-        <li class="active"><a href="#"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
-    </ul>
-    <ul class="side-menu">
-        <li><a href="#"><i class='bx bxs-cog'></i><span class="text">Settings</span></a></li>
-        <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
-    </ul>
-</section>
+	<!-- SIDEBAR -->
+	<section id="sidebar">
+		<a href="#" class="brand">
+			<br>
+			<span class="text">Admin Dashboard</span>
+		</a>
+		<ul class="side-menu top">
+			<li>
+				<a href="admindashboard.html">
+					<i class='bx bxs-dashboard'></i>
+					<span class="text">Dashboard</span>
+				</a>
+			</li>
+			<li class="active">
+				<a href="manageproduct.php">
+					<i class='bx bxs-shopping-bag-alt'></i>
+					<span class="text">Product Management</span>
+				</a>
+			</li>
+			<li>
+				<a href="order.html">
+					<i class='bx bxs-doughnut-chart'></i>
+					<span class="text">Order</span>
+				</a>
+			</li>
+			<li>
+				<a href="addmember.html">
+					<i class='bx bxs-message-dots'></i>
+					<span class="text">Message</span>
+				</a>
+			</li>
+			<li>
+				<a href="addadmin.php">
+					<i class='bx bxs-group'></i>
+					<span class="text">Admin</span>
+				</a>
+			</li>
+		</ul>
+		<ul class="side-menu">
+			<li>
+				<a href="#">
+					<i class='bx bxs-cog'></i>
+					<span class="text">Settings</span>
+				</a>
+			</li>
+			<li>
+				<a href="index.html" class="logout">
+					<i class='bx bxs-log-out-circle'></i>
+					<span class="text">Logout</span>
+				</a>
+			</li>
+		</ul>
+	</section>
+	<!-- SIDEBAR -->
 
-<section id="content">
-    <nav>
-        <i class='bx bx-menu'></i>
-        <a href="managecategory.html" class="nav-link">Categories</a>
-        <form action="#">
-            <div class="form-input">
-                <input type="search" placeholder="Search...">
-                <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
-            </div>
-        </form>
-        <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
-        <a href="#" class="profile"><img src="image/adlina.jpg"></a>
-    </nav>
+	<!-- CONTENT -->
+	<section id="content">
+		<!-- NAVBAR -->
+		<nav>
+			<i class='bx bx-menu'></i>
+			<a href="managecategory.html" class="nav-link">Categories</a>
+			<form action="#">
+				<div class="form-input">
+					<input type="search" placeholder="Search...">
+					<button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
+				</div>
+			</form>
+			<a href="#" class="notification">
+				<i class='bx bxs-bell'></i>
+			</a>
+			<a href="#" class="profile">
+				<img src="image/adlina.jpg">
+			</a>
+		</nav>
+		<!-- NAVBAR -->
 
-    <main>
-        <div class="head-title" style="margin-bottom: 30px;">
-            <div class="left">
-                <h1>Admin Management System</h1>
-                <ul class="breadcrumb">
-                    <li><a href="#">Dashboard</a></li>
-                    <li><i class='bx bx-chevron-right'></i></li>
-                    <li><a class="active" href="#">Admin Management</a></li>
-                </ul>
-            </div>
-        </div>
+		<!-- MAIN -->
+		<main>
+			<div class="head-title" style="margin-bottom: 30px;">
+				<div class="left">
+					<h1>Product Management</h1>
+					<ul class="breadcrumb">
+						<li><a href="#">Dashboard</a></li>
+						<li><i class='bx bx-chevron-right'></i></li>
+						<li><a class="active" href="#">Product Management</a></li>
+					</ul>
+				</div>
+			</div>
 
-        <div class="container">
-            <section id="add-employee">
-                <h2>Add Admin</h2>
-                <form method="POST" enctype="multipart/form-data">
-                    <label>Username:</label>
-                    <input type="text" name="username" required>
-
-                    <label>Email:</label>
-                    <input type="email" name="email" required>
-
-                    <label>Position:</label>
-                    <input type="text" name="position" required>
-
-                    <label>Salary (RM):</label>
-                    <input type="number" name="salary" required>
-
-                    <label>Password:</label>
-                    <input type="password" name="password" required>
-
-                    <label>Profile Image:</label>
-                    <input type="file" name="image" accept="image/*" required>
-
-                    <button type="submit">Add Admin</button>
-                </form>
-            </section>
-
-            <section id="view-employees">
-                <h2>Admin List</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Position</th>
-                            <th>Salary</th>
-                            <th>Image</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($row = $result->fetch_assoc()) { ?>
-                            <tr>
-                                <td><?= $row['id'] ?></td>
-                                <td><?= $row['username'] ?></td>
-                                <td><?= $row['email'] ?></td>
-                                <td><?= $row['position'] ?></td>
-                                <td>RM <?= number_format($row['salary'], 2) ?></td>
-                                <td><img src="uploads/<?= $row['image'] ?>" width="50"></td>
-                                <td>
-                                    <button onclick="editAdmin(<?= $row['id'] ?>)">Edit</button>
-                                    <button onclick="deleteAdmin(<?= $row['id'] ?>)">Delete</button>
-                                </td>
-                            </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
-            </section>
-        </div>
-    </main>
-</section>
-
-<script>
-function deleteAdmin(id) {
-    if (confirm("Are you sure you want to delete this admin?")) {
-        window.location.href = "delete_admin.php?id=" + id;
-    }
-}
-
-function editAdmin(id) {
-    window.location.href = "edit_admin.php?id=" + id;
-}
-</script>
+			<section id="product-list">
+				<h2>Manage Products</h2>
+				<button class="add-product" onclick="window.location.href='addproduct.php'">Add New Product</button>
+				<table>
+					<thead>
+						<tr>
+							<th>Image</th>
+							<th>Product Name</th>
+							<th>Description</th>
+							<th>Price (RM)</th>
+							<th>Stock</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php while ($row = mysqli_fetch_assoc($result)) { ?>
+						<tr>
+							<td><img src="<?= $row['product_image']; ?>" alt="Product Image"></td>
+							<td><?= $row['product_name']; ?></td>
+							<td><?= $row['product_description']; ?></td>
+							<td>RM <?= number_format($row['product_price'], 2); ?></td>
+							<td><?= $row['product_quantity']; ?></td>
+							<td>
+								<div class="action-buttons">
+									<a href="editproductquantity.php?id=<?= $row['id']; ?>"><button>Edit Quantity</button></a>
+									<a href="deleteproduct.php?id=<?= $row['id']; ?>"><button>Delete</button></a>
+								</div>
+							</td>
+						</tr>
+						<?php } ?>
+					</tbody>
+				</table>
+			</section>
+		</main>
+		<!-- MAIN -->
+	</section>
+	<!-- CONTENT -->
 
 </body>
 </html>
-
-<?php $conn->close(); ?>
