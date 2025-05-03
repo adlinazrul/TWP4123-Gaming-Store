@@ -629,5 +629,21 @@ table td {
 }
 
 table tr:hover {
-	background-color: #f9f9f9;
+	background-color: #b46e6e;
+}
+
+
+form button[type="submit"] {
+    grid-column: 2;
+    padding: 10px 20px;
+    background-color: #d03b3b;  /* Red color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+form button[type="submit"]:hover {
+    background-color: #dc2626;  /* Darker red on hover */
 }
