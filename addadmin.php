@@ -232,6 +232,7 @@ $result = $conn->query($sql);
                                 <td><img src="uploads/<?= $row['image'] ?>" width="50"></td>
                                 <td>
                                     <button onclick="editAdmin(<?= $row['id'] ?>)">Edit</button>
+									<br>
                                     <button onclick="deleteAdmin(<?= $row['id'] ?>)">Delete</button>
                                 </td>
                             </tr>
