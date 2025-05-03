@@ -129,9 +129,9 @@ $result = mysqli_query($conn, $sql);
 				</a>
 			</li>
 			<li>
-				<a href="addmember.html">
+				<a href="customer_list.php">
 					<i class='bx bxs-message-dots'></i>
-					<span class="text">Message</span>
+					<span class="text">Customer</span>
 				</a>
 			</li>
 			<li>
