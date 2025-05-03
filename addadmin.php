@@ -96,16 +96,16 @@ $result = $conn->query($sql);
 	<main>
 	<div class="head-title" style="margin-bottom: 30px;">
 				<div class="left">
-					<h1>Product Management</h1>
+					<h1>Admin Management System</h1>
 					<ul class="breadcrumb">
 						<li><a href="#">Dashboard</a></li>
 						<li><i class='bx bx-chevron-right'></i></li>
-						<li><a class="active" href="#">Product Management</a></li>
+						<li><a class="active" href="#">Admin Management System</a></li>
 					</ul>
 				</div>
 			</div>
 		<div class="container">
-			<h1>Admin Management System</h1>
+		
 
 			<section id="add-employee">
 				<h2>Add Admin</h2>
