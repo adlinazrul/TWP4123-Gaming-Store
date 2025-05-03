@@ -48,18 +48,95 @@ $sql = "SELECT * FROM admin_list";
 $result = $conn->query($sql);
 ?>
 
-<!-- Below is the original admindashboard HTML -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Admin</title>
 	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
 	<link rel="stylesheet" href="manageadmin.css">
-    
+	<style>
+		.container {
+			display: flex;
+			flex-direction: column;
+			gap: 40px;
+			padding: 20px;
+		}
 
-	<title>Admin</title>
+		#add-employee, #view-employees {
+			background: #ffffff;
+			padding: 20px;
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0,0,0,0.1);
+		}
+
+		form {
+			display: grid;
+			grid-template-columns: 1fr 2fr;
+			gap: 15px;
+			align-items: center;
+		}
+
+		form label {
+			text-align: right;
+			font-weight: bold;
+		}
+
+		form input[type="text"],
+		form input[type="email"],
+		form input[type="number"],
+		form input[type="password"],
+		form input[type="file"] {
+			width: 100%;
+			padding: 8px;
+			border-radius: 5px;
+			border: 1px solid #ccc;
+		}
+
+		form button {
+			grid-column: 2;
+			padding: 10px 20px;
+			background-color: #3b82f6;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: 0.3s;
+		}
+
+		form button:hover {
+			background-color: #2563eb;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+
+		table th, table td {
+			padding: 12px;
+			text-align: center;
+			border-bottom: 1px solid #ddd;
+		}
+
+		table img {
+			border-radius: 5px;
+		}
+
+		table button {
+			padding: 5px 10px;
+			background-color: #ef4444;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+
+		table button:hover {
+			background-color: #dc2626;
+		}
+	</style>
 </head>
 <body>
 
@@ -69,8 +146,8 @@ $result = $conn->query($sql);
 		<li><a href="admindashboard.html"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
 		<li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
 		<li><a href="order.html"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
-		<li><a href= "#"><i class='bx bxs-message-dots'></i><span class="text">Message</span></a></li>
-		<li class="active"><a href= "#"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
+		<li><a href="#"><i class='bx bxs-message-dots'></i><span class="text">Message</span></a></li>
+		<li class="active"><a href="#"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
 	</ul>
 	<ul class="side-menu">
 		<li><a href="#"><i class='bx bxs-cog'></i><span class="text">Settings</span></a></li>
@@ -92,41 +169,39 @@ $result = $conn->query($sql);
 		<a href="#" class="profile"><img src="image/adlina.jpg"></a>
 	</nav>
 
-	<!-- MAIN -->
 	<main>
-	<div class="head-title" style="margin-bottom: 30px;">
-				<div class="left">
-					<h1>Admin Management System</h1>
-					<ul class="breadcrumb">
-						<li><a href="#">Dashboard</a></li>
-						<li><i class='bx bx-chevron-right'></i></li>
-						<li><a class="active" href="#">Admin Management System</a></li>
-					</ul>
-				</div>
+		<div class="head-title" style="margin-bottom: 30px;">
+			<div class="left">
+				<h1>Admin Management System</h1>
+				<ul class="breadcrumb">
+					<li><a href="#">Dashboard</a></li>
+					<li><i class='bx bx-chevron-right'></i></li>
+					<li><a class="active" href="#">Admin Management</a></li>
+				</ul>
 			</div>
-		<div class="container">
-		
+		</div>
 
+		<div class="container">
 			<section id="add-employee">
 				<h2>Add Admin</h2>
 				<form method="POST" enctype="multipart/form-data">
 					<label>Username:</label>
-					<input type="text" name="username" required><br>
+					<input type="text" name="username" required>
 
 					<label>Email:</label>
-					<input type="email" name="email" required><br>
+					<input type="email" name="email" required>
 
 					<label>Position:</label>
-					<input type="text" name="position" required><br>
+					<input type="text" name="position" required>
 
-					<label>Salary:</label>
-					<input type="number" name="salary" required><br>
+					<label>Salary (RM):</label>
+					<input type="number" name="salary" required>
 
 					<label>Password:</label>
-					<input type="password" name="password" required><br>
+					<input type="password" name="password" required>
 
-					<label>Image:</label>
-					<input type="file" name="image" accept="image/*" required><br>
+					<label>Profile Image:</label>
+					<input type="file" name="image" accept="image/*" required>
 
 					<button type="submit">Add Admin</button>
 				</form>
@@ -134,7 +209,7 @@ $result = $conn->query($sql);
 
 			<section id="view-employees">
 				<h2>Admin List</h2>
-				<table border="1">
+				<table>
 					<thead>
 						<tr>
 							<th>ID</th>
