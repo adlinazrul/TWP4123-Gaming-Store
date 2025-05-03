@@ -78,7 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-top: 20px;
             width: 100%;
             padding: 12px;
-            background-color: #4CAF50;
+            background-color:#d03b3b;
             color: white;
             border: none;
             border-radius: 6px;
@@ -86,7 +86,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             cursor: pointer;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #d03b3b;
         }
         .back-link {
             display: block;
@@ -120,7 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <button type="submit">Update Admin</button>
         </form>
-        <a href="manageadmin.php" class="back-link">← Back to Admin List</a>
+        <a href="addadmin.php" class="back-link">← Back to Admin List</a>
     </div>
 </body>
 </html>
