@@ -233,6 +233,9 @@ $result = $conn->query($sql);
                                 <td>
                                     <button onclick="editAdmin(<?= $row['id'] ?>)">Edit</button>
 									<br>
+									<br>
+									<br>
+									<br>
                                     <button onclick="deleteAdmin(<?= $row['id'] ?>)">Delete</button>
                                 </td>
                             </tr>
