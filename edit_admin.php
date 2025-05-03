@@ -36,18 +36,91 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <!DOCTYPE html>
-<html>
-<head><title>Edit Admin</title></head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            padding: 40px;
+        }
+        .form-container {
+            max-width: 500px;
+            background: #fff;
+            margin: auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #333;
+        }
+    </style>
+</head>
 <body>
-<h2>Edit Admin</h2>
-<form method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="id" value="<?= $row['id'] ?>">
-    Username: <input type="text" name="username" value="<?= $row['username'] ?>" required><br>
-    Email: <input type="email" name="email" value="<?= $row['email'] ?>" required><br>
-    Position: <input type="text" name="position" value="<?= $row['position'] ?>" required><br>
-    Salary: <input type="number" name="salary" value="<?= $row['salary'] ?>" required><br>
-    Profile Image: <input type="file" name="image"><br>
-    <button type="submit">Update</button>
-</form>
+    <div class="form-container">
+        <h2>Edit Admin</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="<?= htmlspecialchars($row['id']) ?>">
+            
+            <label>Username:</label>
+            <input type="text" name="username" value="<?= htmlspecialchars($row['username']) ?>" required>
+
+            <label>Email:</label>
+            <input type="email" name="email" value="<?= htmlspecialchars($row['email']) ?>" required>
+
+            <label>Position:</label>
+            <input type="text" name="position" value="<?= htmlspecialchars($row['position']) ?>" required>
+
+            <label>Salary (RM):</label>
+            <input type="number" name="salary" value="<?= htmlspecialchars($row['salary']) ?>" required>
+
+            <label>Profile Image:</label>
+            <input type="file" name="image">
+
+            <button type="submit">Update Admin</button>
+        </form>
+        <a href="manageadmin.php" class="back-link">← Back to Admin List</a>
+    </div>
 </body>
 </html>
