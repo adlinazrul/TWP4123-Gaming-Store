@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             width: 100%;
             margin-top: 20px;
             padding: 12px;
-            background-color: #2196F3;
+            background-color: #d03b3b;
             color: white;
             border: none;
             border-radius: 6px;
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         button:hover {
-            background-color: #1976D2;
+            background-color: #d03b3b;
         }
 
         .back-link {
