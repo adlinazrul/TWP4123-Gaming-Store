@@ -1,44 +1,39 @@
 <?php
-// Start session to store logged-in status
 session_start();
 
-include 'db_connect.php';
+// Database connection
+$servername = "localhost";
+$username = "root"; // Change if needed
+$password = "";     // Change if needed
+$dbname = "gaming_store"; // Your DB name
 
-// Check if form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Collect form data
-    $username = $_POST['uname'];
-    $password = $_POST['psw'];
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-    // SQL query to fetch the user with the entered username
-    $sql = "SELECT * FROM admin_list WHERE username = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $username); // "s" means the parameter is a string
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    // Check if the user exists
-    if ($result->num_rows > 0) {
-        // User exists, fetch the data
-        $user = $result->fetch_assoc();
-
-        // Verify the entered password with the stored hashed password
-        if (password_verify($password, $user['password'])) {
-            // Password is correct, set session and redirect to dashboard
-            $_SESSION['username'] = $username; // Store username in session
-            header("Location: admindashboard.html"); // Redirect to admin dashboard
-            exit(); // Stop further execution
-        } else {
-            // Incorrect password
-            echo "Invalid password. Please try again.";
-        }
-    } else {
-        // Username not found
-        echo "No user found with this username.";
-    }
-
-    $stmt->close(); // Close the prepared statement
+// Check connection
+if ($conn->connect_error) {
+  die("Connection failed: " . $conn->connect_error);
 }
 
-$conn->close(); // Close the database connection
+// Get login input
+$uname = $_POST['uname'];
+$psw = $_POST['psw'];
+
+// Validate login
+$sql = "SELECT * FROM addadmin WHERE username = ? AND password = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ss", $uname, $psw);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 1) {
+  $row = $result->fetch_assoc();
+  $_SESSION['admin_id'] = $row['id'];
+  $_SESSION['admin_username'] = $row['username'];
+  echo "<script>alert('Login successful!'); window.location.href='admin_dashboard.php';</script>";
+} else {
+  echo "<script>alert('Invalid username or password'); window.location.href='loginadmin.php';</script>";
+}
+
+$stmt->close();
+$conn->close();
 ?>
