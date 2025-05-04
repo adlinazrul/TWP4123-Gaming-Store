@@ -129,4 +129,3 @@ $admin_username = $_SESSION['admin_username'];
 <?php
 $conn->close();
 ?>
-try
