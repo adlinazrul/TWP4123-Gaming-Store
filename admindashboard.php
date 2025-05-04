@@ -1,143 +1,132 @@
 <?php
 session_start();
-include 'db_connection.php'; // your DB connection file
 
-// Check if admin is logged in
+// Check if user is logged in
 if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
+    // Redirect to login page if not logged in
+    header("Location: loginadmin.php");
     exit();
 }
 
+// Database connection
+$servername = "localhost";
+$username = "root"; // Change if needed
+$password = "";     // Change if needed
+$dbname = "gaming_store"; // Your DB name
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch admin details
 $admin_id = $_SESSION['admin_id'];
-$sql = "SELECT name, position, profile_pic FROM admins WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $admin_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$admin = $result->fetch_assoc();
+$admin_username = $_SESSION['admin_username'];
+
+// You can add additional queries here to display relevant admin data on the dashboard
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard - Gaming Store</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
 
-	<!-- Boxicons -->
-	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-	<link rel="stylesheet" href="admindashboard.css">
+        header {
+            background-color: #C70039;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
 
-	<title>Admin</title>
-	<style>
-		.profile-dropdown {
-			position: absolute;
-			top: 60px;
-			right: 20px;
-			background: white;
-			box-shadow: 0 0 10px rgba(0,0,0,0.2);
-			border-radius: 10px;
-			padding: 15px;
-			display: none;
-			z-index: 999;
-			width: 200px;
-		}
-		.profile-dropdown img {
-			width: 60px;
-			height: 60px;
-			border-radius: 50%;
-			display: block;
-			margin: 0 auto 10px;
-		}
-		.profile-dropdown p {
-			text-align: center;
-			margin: 5px 0;
-		}
-	</style>
+        .dashboard-container {
+            padding: 20px;
+        }
+
+        .admin-info {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .admin-info h2 {
+            margin: 0 0 10px 0;
+        }
+
+        .admin-info p {
+            margin: 5px 0;
+        }
+
+        .action-btns {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .action-btns a {
+            background-color: #C70039;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .action-btns a:hover {
+            background-color: #900C3F;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #C70039;
+            color: white;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<section id="sidebar">
-	<a href="#" class="brand">
-		<br>
-		<span class="text">Admin Dashboard</span>
-	</a>
-	<ul class="side-menu top">
-		<li class="active">
-			<a href="#"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a>
-		</li>
-		<li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
-		<li><a href="order.php"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
-		<li><a href="customer_list.php"><i class='bx bxs-user'></i><span class="text">Customer</span></a></li>
-		<li><a href="addadmin.php"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
-	</ul>
-	<ul class="side-menu">
-		<li><a href="#"><i class='bx bxs-cog'></i><span class="text">Settings</span></a></li>
-		<li><a href="logout.php" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
-	</ul>
-</section>
+<header>
+    <h1>Admin Dashboard</h1>
+</header>
 
-<!-- CONTENT -->
-<section id="content">
-	<!-- NAVBAR -->
-	<nav>
-		<i class='bx bx-menu'></i> 
-		<a href="managecategory.html" class="nav-link">Categories</a>
-		<form action="#">
-			<div class="form-input">
-				<input type="search" placeholder="Search...">
-				<button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
-			</div>
-		</form>
-		<a href="#" class="notification">
-			<i class='bx bxs-bell'></i><span class="num"></span>
-		</a>
-		<a href="#" class="profile" id="profileBtn">
-			<img src="image/<?php echo htmlspecialchars($admin['profile_pic']); ?>" alt="Profile">
-		</a>
-		<div class="profile-dropdown" id="profileDropdown">
-			<img src="image/<?php echo htmlspecialchars($admin['profile_pic']); ?>" alt="Profile">
-			<p><strong><?php echo htmlspecialchars($admin['name']); ?></strong></p>
-			<p><?php echo htmlspecialchars($admin['position']); ?></p>
-		</div>
-	</nav>
+<div class="dashboard-container">
+    <div class="admin-info">
+        <h2>Welcome, <?php echo htmlspecialchars($admin_username); ?></h2>
+        <p><strong>Admin ID:</strong> <?php echo $admin_id; ?></p>
+        <p><strong>Username:</strong> <?php echo $admin_username; ?></p>
+    </div>
 
-	<!-- MAIN -->
-	<main>
-		<div class="head-title">
-			<div class="left">
-				<h1>Dashboard</h1>
-				<ul class="breadcrumb">
-					<li><a href="#">Dashboard</a></li>
-					<li><i class='bx bx-chevron-right'></i></li>
-					<li><a class="active" href="#">Home</a></li>
-				</ul>
-			</div>
-			<a href="#" class="btn-download">
-				<i class='bx bxs-cloud-download'></i>
-				<span class="text">Download PDF</span>
-			</a>
-		</div>
-		<!-- Your dashboard content continues here... -->
-	</main>
-</section>
+    <div class="action-btns">
+        <a href="manage_products.php">Manage Products</a>
+        <a href="manage_orders.php">Manage Orders</a>
+        <a href="manage_users.php">Manage Users</a>
+        <a href="logout.php">Logout</a>
+    </div>
+</div>
 
-<script>
-	const profileBtn = document.getElementById('profileBtn');
-	const profileDropdown = document.getElementById('profileDropdown');
-
-	profileBtn.addEventListener('click', function(event) {
-		event.preventDefault();
-		profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
-	});
-
-	// Close dropdown when clicking outside
-	document.addEventListener('click', function(event) {
-		if (!profileBtn.contains(event.target) && !profileDropdown.contains(event.target)) {
-			profileDropdown.style.display = 'none';
-		}
-	});
-</script>
+<footer>
+    <p>&copy; 2025 Gaming Store. All Rights Reserved.</p>
+</footer>
 
 </body>
 </html>
+
+<?php
+$conn->close();
+?>
+try
