@@ -83,6 +83,13 @@ $result = $conn->query($sql);
             font-weight: bold;
         }
 
+        form input[type="search"] {
+        width: 300px; /* Match the width from customer_list.php */
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        }
+
         form input[type="text"],
         form input[type="email"],
         form input[type="number"],
