@@ -1,131 +1,238 @@
 <?php
+// You can include any PHP logic here if needed, such as session starts or database connections
+// For example, to start a session:
 session_start();
-
-// Check if user is logged in
-if (!isset($_SESSION['admin_id'])) {
-    // Redirect to login page if not logged in
-    header("Location: loginadmin.html");
-    exit();
-}
-
-// Database connection
-$servername = "localhost";
-$username = "root"; // Change if needed
-$password = "";     // Change if needed
-$dbname = "gaming_store"; // Your DB name
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Fetch admin details
-$admin_id = $_SESSION['admin_id'];
-$admin_username = $_SESSION['admin_username'];
-
-// You can add additional queries here to display relevant admin data on the dashboard
+// Check if the user is logged in or redirect if not
+// if (!isset($_SESSION['admin_logged_in'])) {
+//     header("Location: login.php");
+//     exit();
+// }
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Dashboard - Gaming Store</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        header {
-            background-color: #C70039;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
+	<!-- Boxicons -->
+	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+	<!-- My CSS -->
+	<link rel="stylesheet" href="admindashboard.css">
 
-        .dashboard-container {
-            padding: 20px;
-        }
-
-        .admin-info {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .admin-info h2 {
-            margin: 0 0 10px 0;
-        }
-
-        .admin-info p {
-            margin: 5px 0;
-        }
-
-        .action-btns {
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .action-btns a {
-            background-color: #C70039;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 16px;
-            text-align: center;
-        }
-
-        .action-btns a:hover {
-            background-color: #900C3F;
-        }
-
-        footer {
-            text-align: center;
-            padding: 10px;
-            background-color: #C70039;
-            color: white;
-            position: fixed;
-            width: 100%;
-            bottom: 0;
-        }
-    </style>
+	<title>Admin</title>
 </head>
 <body>
 
-<header>
-    <h1>Admin Dashboard</h1>
-</header>
 
-<div class="dashboard-container">
-    <div class="admin-info">
-        <h2>Welcome, <?php echo htmlspecialchars($admin_username); ?></h2>
-        <p><strong>Admin ID:</strong> <?php echo $admin_id; ?></p>
-        <p><strong>Username:</strong> <?php echo $admin_username; ?></p>
-    </div>
+	<!-- SIDEBAR -->
+	<section id="sidebar">
+		<a href="#" class="brand">
+			<br>
+			<span class="text">Admin Dashboard</span>
+		</a>
+		<ul class="side-menu top">
+			<li class="active">
+				<a href="#">
+					<i class='bx bxs-dashboard' ></i>
+					<span class="text">Dashboard</span>
+				</a>
+			</li>
+			<li>
+				<a href="manageproduct.php">
+					<i class='bx bxs-shopping-bag-alt' ></i>
+					<span class="text">Product Management</span>
+				</a>
+			</li>
+			<li>
+				<a href="order.php">
+					<i class='bx bxs-doughnut-chart' ></i>
+					<span class="text">Order</span>
+				</a>
+			</li>
+			<li>
+				<a href="customer_list.php">
+					<i class='bx bxs-user' ></i>
+					<span class="text">Customer</span>
+				</a>
+			</li>
+			<li>
+				<a href="addadmin.php">
+					<i class='bx bxs-group' ></i>
+					<span class="text">Admin</span>
+				</a>
+			</li>
+		</ul>
+		<ul class="side-menu">
+			<li>
+				<a href="#">
+					<i class='bx bxs-cog' ></i>
+					<span class="text">Settings</span>
+				</a>
+			</li>
+			<li>
+				<a href="index.html" class="logout">
+					<i class='bx bxs-log-out-circle' ></i>
+					<span class="text">Logout</span>
+				</a>
+			</li>
+		</ul>
+	</section>
+	<!-- SIDEBAR -->
 
-    <div class="action-btns">
-        <a href="manage_products.php">Manage Products</a>
-        <a href="manage_orders.php">Manage Orders</a>
-        <a href="manage_users.php">Manage Users</a>
-        <a href="logout.php">Logout</a>
-    </div>
-</div>
 
-<footer>
-    <p>&copy; 2025 Gaming Store. All Rights Reserved.</p>
-</footer>
 
+	<!-- CONTENT -->
+	<section id="content">
+		<!-- NAVBAR -->
+		<nav>
+			<i class='bx bx-menu' ></i> 
+			<a href="managecategory.php" class="nav-link">Categories</a>
+			<form action="#">
+				<div class="form-input">
+					<input type="search" placeholder="Search...">
+					<button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
+				</div>
+			</form>
+			
+			<a href="#" class="notification">
+				<i class='bx bxs-bell' ></i>
+				<span class="num"></span>
+			</a>
+			<a href="#" class="profile">
+				<img src="image/adlina.jpg">
+			</a>
+		</nav>
+		<!-- NAVBAR -->
+
+		<!-- MAIN -->
+		<main>
+			<div class="head-title">
+				<div class="left">
+					<h1>Dashboard</h1>
+					<ul class="breadcrumb">
+						<li>
+							<a href="#">Dashboard</a>
+						</li>
+						<li><i class='bx bx-chevron-right' ></i></li>
+						<li>
+							<a class="active" href="#">Home</a>
+						</li>
+					</ul>
+				</div>
+				<a href="#" class="btn-download">
+					<i class='bx bxs-cloud-download' ></i>
+					<span class="text">Download PDF</span>
+				</a>
+			</div>
+
+			<ul class="box-info">
+				<li>
+					<i class='bx bxs-calendar-check' ></i>
+					<span class="text">
+						<h3>1020</h3>
+						<p>New Order</p>
+					</span>
+				</li>
+				<li>
+					<i class='bx bxs-group' ></i>
+					<span class="text">
+						<h3>2834</h3>
+						<p>Visitors</p>
+					</span>
+				</li>
+				<li>
+					<i class='bx bxs-dollar-circle' ></i>
+					<span class="text">
+						<h3>RM 2543</h3>
+						<p>Total Sales</p>
+					</span>
+				</li>
+			</ul>
+
+
+			<div class="table-data">
+				<div class="order">
+					<div class="head">
+						<h3>Recent Orders</h3>
+						<i class='bx bx-search' ></i>
+						<i class='bx bx-filter' ></i>
+					</div>
+					<table>
+						<thead>
+							<tr>
+								<th>User</th>
+								<th>Date Order</th>
+								<th>Status</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+									<img src="image/people1.jpg">
+									<p>Kevin</p>
+								</td>
+								<td>01-01-2025</td>
+								<td><span class="status completed">Completed</span></td>
+							</tr>
+							<tr>
+								<td>
+									<img src="image/people2.jpg">
+									<p>Brian</p>
+								</td>
+								<td>06-01-2025</td>
+								<td><span class="status pending">Pending</span></td>
+							</tr>
+							<tr>
+								<td>
+									<img src="image/woman1.jpg">
+									<p>Camila</p>
+								</td>
+								<td>07-02-2025</td>
+								<td><span class="status process">Process</span></td>
+							</tr>
+				
+						</tbody>
+					</table>
+				</div>
+				<div class="todo">
+					<div class="head">
+						<h3>To do </h3>
+						<i class='bx bx-plus' ></i>
+						<i class='bx bx-filter' ></i>
+					</div>
+					<ul class="todo-list">
+						<li class="completed">
+							<p>Todo List</p>
+							<i class='bx bx-dots-vertical-rounded' ></i>
+						</li>
+						<li class="completed">
+							<p>Todo List</p>
+							<i class='bx bx-dots-vertical-rounded' ></i>
+						</li>
+						<li class="not-completed">
+							<p>Todo List</p>
+							<i class='bx bx-dots-vertical-rounded' ></i>
+						</li>
+						<li class="completed">
+							<p>Todo List</p>
+							<i class='bx bx-dots-vertical-rounded' ></i>
+						</li>
+						<li class="not-completed">
+							<p>Todo List</p>
+							<i class='bx bx-dots-vertical-rounded' ></i>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</main>
+		<!--MAIN-->
+	</section>
+	<!-- CONTENT -->
+
+
+	
+
+	<script src="script.js"></script>
 </body>
 </html>
-
-<?php
-$conn->close();
-?>
