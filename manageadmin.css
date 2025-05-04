@@ -647,3 +647,10 @@ form button[type="submit"] {
 form button[type="submit"]:hover {
     background-color: #dc2626;  /* Darker red on hover */
 }
+
+form .form-input input[type="search"] {
+    width: 300px; /* Match the width from customer_list.php */
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
