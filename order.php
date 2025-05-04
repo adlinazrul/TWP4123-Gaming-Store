@@ -70,7 +70,7 @@ if ($result === false) {
         <li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
         <li class="active"><a href="order.php"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
         <li><a href="customer_list.php"><i class='bx bxs-user'></i><span class="text">Customer</span></a></li>
-        <li><a href="#"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
+        <li><a href="addadmin.php"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
     </ul>
     <ul class="side-menu">
         <li><a href="#"><i class='bx bxs-cog'></i><span class="text">Settings</span></a></li>
