@@ -218,7 +218,7 @@ body {
 	color: var(--blue);
 }
 #content nav form {
-	max-width: 600px;
+	max-width: 400px;
 	width: 100%;
 	margin-right: auto;
 }
