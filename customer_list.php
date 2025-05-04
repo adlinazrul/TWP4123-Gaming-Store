@@ -146,8 +146,8 @@ $result = $conn->query($sql);
         <li><a href="admindashboard.html"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
         <li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
         <li><a href="order.html"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
-        <li><a href="#customer_list.php"><i class='bx bxs-user'></i><span class="text">Customer</span></a></li>
-        <li class="active"><a href="#"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
+        <li class="active"><a href="#customer_list.php"><i class='bx bxs-user'></i><span class="text">Customer</span></a></li>
+        <li><a href="#"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
     </ul>
     <ul class="side-menu">
         <li><a href="#"><i class='bx bxs-cog'></i><span class="text">Settings</span></a></li>
@@ -170,79 +170,57 @@ $result = $conn->query($sql);
     </nav>
 
     <main>
-        <div class="head-title" style="margin-bottom: 30px;">
-            <div class="left">
-                <h1>Admin Management System</h1>
-                <ul class="breadcrumb">
-                    <li><a href="#">Dashboard</a></li>
-                    <li><i class='bx bx-chevron-right'></i></li>
-                    <li><a class="active" href="#">Admin Management</a></li>
-                </ul>
-            </div>
+    <div class="head-title" style="margin-bottom: 30px;">
+        <div class="left">
+            <h1>Customer List</h1>
+            <ul class="breadcrumb">
+                <li><a href="#">Dashboard</a></li>
+                <li><i class='bx bx-chevron-right'></i></li>
+                <li><a class="active" href="#">Customer</a></li>
+            </ul>
         </div>
+    </div>
 
-        <div class="container">
-            <section id="add-employee">
-                <h2>Add Admin</h2>
-                <form method="POST" enctype="multipart/form-data">
-                    <label>Username:</label>
-                    <input type="text" name="username" required>
+    <div class="container">
+        <section id="view-customers">
+            <h2>Customer List</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer ID</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Registered At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $customer_sql = "SELECT * FROM customer";
+                    $customer_result = $conn->query($customer_sql);
 
-                    <label>Email:</label>
-                    <input type="email" name="email" required>
+                    if ($customer_result->num_rows > 0) {
+                        while ($row = $customer_result->fetch_assoc()) {
+                            echo "<tr>
+                                <td>" . $row['customer_id'] . "</td>
+                                <td>" . htmlspecialchars($row['first_name']) . "</td>
+                                <td>" . htmlspecialchars($row['last_name']) . "</td>
+                                <td>" . htmlspecialchars($row['email']) . "</td>
+                                <td>" . htmlspecialchars($row['phone']) . "</td>
+                                <td>" . $row['created_at'] . "</td>
+                            </tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='6'>No customers found.</td></tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</main>
 
-                    <label>Position:</label>
-                    <input type="text" name="position" required>
-
-                    <label>Salary (RM):</label>
-                    <input type="number" name="salary" required>
-
-                    <label>Password:</label>
-                    <input type="password" name="password" required>
-
-                    <label>Profile Image:</label>
-                    <input type="file" name="image" accept="image/*" required>
-
-                    <button type="submit">Add Admin</button>
-                </form>
-            </section>
-
-            <section id="view-employees">
-                <h2>Admin List</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Position</th>
-                            <th>Salary</th>
-                            <th>Image</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($row = $result->fetch_assoc()) { ?>
-                            <tr>
-                                <td><?= $row['id'] ?></td>
-                                <td><?= $row['username'] ?></td>
-                                <td><?= $row['email'] ?></td>
-                                <td><?= $row['position'] ?></td>
-                                <td>RM <?= number_format($row['salary'], 2) ?></td>
-                                <td><img src="uploads/<?= $row['image'] ?>" width="50"></td>
-                                <td>
-                                    <button onclick="editAdmin(<?= $row['id'] ?>)">Edit</button>
-									<br>
-									<br>
-                                    <button onclick="deleteAdmin(<?= $row['id'] ?>)">Delete</button>
-                                </td>
-                            </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
-            </section>
-        </div>
-    </main>
 </section>
 
 <script>
