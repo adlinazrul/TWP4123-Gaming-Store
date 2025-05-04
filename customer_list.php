@@ -41,7 +41,7 @@ $result = $conn->query($sql);
         }
 
         table th {
-            background-color: #f3f4f6;
+            background-color: #d03b3b;
         }
     </style>
 </head>
