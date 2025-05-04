@@ -9,42 +9,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $position = $_POST['position'];
-    $salary = $_POST['salary'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
-
-    $target_dir = "uploads/";
-    $image_name = basename($_FILES["image"]["name"]);
-    $target_file = $target_dir . $image_name;
-    move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
-
-    $check_email = "SELECT * FROM admin_list WHERE email = ?";
-    $stmt = $conn->prepare($check_email);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        echo "<script>alert('Error: Email already exists!'); window.location.href='admindashboard.php';</script>";
-    } else {
-        $sql = "INSERT INTO admin_list (username, email, position, salary, password, image) 
-                VALUES (?, ?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssss", $username, $email, $position, $salary, $password, $image_name);
-
-        if ($stmt->execute()) {
-            echo "<script>alert('Admin added successfully!'); window.location.href='admindashboard.php';</script>";
-        } else {
-            echo "<script>alert('Error: " . $stmt->error . "');</script>";
-        }
-    }
-    $stmt->close();
-}
-
-$sql = "SELECT * FROM admin_list";
+$sql = "SELECT * FROM customer_list";
 $result = $conn->query($sql);
 ?>
 
@@ -53,65 +18,20 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin</title>
+    <title>Customer List</title>
     <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="manageadmin.css">
     <style>
         .container {
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
             padding: 20px;
-        }
-
-        #add-employee, #view-employees {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        form {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 15px;
-            align-items: center;
-        }
-
-        form label {
-            text-align: right;
-            font-weight: bold;
-        }
-
-        form input[type="text"],
-        form input[type="email"],
-        form input[type="number"],
-        form input[type="password"],
-        form input[type="file"] {
-            width: 100%;
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        form button[type="submit"] {
-            grid-column: 2;
-            padding: 10px 20px;
-            background-color: #ef4444;  /* Red color */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        form button[type="submit"]:hover {
-            background-color: #dc2626;  /* Darker red on hover */
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
         table th, table td {
@@ -120,21 +40,8 @@ $result = $conn->query($sql);
             border-bottom: 1px solid #ddd;
         }
 
-        table img {
-            border-radius: 5px;
-        }
-
-        table button {
-            padding: 5px 10px;
-            background-color: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        table button:hover {
-            background-color: #dc2626;
+        table th {
+            background-color: #f3f4f6;
         }
     </style>
 </head>
@@ -146,7 +53,7 @@ $result = $conn->query($sql);
         <li><a href="admindashboard.html"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
         <li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
         <li><a href="order.html"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
-        <li class="active"><a href="#customer_list.php"><i class='bx bxs-user'></i><span class="text">Customer</span></a></li>
+        <li class="active"><a href="customer_list.php"><i class='bx bxs-user'></i><span class="text">Customer</span></a></li>
         <li><a href="#"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
     </ul>
     <ul class="side-menu">
@@ -170,70 +77,50 @@ $result = $conn->query($sql);
     </nav>
 
     <main>
-    <div class="head-title" style="margin-bottom: 30px;">
-        <div class="left">
-            <h1>Customer List</h1>
-            <ul class="breadcrumb">
-                <li><a href="#">Dashboard</a></li>
-                <li><i class='bx bx-chevron-right'></i></li>
-                <li><a class="active" href="#">Customer</a></li>
-            </ul>
+        <div class="head-title" style="margin-bottom: 30px;">
+            <div class="left">
+                <h1>Customer List</h1>
+                <ul class="breadcrumb">
+                    <li><a href="#">Dashboard</a></li>
+                    <li><i class='bx bx-chevron-right'></i></li>
+                    <li><a class="active" href="#">Customer</a></li>
+                </ul>
+            </div>
         </div>
-    </div>
 
-    <div class="container">
-        <section id="view-customers">
-            <h2>Customer List</h2>
+        <div class="container">
+            <h2>Registered Customers</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>Customer ID</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
+                        <th>ID</th>
+                        <th>Name</th>
                         <th>Email</th>
                         <th>Phone</th>
-                        <th>Registered At</th>
+                        <th>Address</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    $customer_sql = "SELECT * FROM customer";
-                    $customer_result = $conn->query($customer_sql);
-
-                    if ($customer_result->num_rows > 0) {
-                        while ($row = $customer_result->fetch_assoc()) {
-                            echo "<tr>
-                                <td>" . $row['customer_id'] . "</td>
-                                <td>" . htmlspecialchars($row['first_name']) . "</td>
-                                <td>" . htmlspecialchars($row['last_name']) . "</td>
-                                <td>" . htmlspecialchars($row['email']) . "</td>
-                                <td>" . htmlspecialchars($row['phone']) . "</td>
-                                <td>" . $row['created_at'] . "</td>
-                            </tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='6'>No customers found.</td></tr>";
-                    }
-                    ?>
+                    <?php if ($result->num_rows > 0): ?>
+                        <?php while ($row = $result->fetch_assoc()): ?>
+                            <tr>
+                                <td><?= $row['id'] ?></td>
+                                <td><?= $row['name'] ?></td>
+                                <td><?= $row['email'] ?></td>
+                                <td><?= $row['phone'] ?></td>
+                                <td><?= $row['address'] ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="5">No customers found.</td>
+                        </tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
-        </section>
-    </div>
-</main>
-
+        </div>
+    </main>
 </section>
-
-<script>
-function deleteAdmin(id) {
-    if (confirm("Are you sure you want to delete this admin?")) {
-        window.location.href = "delete_admin.php?id=" + id;
-    }
-}
-
-function editAdmin(id) {
-    window.location.href = "edit_admin.php?id=" + id;
-}
-</script>
 
 </body>
 </html>
