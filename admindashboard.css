@@ -591,3 +591,39 @@ body {
 		min-width: 420px;
 	}
 }
+
+/* Style for profile image */
+.profile {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown content */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    width: 200px;
+    padding: 10px;
+    z-index: 1;
+}
+
+/* Show the dropdown when hovering over the profile image */
+.profile:hover .dropdown-content {
+    display: block;
+}
+
+/* Styling the dropdown content */
+.dropdown-content p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.dropdown-content p strong {
+    color: #333;
+}
