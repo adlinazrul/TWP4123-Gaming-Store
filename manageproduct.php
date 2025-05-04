@@ -123,7 +123,7 @@ $result = mysqli_query($conn, $sql);
 				</a>
 			</li>
 			<li>
-				<a href="order.html">
+				<a href="order.php">
 					<i class='bx bxs-doughnut-chart'></i>
 					<span class="text">Order</span>
 				</a>
