@@ -125,8 +125,12 @@ $stmt->close();
 				<span class="num"></span>
 			</a>
 			<a href="#" class="profile">
-				<img src="image/adlina.jpg">
-			</a>
+                <img src="images/<?php echo $profile_image; ?>" alt="Profile Image">
+                 <div class="dropdown-content">
+                    <p><strong>Name:</strong> <?php echo $name; ?></p>
+                    <p><strong>Position:</strong> <?php echo $position; ?></p>
+                </div>
+            </a>
 		</nav>
 		<!-- NAVBAR -->
 
