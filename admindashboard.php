@@ -27,7 +27,7 @@ if ($result->num_rows > 0) {
     $profile_image = $user['profile_image'];
 } else {
     // If no user is found, redirect or show an error
-    header("Location: loginadmin.html");
+    header("Location: admindasboard.php");
     exit();
 }
 
