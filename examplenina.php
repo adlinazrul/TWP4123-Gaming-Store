@@ -111,7 +111,7 @@ $result = mysqli_query($conn, $sql);
 		</a>
 		<ul class="side-menu top">
 			<li>
-				<a href="admindashboard.html">
+				<a href="#">
 					<i class='bx bxs-dashboard'></i>
 					<span class="text">Dashboard</span>
 				</a>
@@ -123,21 +123,21 @@ $result = mysqli_query($conn, $sql);
 				</a>
 			</li>
 			<li>
-				<a href="order.php">
+				<a href="order.html">
 					<i class='bx bxs-doughnut-chart'></i>
 					<span class="text">Order</span>
 				</a>
 			</li>
 			<li>
-				<a href="customer_list.php">
-					<i class='bx bxs-user'></i>
-					<span class="text">Customer</span>
+				<a href="addmember.html">
+					<i class='bx bxs-message-dots'></i>
+					<span class="text">Message</span>
 				</a>
 			</li>
 			<li>
 				<a href="addadmin.php">
 					<i class='bx bxs-group'></i>
-					<span class="text">Admin</span>
+					<span class="text">Team</span>
 				</a>
 			</li>
 		</ul>

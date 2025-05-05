@@ -1,3 +1,39 @@
+<?php
+session_start();
+
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: admindashboard.php"); // Redirect to login if not logged in
+    exit();
+}
+
+// Include your database connection file
+include('db_connection.php'); 
+
+// Get the logged-in user's ID from the session
+$user_id = $_SESSION['user_id'];
+
+// Query to fetch the user's profile details
+$sql = "SELECT name, position, profile_image FROM users WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $user = $result->fetch_assoc();
+    $name = $user['name'];
+    $position = $user['position'];
+    $profile_image = $user['profile_image'];
+} else {
+    // If no user is found, redirect or show an error
+    header("Location: admindasboard.php");
+    exit();
+}
+
+$stmt->close();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -76,7 +112,7 @@
 		<!-- NAVBAR -->
 		<nav>
 			<i class='bx bx-menu' ></i> 
-			<a href="managecategory.html" class="nav-link">Categories</a>
+			<a href="managecategory.php" class="nav-link">Categories</a>
 			<form action="#">
 				<div class="form-input">
 					<input type="search" placeholder="Search...">
@@ -89,8 +125,12 @@
 				<span class="num"></span>
 			</a>
 			<a href="profile.php" class="profile">
-				<img src="image/adlina.jpg">
-			</a>
+                <img src="images/<?php echo $profile_image; ?>" alt="Profile Image">
+                 <div class="dropdown-content">
+                    <p><strong>Name:</strong> <?php echo $name; ?></p>
+                    <p><strong>Position:</strong> <?php echo $position; ?></p>
+                </div>
+            </a>
 		</nav>
 		<!-- NAVBAR -->
 
