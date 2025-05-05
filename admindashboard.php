@@ -124,7 +124,7 @@ $stmt->close();
 				<i class='bx bxs-bell' ></i>
 				<span class="num"></span>
 			</a>
-			<a href="#" class="profile">
+			<a href="profile.php" class="profile">
                 <img src="images/<?php echo $profile_image; ?>" alt="Profile Image">
                  <div class="dropdown-content">
                     <p><strong>Name:</strong> <?php echo $name; ?></p>
