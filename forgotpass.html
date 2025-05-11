@@ -88,13 +88,16 @@
         </header>
         <main>
 
-            <form action="forgotpass.php" method="post"></form>
-                <div class="form-group">
-                    <label for="identifier">Choose one of the following:</label>
-                    <input type="text" id="identifier" name="identifier" placeholder="Email, Phone Number, or Username" required>
-                </div>
-                <button type="submit" class="button">Reset Password</button>
-            </form>
+        
+
+  <form action="forgotpass.php" method="post">
+   <div class="form-group">                        
+   <label for="identifier">Enter your email:</label>
+   <input type="email" id="identifier" name="email" placeholder="Email" required>
+   </div>
+   <button type="submit" class="button">Reset Password</button>
+   </form>
+                
             
         </main>
     </div>
