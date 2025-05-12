@@ -4,10 +4,7 @@ session_start();
 include 'db_connection.php';
 
 // Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
+
 
 $success_message = $error_message = "";
 $category_name = "";
