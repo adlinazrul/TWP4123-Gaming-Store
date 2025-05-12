@@ -71,11 +71,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-    <?php include 'sidebar.php'; ?>
-    <section id="content">
-        <?php include 'navbar.php'; ?>
         <main>
-            <h1>Add New Category</h1>
+            <center><h1>Add New Category</h1></center>
             <div class="form-container">
                 <?php if (isset($error)) echo "<p class='error'>$error</p>"; ?>
                 <form method="POST">
