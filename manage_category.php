@@ -191,7 +191,7 @@ $result = $conn->query($sql);
 
 		<section id="category-list">
 			<h2>Manage Categories</h2>
-			<button class="add-category" onclick="window.location.href='addcategory.php'">Add New Category</button>
+			<button class="add-category" onclick="window.location.href='add_category.php'">Add New Category</button>
 			<table>
 				<thead>
 					<tr>
