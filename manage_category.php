@@ -117,7 +117,7 @@ $result = $conn->query($sql);
 			</a>
 		</li>
 		<li class="active">
-			<a href="managecategory.php">
+			<a href="manage_category.php">
 				<i class='bx bxs-category'></i>
 				<span class="text">Category Management</span>
 			</a>
