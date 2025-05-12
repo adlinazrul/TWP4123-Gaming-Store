@@ -1,59 +1,81 @@
 <?php
-include 'database.php';
-$id = $_GET['id'];
+// Start session
+session_start();
+include 'db_connection.php';
 
-$sql = "SELECT * FROM product_categories WHERE id=?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$category = $stmt->get_result()->fetch_assoc();
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = $_POST['category_name'];
-    $desc = $_POST['description'];
+$success_message = $error_message = "";
+$category_name = "";
+$category_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-    $update = "UPDATE product_categories SET category_name=?, description=? WHERE id=?";
-    $stmt = $conn->prepare($update);
-    $stmt->bind_param("ssi", $name, $desc, $id);
-    if ($stmt->execute()) {
-        header("Location: managecategory.php");
-        exit;
+// Fetch existing category data
+if ($category_id > 0) {
+    $query = "SELECT * FROM categories WHERE category_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $category_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $category_name = $row['category_name'];
     } else {
-        $error = "Update failed.";
+        $error_message = "Category not found.";
+    }
+} else {
+    $error_message = "Invalid category ID.";
+}
+
+// Update category
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $new_name = trim($_POST["category_name"]);
+    
+    if (!empty($new_name)) {
+        $update_query = "UPDATE categories SET category_name = ? WHERE category_id = ?";
+        $stmt = $conn->prepare($update_query);
+        $stmt->bind_param("si", $new_name, $category_id);
+
+        if ($stmt->execute()) {
+            $success_message = "Category updated successfully.";
+            $category_name = $new_name;
+        } else {
+            $error_message = "Error updating category.";
+        }
+    } else {
+        $error_message = "Please enter a category name.";
     }
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Edit Category</title>
-    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="admindashboard.css">
-    <style>
-        <?php include 'addcategory-style.css'; ?>
-    </style>
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-    <?php include 'sidebar.php'; ?>
-    <section id="content">
-        <?php include 'navbar.php'; ?>
-        <main>
-            <h1>Edit Category</h1>
-            <div class="form-container">
-                <?php if (isset($error)) echo "<p class='error'>$error</p>"; ?>
-                <form method="POST">
-                    <label for="category_name">Category Name:</label>
-                    <input type="text" id="category_name" name="category_name" value="<?= htmlspecialchars($category['category_name']); ?>" required>
 
-                    <label for="description">Description:</label>
-                    <textarea id="description" name="description" rows="4" required><?= htmlspecialchars($category['description']); ?></textarea>
+<div class="container">
+    <h2>Edit Category</h2>
 
-                    <button type="submit">Update Category</button>
-                </form>
-            </div>
-        </main>
-    </section>
+    <?php if (!empty($success_message)): ?>
+        <div class="success"><?php echo $success_message; ?></div>
+    <?php endif; ?>
+
+    <?php if (!empty($error_message)): ?>
+        <div class="error"><?php echo $error_message; ?></div>
+    <?php endif; ?>
+
+    <form method="POST" action="">
+        <label for="category_name">Category Name:</label>
+        <input type="text" name="category_name" id="category_name" value="<?php echo htmlspecialchars($category_name); ?>" required>
+
+        <button type="submit">Update Category</button>
+    </form>
+</div>
+
 </body>
 </html>
