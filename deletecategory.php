@@ -12,7 +12,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 
     if ($stmt->execute()) {
         // Redirect after successful deletion
-        header("Location: managecategory.php");
+        header("Location: manage_category.php");
         exit;
     } else {
         echo "Error deleting category.";
