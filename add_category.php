@@ -95,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .back-btn {
             display: inline-block;
             margin-top: 20px;
-            background-color: #34495e;
+            background-color: #e74c3c;
             color: #fff;
             padding: 10px 15px;
             border-radius: 5px;
@@ -103,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .back-btn:hover {
-            background-color: #2c3e50;
+            background-color: #e74c3c;
         }
     </style>
 </head>
@@ -125,7 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <button type="submit">Add Category</button>
             </form>
 
-            <a href="managecategory.php" class="back-btn">← Back to Manage Category</a>
+            <a href="manage_category.php" class="back-btn">← Back to Manage Category</a>
         </div>
     </main>
 
