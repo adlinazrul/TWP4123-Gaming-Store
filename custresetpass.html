@@ -88,11 +88,31 @@
         </header>
         <main>
             <form action="custresetpass.php" method="POST">
-                <label>Email:</label><input type="email" name="email" required><br>
-                <label>Old Password:</label><input type="password" name="old-password" required><br>
+
+                
+             <div class="form-group">
+ 
+              <label>Email:</label><input type="email" name="email" required><br>
+                    </div>
+               
+             <div class="form-group">
+
+                    <label>Old Password: </label><input type="password" name="old-password" required><br>
+                </div>
+                
+                <div class="form-group">
+
                 <label>New Password:</label><input type="password" name="new-password" required><br>
+                </div>
+                
+              <div class="form-group">
+
                 <label>Confirm Password:</label><input type="password" name="confirm-password" required><br>
+                </div>
+
+                <div class="form-group">
                 <input type="submit" value="Reset Password">
+                </div>
             </form>
             
         </main>
