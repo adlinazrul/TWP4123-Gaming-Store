@@ -79,11 +79,11 @@ $result = $conn->query($sql);
 		}
 
 		.action-buttons a:first-child button {
-			background-color: #3498db;
+			background-color: #c0392b;
 		}
 
 		.action-buttons a:first-child button:hover {
-			background-color: #2980b9;
+			background-color: #c0392b;
 		}
 
 		.action-buttons a:last-child button {
