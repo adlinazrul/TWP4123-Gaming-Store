@@ -12,7 +12,7 @@ $category_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 // Fetch existing category data
 if ($category_id > 0) {
-    $query = "SELECT * FROM categories WHERE category_id = ?";
+    $query = "SELECT * FROM product_categories WHERE category_id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $category_id);
     $stmt->execute();
