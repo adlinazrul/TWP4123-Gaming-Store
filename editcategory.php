@@ -3,16 +3,13 @@
 session_start();
 include 'db_connection.php';
 
-// Check if user is logged in
-
-
 $success_message = $error_message = "";
 $category_name = "";
 $category_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 // Fetch existing category data
 if ($category_id > 0) {
-    $query = "SELECT * FROM product_categories WHERE category_id = ?";
+    $query = "SELECT * FROM product_categories WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $category_id);
     $stmt->execute();
@@ -31,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $new_name = trim($_POST["category_name"]);
     
     if (!empty($new_name)) {
-        $update_query = "UPDATE categories SET category_name = ? WHERE category_id = ?";
+        $update_query = "UPDATE product_categories SET category_name = ? WHERE id = ?";
         $stmt = $conn->prepare($update_query);
         $stmt->bind_param("si", $new_name, $category_id);
 
