@@ -5,6 +5,7 @@ include 'db_connection.php';
 
 $success_message = $error_message = "";
 $category_name = "";
+$category_description = "";
 $category_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 // Fetch existing category data
@@ -16,6 +17,7 @@ if ($category_id > 0) {
     $result = $stmt->get_result();
     if ($row = $result->fetch_assoc()) {
         $category_name = $row['category_name'];
+        $category_description = $row['description'];  // Fetch the description
     } else {
         $error_message = "Category not found.";
     }
@@ -26,20 +28,22 @@ if ($category_id > 0) {
 // Update category
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $new_name = trim($_POST["category_name"]);
+    $new_description = trim($_POST["category_description"]);  // Get the description from the form
     
-    if (!empty($new_name)) {
-        $update_query = "UPDATE product_categories SET category_name = ? WHERE id = ?";
+    if (!empty($new_name) && !empty($new_description)) {
+        $update_query = "UPDATE product_categories SET category_name = ?, description = ? WHERE id = ?";
         $stmt = $conn->prepare($update_query);
-        $stmt->bind_param("si", $new_name, $category_id);
+        $stmt->bind_param("ssi", $new_name, $new_description, $category_id);
 
         if ($stmt->execute()) {
             $success_message = "Category updated successfully.";
             $category_name = $new_name;
+            $category_description = $new_description;
         } else {
             $error_message = "Error updating category.";
         }
     } else {
-        $error_message = "Please enter a category name.";
+        $error_message = "Please enter both a category name and description.";
     }
 }
 ?>
@@ -96,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-bottom: 8px;
         }
 
-        input[type="text"] {
+        input[type="text"], textarea {
             padding: 10px;
             margin-bottom: 20px;
             border: 1px solid #ccc;
@@ -106,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         button {
             padding: 10px 15px;
-            background-color: #3498db;
+            background-color: #c0392b;
             border: none;
             color: white;
             border-radius: 4px;
@@ -116,12 +120,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         button:hover {
-            background-color: #2980b9;
+            background-color: #c0392b;
         }
 
         .back-button {
             padding: 10px 15px;
-            background-color: #e67e22;
+            background-color: #e74c3c;
             border: none;
             color: white;
             border-radius: 4px;
@@ -134,7 +138,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .back-button:hover {
-            background-color: #d35400;
+            background-color: #e74c3c;
         }
     </style>
 </head>
@@ -154,6 +158,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <form method="POST" action="">
         <label for="category_name">Category Name:</label>
         <input type="text" name="category_name" id="category_name" value="<?php echo htmlspecialchars($category_name); ?>" required>
+
+        <label for="category_description">Category Description:</label>
+        <textarea name="category_description" id="category_description" rows="4" required><?php echo htmlspecialchars($category_description); ?></textarea>
 
         <button type="submit">Update Category</button>
     </form>
