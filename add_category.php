@@ -72,6 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
         <main>
+            <br>
             <center><h1>Add New Category</h1></center>
             <div class="form-container">
                 <?php if (isset($error)) echo "<p class='error'>$error</p>"; ?>
