@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("ss", $name, $desc);
 
         if ($stmt->execute()) {
-            header("Location: managecategory.php");
+            header("Location: manage_category.php");
             exit;
         } else {
             $error = "Failed to add category.";
