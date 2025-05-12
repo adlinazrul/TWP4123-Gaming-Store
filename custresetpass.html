@@ -87,21 +87,14 @@
             <h1>User Reset Password</h1>
         </header>
         <main>
-            <form>
-                <div class="form-group">
-                    <label for="old-password">Old Password</label>
-                    <input type="password" id="old-password" name="old-password" required>
-                </div>
-                <div class="form-group" if new database connect.php is working Required="error message.php">
-                    <label for="new-password">New Password</label>
-                    <input type="password" id="new-password" name="new-password" required>
-                </div>
-                <div class="form-group">
-                    <label for="confirm-password">Confirm New Password</label>
-                    <input type="password" id="confirm-password" name="confirm-password" required>
-                </div>
-                <button type="submit" class="button">Reset Password</button>
+            <form action="custresetpass.php" method="POST">
+                <label>Email:</label><input type="email" name="email" required><br>
+                <label>Old Password:</label><input type="password" name="old-password" required><br>
+                <label>New Password:</label><input type="password" name="new-password" required><br>
+                <label>Confirm Password:</label><input type="password" name="confirm-password" required><br>
+                <input type="submit" value="Reset Password">
             </form>
+            
         </main>
     </div>
 </body>
