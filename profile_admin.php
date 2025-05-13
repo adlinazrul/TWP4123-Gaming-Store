@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
@@ -19,7 +18,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle form submission to update data
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $email = $_POST['email'];
@@ -27,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $salary = $_POST['salary'];
     $password = $_POST['password'];
 
-    // Optional: update image
     if (!empty($_FILES['image']['name'])) {
         $image = $_FILES['image']['name'];
         $target = "image/" . basename($image);
@@ -51,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 }
 
-// Fetch admin data
 $query = "SELECT * FROM admin_list WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $admin_id);
@@ -116,17 +112,26 @@ $conn->close();
 
         .password-container input[type="password"],
         .password-container input[type="text"] {
-            padding-right: 50px;
+            padding-right: 45px;
         }
 
         .toggle-password {
             position: absolute;
+            top: 50%;
             right: 10px;
-            top: 35%;
             transform: translateY(-50%);
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
             cursor: pointer;
-            color: #555;
-            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-password:hover {
+            background-color: #dc2626;
         }
 
         form img {
@@ -173,7 +178,7 @@ $conn->close();
         <label>Password:</label>
         <div class="password-container">
             <input type="password" name="password" id="passwordField" value="<?= htmlspecialchars($admin['password']) ?>" required>
-            <span class="toggle-password" onclick="togglePassword()">Show</span>
+            <button type="button" class="toggle-password" onclick="togglePassword()">Show</button>
         </div>
 
         <label>Profile Image:</label>
