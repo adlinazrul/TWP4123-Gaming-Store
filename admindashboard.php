@@ -30,7 +30,7 @@ $admin_id = $_SESSION['admin_id']; // Example session variable
 
 if ($admin_id) {
     // Correct SQL query to fetch the profile image (use 'image' column)
-    $query = "SELECT image FROM admins WHERE id = ?";
+    $query = "SELECT image FROM admin_list WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $admin_id);
     $stmt->execute();
