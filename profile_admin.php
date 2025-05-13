@@ -27,7 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $salary = $_POST['salary'];
     $password = $_POST['password'];
 
-    // Optional: update image
     if (!empty($_FILES['image']['name'])) {
         $image = $_FILES['image']['name'];
         $target = "image/" . basename($image);
@@ -43,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($stmt->execute()) {
-        echo "<script>alert('Profile updated successfully!'); window.location.href='profile_admin.php';</script>";
+        echo "<script>alert('Profile updated successfully!'); window.location.href='admindashboard.php';</script>";
     } else {
         echo "Error updating profile: " . $stmt->error;
     }
@@ -51,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 }
 
-// Fetch admin data
 $query = "SELECT * FROM admin_list WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $admin_id);
@@ -104,29 +102,42 @@ $conn->close();
         form input[type="password"],
         form input[type="file"] {
             width: 100%;
+            height: 40px;
             padding: 10px;
             margin-top: 5px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            box-sizing: border-box;
         }
 
         .password-container {
             position: relative;
+            display: flex;
+            align-items: center;
         }
 
         .password-container input[type="password"],
         .password-container input[type="text"] {
-            padding-right: 50px;
+            flex: 1;
+            padding-right: 90px;
         }
 
         .toggle-password {
             position: absolute;
             right: 10px;
-            top: 35%;
-            transform: translateY(-50%);
+            height: 28px;
+            padding: 0 14px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 12px;
             cursor: pointer;
-            color: #555;
-            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-password:hover {
+            background-color: #dc2626;
         }
 
         form img {
@@ -173,7 +184,7 @@ $conn->close();
         <label>Password:</label>
         <div class="password-container">
             <input type="password" name="password" id="passwordField" value="<?= htmlspecialchars($admin['password']) ?>" required>
-            <span class="toggle-password" onclick="togglePassword()">Show</span>
+            <button type="button" class="toggle-password" onclick="togglePassword()">Show</button>
         </div>
 
         <label>Profile Image:</label>
