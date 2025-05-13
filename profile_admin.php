@@ -110,6 +110,25 @@ $conn->close();
             border: 1px solid #ccc;
         }
 
+        .password-container {
+            position: relative;
+        }
+
+        .password-container input[type="password"],
+        .password-container input[type="text"] {
+            padding-right: 50px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 35%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #555;
+            font-size: 14px;
+        }
+
         form img {
             margin-top: 10px;
             width: 120px;
@@ -152,7 +171,10 @@ $conn->close();
         <input type="number" name="salary" step="0.01" value="<?= htmlspecialchars($admin['salary']) ?>" required>
 
         <label>Password:</label>
-        <input type="password" name="password" value="<?= htmlspecialchars($admin['password']) ?>" required>
+        <div class="password-container">
+            <input type="password" name="password" id="passwordField" value="<?= htmlspecialchars($admin['password']) ?>" required>
+            <span class="toggle-password" onclick="togglePassword()">Show</span>
+        </div>
 
         <label>Profile Image:</label>
         <?php if (!empty($admin['image'])): ?>
@@ -163,6 +185,21 @@ $conn->close();
         <input type="submit" value="Update Profile">
     </form>
 </div>
+
+<script>
+function togglePassword() {
+    const passwordField = document.getElementById("passwordField");
+    const toggleBtn = document.querySelector(".toggle-password");
+
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+        toggleBtn.textContent = "Hide";
+    } else {
+        passwordField.type = "password";
+        toggleBtn.textContent = "Show";
+    }
+}
+</script>
 
 </body>
 </html>
