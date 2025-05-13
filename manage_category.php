@@ -1,12 +1,21 @@
 <?php
-
 session_start();
+
+// CONNECT TO DATABASE FIRST
+$host = 'localhost';
+$dbname = 'gaming_store';
+$username = 'root';
+$password = ''; // Change if your MySQL has a password
+
+$conn = new mysqli($host, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
 // Check if the session variable is set
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 } else {
-    // Handle the case when the admin is not logged in (e.g., redirect to login page)
     header("Location: login_admin.php");
     exit;
 }
@@ -19,27 +28,20 @@ if ($admin_id) {
     $stmt->execute();
     $stmt->bind_result($image);
     if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'image/' . $image; // Path to the image in 'image' folder
+        $profile_image = 'image/' . $image;
     } else {
-        $profile_image = 'image/default_profile.jpg'; // Default image in 'image' folder
+        $profile_image = 'image/default_profile.jpg';
     }
     $stmt->close();
 } else {
-    $profile_image = 'image/default_profile.jpg'; // Default image if not logged in
+    $profile_image = 'image/default_profile.jpg';
 }
 
-$host = 'localhost';
-$dbname = 'gaming_store';
-$username = 'root';
-$password = ''; // Change if your MySQL has a password
-
-$conn = new mysqli($host, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+// Fetch categories
 $sql = "SELECT * FROM product_categories";
 $result = $conn->query($sql);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
