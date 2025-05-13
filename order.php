@@ -51,7 +51,7 @@ if ($admin_id) {
 }
 
 
-$conn->close();
+
 ?>
 
 <!DOCTYPE html>
