@@ -22,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Fetch the user data
         $user = $result->fetch_assoc();
 
-        // Verify the password
-        if ($password === $user['password'])) {
-            // Start session and set user details in session variables
+        // Verify the password (plain text check)
+        if ($password === $user['password']) {
+            // Set session variables
             $_SESSION['admin_id'] = $user['id'];
             $_SESSION['admin_username'] = $user['username'];
             $_SESSION['admin_email'] = $user['email'];
@@ -43,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->close();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
