@@ -1,4 +1,17 @@
 <?php
+
+session_start();
+
+// Check if the session variable is set
+if (isset($_SESSION['admin_id'])) {
+    $admin_id = $_SESSION['admin_id'];
+} else {
+    // Handle the case when the admin is not logged in (e.g., redirect to login page)
+    header("Location: login_admin.php");
+    exit;
+}
+
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -11,6 +24,23 @@ if ($conn->connect_error) {
 
 $sql = "SELECT * FROM customer_list";
 $result = $conn->query($sql);
+if ($admin_id) {
+    // Correct SQL query to fetch the profile image (use 'image' column)
+    $query = "SELECT image FROM admin_list WHERE id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $admin_id);
+    $stmt->execute();
+    $stmt->bind_result($image);
+    if ($stmt->fetch() && !empty($image)) {
+        $profile_image = 'image/' . $image; // Path to the image in 'image' folder
+    } else {
+        $profile_image = 'image/default_profile.jpg'; // Default image in 'image' folder
+    }
+    $stmt->close();
+} else {
+    $profile_image = 'image/default_profile.jpg'; // Default image if not logged in
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -74,7 +104,7 @@ $result = $conn->query($sql);
             </div>
         </form>
         <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
-        <a href="#" class="profile"><img src="image/adlina.jpg"></a>
+        <a href="profile.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture""></a>
     </nav>
 
     <main>
