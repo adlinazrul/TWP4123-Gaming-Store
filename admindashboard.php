@@ -137,7 +137,7 @@ $conn->close();
 				<i class='bx bxs-bell'></i>
 				<span class="num"></span>
 			</a>
-			<a href="profile.php" class="profile">
+			<a href="profile_admin.php" class="profile">
 				<img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture">
 			</a>
 		</nav>
