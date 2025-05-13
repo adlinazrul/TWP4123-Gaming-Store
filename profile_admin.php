@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($stmt->execute()) {
-        echo "<script>alert('Profile updated successfully!'); window.location.href='profile.php';</script>";
+        echo "<script>alert('Profile updated successfully!'); window.location.href='profile_admin.php';</script>";
     } else {
         echo "Error updating profile: " . $stmt->error;
     }
@@ -67,13 +67,35 @@ $conn->close();
 <html>
 <head>
     <title>Admin Profile</title>
+    <meta charset="UTF-8">
     <style>
-        form {
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #ef4444;
+            margin-bottom: 30px;
+        }
+
+        form label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #333;
         }
 
         form input[type="text"],
@@ -83,56 +105,64 @@ $conn->close();
         form input[type="file"] {
             width: 100%;
             padding: 10px;
-            margin: 10px 0;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
         }
 
         form img {
-            width: 100px;
             margin-top: 10px;
+            width: 120px;
+            border-radius: 10px;
         }
 
         form input[type="submit"] {
-            background-color: #4CAF50;
+            margin-top: 20px;
+            background-color: #ef4444;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px;
+            border-radius: 5px;
             cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
 
         form input[type="submit"]:hover {
-            background-color: #45a049;
-        }
-
-        h2 {
-            text-align: center;
+            background-color: #dc2626;
         }
     </style>
 </head>
 <body>
 
-<h2>My Profile</h2>
-<form method="post" enctype="multipart/form-data">
-    <label>Username:</label>
-    <input type="text" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required>
+<div class="container">
+    <h2>My Profile</h2>
+    <form method="post" enctype="multipart/form-data">
+        <label>Username:</label>
+        <input type="text" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required>
 
-    <label>Email:</label>
-    <input type="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required>
+        <label>Email:</label>
+        <input type="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required>
 
-    <label>Position:</label>
-    <input type="text" name="position" value="<?= htmlspecialchars($admin['position']) ?>" required>
+        <label>Position:</label>
+        <input type="text" name="position" value="<?= htmlspecialchars($admin['position']) ?>" required>
 
-    <label>Salary (RM):</label>
-    <input type="number" name="salary" step="0.01" value="<?= htmlspecialchars($admin['salary']) ?>" required>
+        <label>Salary (RM):</label>
+        <input type="number" name="salary" step="0.01" value="<?= htmlspecialchars($admin['salary']) ?>" required>
 
-    <label>Password:</label>
-    <input type="password" name="password" value="<?= htmlspecialchars($admin['password']) ?>" required>
+        <label>Password:</label>
+        <input type="password" name="password" value="<?= htmlspecialchars($admin['password']) ?>" required>
 
-    <label>Profile Image:</label><br>
-    <img src="image/<?= htmlspecialchars($admin['image']) ?>" alt="Profile Image"><br>
-    <input type="file" name="image">
+        <label>Profile Image:</label>
+        <?php if (!empty($admin['image'])): ?>
+            <br><img src="image/<?= htmlspecialchars($admin['image']) ?>" alt="Profile Image"><br>
+        <?php endif; ?>
+        <input type="file" name="image">
 
-    <input type="submit" value="Update Profile">
-</form>
+        <input type="submit" value="Update Profile">
+    </form>
+</div>
 
 </body>
 </html>
