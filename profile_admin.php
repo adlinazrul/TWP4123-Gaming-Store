@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+// Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
@@ -18,6 +19,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Handle form submission to update data
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $email = $_POST['email'];
@@ -100,30 +102,34 @@ $conn->close();
         form input[type="password"],
         form input[type="file"] {
             width: 100%;
+            height: 40px;
             padding: 10px;
             margin-top: 5px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            box-sizing: border-box;
         }
 
         .password-container {
             position: relative;
+            display: flex;
+            align-items: center;
         }
 
         .password-container input[type="password"],
         .password-container input[type="text"] {
-            padding-right: 45px;
+            flex: 1;
+            padding-right: 90px;
         }
 
         .toggle-password {
             position: absolute;
-            top: 50%;
             right: 10px;
-            transform: translateY(-50%);
+            height: 28px;
+            padding: 0 14px;
             background-color: #ef4444;
             color: white;
             border: none;
-            padding: 5px 10px;
             border-radius: 20px;
             font-size: 12px;
             cursor: pointer;
