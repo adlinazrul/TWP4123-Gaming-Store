@@ -6,6 +6,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $last_name = $_POST["last-name"];
     $email = $_POST["email"];
     $phone = $_POST["phone"] ?? ''; // Optional field
+    $address = $_POST["address"]; // Add this line to capture the address
     $password = password_hash($_POST["password"], PASSWORD_BCRYPT); // Hash password for security
 
     // Insert into database
