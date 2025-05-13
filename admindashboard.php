@@ -1,4 +1,16 @@
 <?php
+
+session_start();
+
+// Check if the session variable is set
+if (isset($_SESSION['admin_id'])) {
+    $admin_id = $_SESSION['admin_id'];
+} else {
+    // Handle the case when the admin is not logged in (e.g., redirect to login page)
+    header("Location: login_admin.php");
+    exit;
+}
+
 // Database connection
 $servername = "localhost";
 $username = "root"; // Use your MySQL username
