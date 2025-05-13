@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user = $result->fetch_assoc();
 
         // Verify the password
-        if (password_verify($password, $user['password'])) {
+        if ($password === $user['password'])) {
             // Start session and set user details in session variables
             $_SESSION['admin_id'] = $user['id'];
             $_SESSION['admin_username'] = $user['username'];
