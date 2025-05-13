@@ -112,7 +112,7 @@ $conn->close();
 				</a>
 			</li>
 			<li>
-				<a href="logout.php" class="logout">
+				<a href="index.html" class="logout">
 					<i class='bx bxs-log-out-circle'></i>
 					<span class="text">Logout</span>
 				</a>
