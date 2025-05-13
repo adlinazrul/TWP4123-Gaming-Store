@@ -36,14 +36,15 @@ if ($admin_id) {
     $stmt->execute();
     $stmt->bind_result($image);
     if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'uploads/profile/' . $image; // Path to the image
+        $profile_image = 'image/' . $image; // Path to the image in 'image' folder
     } else {
-        $profile_image = 'default_profile.jpg'; // Default image if no profile image is found
+        $profile_image = 'image/default_profile.jpg'; // Default image in 'image' folder
     }
     $stmt->close();
 } else {
-    $profile_image = 'default_profile.jpg'; // Default image if not logged in
+    $profile_image = 'image/default_profile.jpg'; // Default image if not logged in
 }
+
 
 $conn->close();
 ?>
