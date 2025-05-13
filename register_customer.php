@@ -10,11 +10,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = password_hash($_POST["password"], PASSWORD_BCRYPT); // Hash password for security
 
     // Insert into database
-    $sql = "INSERT INTO customers (first_name, last_name, email, phone, password) 
-            VALUES (?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO customers (first_name, last_name, email, phone, address, password) 
+            VALUES (?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sssss", $first_name, $last_name, $email, $phone, $password);
+    $stmt->bind_param("ssssss", $first_name, $last_name, $email, $phone, $address, $password);
 
     if ($stmt->execute()) {
         echo "New customer registered successfully";
