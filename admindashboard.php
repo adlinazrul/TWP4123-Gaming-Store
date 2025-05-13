@@ -1,22 +1,41 @@
 <?php
-session_start();
-include 'db_connection.php'; // Replace with your actual DB connection file
+// Database connection
+$servername = "localhost";
+$username = "root"; // Use your MySQL username
+$password = ""; // Use your MySQL password
+$dbname = "gaming_store"; // Use your database name
 
-$admin_id = $_SESSION['admin_id'] ?? null;
-$profile_image = 'image/default.jpg'; // default fallback image
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Assuming you have a session or other way to get the logged-in admin ID
+$admin_id = $_SESSION['admin_id']; // Example session variable
 
 if ($admin_id) {
-    $query = "SELECT profile_image FROM admins WHERE id = ?";
+    // Correct SQL query to fetch the profile image (use 'image' column)
+    $query = "SELECT image FROM admins WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $admin_id);
     $stmt->execute();
     $stmt->bind_result($image);
     if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'uploads/profile/' . $image;
+        $profile_image = 'uploads/profile/' . $image; // Path to the image
+    } else {
+        $profile_image = 'default_profile.jpg'; // Default image if no profile image is found
     }
     $stmt->close();
+} else {
+    $profile_image = 'default_profile.jpg'; // Default image if not logged in
 }
+
+$conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
