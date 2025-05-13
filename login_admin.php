@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['admin_email'] = $user['email'];
 
             // Redirect to admin dashboard
-            header("Location: admindashboard.html");
+            header("Location: admindashboard.php");
             exit();
         } else {
             echo "Incorrect password.";
