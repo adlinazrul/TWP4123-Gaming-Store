@@ -98,7 +98,7 @@ if ($admin_id) {
 <section id="sidebar">
 <a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
     <ul class="side-menu top">
-        <li><a href="admindashboard.html"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
+        <li><a href="admindashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
         <li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
         <li><a href="manage_category.php"><i class='bx bxs-category'></i><span class="text">Category Management</span></a></li>
         <li class="active"><a href="order.php"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
@@ -122,7 +122,7 @@ if ($admin_id) {
             </div>
         </form>
         <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
-        <a href="profile.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
+        <a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
     </nav>
 
     <main>

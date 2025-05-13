@@ -228,7 +228,7 @@ $result = mysqli_query($conn, $sql);
 			<a href="#" class="notification">
 				<i class='bx bxs-bell'></i>
 			</a>
-			<a href="profile.php" class="profile">
+			<a href="profile_admin.php" class="profile">
 				<img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture">
 			</a>
 		</nav>
