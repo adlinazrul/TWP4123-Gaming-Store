@@ -1,4 +1,53 @@
 <?php
+
+session_start();
+
+// Check if the session variable is set
+if (isset($_SESSION['admin_id'])) {
+    $admin_id = $_SESSION['admin_id'];
+} else {
+    // Handle the case when the admin is not logged in (e.g., redirect to login page)
+    header("Location: login_admin.php");
+    exit;
+}
+
+// Database connection
+$servername = "localhost";
+$username = "root"; // Use your MySQL username
+$password = ""; // Use your MySQL password
+$dbname = "gaming_store"; // Use your database name
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Assuming you have a session or other way to get the logged-in admin ID
+$admin_id = $_SESSION['admin_id']; // Example session variable
+
+if ($admin_id) {
+    // Correct SQL query to fetch the profile image (use 'image' column)
+    $query = "SELECT image FROM admin_list WHERE id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $admin_id);
+    $stmt->execute();
+    $stmt->bind_result($image);
+    if ($stmt->fetch() && !empty($image)) {
+        $profile_image = 'image/' . $image; // Path to the image in 'image' folder
+    } else {
+        $profile_image = 'image/default_profile.jpg'; // Default image in 'image' folder
+    }
+    $stmt->close();
+} else {
+    $profile_image = 'image/default_profile.jpg'; // Default image if not logged in
+}
+
+
+$conn->close();
+
 // Include your database connection
 include 'database.php';
 
@@ -111,7 +160,7 @@ $result = mysqli_query($conn, $sql);
 		</a>
 		<ul class="side-menu top">
 			<li>
-				<a href="admindashboard.html">
+				<a href="admindashboard.php">
 					<i class='bx bxs-dashboard'></i>
 					<span class="text">Dashboard</span>
 				</a>
@@ -179,8 +228,8 @@ $result = mysqli_query($conn, $sql);
 			<a href="#" class="notification">
 				<i class='bx bxs-bell'></i>
 			</a>
-			<a href="#" class="profile">
-				<img src="image/adlina.jpg">
+			<a href="profile.php" class="profile">
+				<img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture">
 			</a>
 		</nav>
 		<!-- NAVBAR -->

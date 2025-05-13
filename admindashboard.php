@@ -1,37 +1,52 @@
 <?php
+
 session_start();
 
-// Check if the user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: admindashboard.php"); // Redirect to login if not logged in
-    exit();
-}
-
-// Include your database connection file
-include('db_connection.php'); 
-
-// Get the logged-in user's ID from the session
-$user_id = $_SESSION['user_id'];
-
-// Query to fetch the user's profile details
-$sql = "SELECT name, position, profile_image FROM users WHERE user_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    $user = $result->fetch_assoc();
-    $name = $user['name'];
-    $position = $user['position'];
-    $profile_image = $user['profile_image'];
+// Check if the session variable is set
+if (isset($_SESSION['admin_id'])) {
+    $admin_id = $_SESSION['admin_id'];
 } else {
-    // If no user is found, redirect or show an error
-    header("Location: admindasboard.php");
-    exit();
+    // Handle the case when the admin is not logged in (e.g., redirect to login page)
+    header("Location: login_admin.php");
+    exit;
 }
 
-$stmt->close();
+// Database connection
+$servername = "localhost";
+$username = "root"; // Use your MySQL username
+$password = ""; // Use your MySQL password
+$dbname = "gaming_store"; // Use your database name
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Assuming you have a session or other way to get the logged-in admin ID
+$admin_id = $_SESSION['admin_id']; // Example session variable
+
+if ($admin_id) {
+    // Correct SQL query to fetch the profile image (use 'image' column)
+    $query = "SELECT image FROM admin_list WHERE id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $admin_id);
+    $stmt->execute();
+    $stmt->bind_result($image);
+    if ($stmt->fetch() && !empty($image)) {
+        $profile_image = 'image/' . $image; // Path to the image in 'image' folder
+    } else {
+        $profile_image = 'image/default_profile.jpg'; // Default image in 'image' folder
+    }
+    $stmt->close();
+} else {
+    $profile_image = 'image/default_profile.jpg'; // Default image if not logged in
+}
+
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -39,16 +54,11 @@ $stmt->close();
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-	<!-- Boxicons -->
 	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-	<!-- My CSS -->
 	<link rel="stylesheet" href="admindashboard.css">
-
 	<title>Admin</title>
 </head>
 <body>
-
 
 	<!-- SIDEBAR -->
 	<section id="sidebar">
@@ -59,31 +69,37 @@ $stmt->close();
 		<ul class="side-menu top">
 			<li class="active">
 				<a href="#">
-					<i class='bx bxs-dashboard' ></i>
+					<i class='bx bxs-dashboard'></i>
 					<span class="text">Dashboard</span>
 				</a>
 			</li>
 			<li>
 				<a href="manageproduct.php">
-					<i class='bx bxs-shopping-bag-alt' ></i>
+					<i class='bx bxs-shopping-bag-alt'></i>
 					<span class="text">Product Management</span>
 				</a>
 			</li>
 			<li>
+				<a href="manage_category.php">
+					<i class='bx bxs-category'></i>
+					<span class="text">Category Management</span>
+				</a>
+			</li>
+			<li>
 				<a href="order.php">
-					<i class='bx bxs-doughnut-chart' ></i>
+					<i class='bx bxs-doughnut-chart'></i>
 					<span class="text">Order</span>
 				</a>
 			</li>
 			<li>
 				<a href="customer_list.php">
-					<i class='bx bxs-user' ></i>
+					<i class='bx bxs-user'></i>
 					<span class="text">Customer</span>
 				</a>
 			</li>
 			<li>
 				<a href="addadmin.php">
-					<i class='bx bxs-group' ></i>
+					<i class='bx bxs-group'></i>
 					<span class="text">Admin</span>
 				</a>
 			</li>
@@ -91,48 +107,40 @@ $stmt->close();
 		<ul class="side-menu">
 			<li>
 				<a href="#">
-					<i class='bx bxs-cog' ></i>
+					<i class='bx bxs-cog'></i>
 					<span class="text">Settings</span>
 				</a>
 			</li>
 			<li>
 				<a href="index.html" class="logout">
-					<i class='bx bxs-log-out-circle' ></i>
+					<i class='bx bxs-log-out-circle'></i>
 					<span class="text">Logout</span>
 				</a>
 			</li>
 		</ul>
 	</section>
-	<!-- SIDEBAR -->
-
-
 
 	<!-- CONTENT -->
 	<section id="content">
 		<!-- NAVBAR -->
 		<nav>
-			<i class='bx bx-menu' ></i> 
-			<a href="managecategory.php" class="nav-link">Categories</a>
+			<i class='bx bx-menu'></i>
+			<a href="managecategory.html" class="nav-link">Categories</a>
 			<form action="#">
 				<div class="form-input">
 					<input type="search" placeholder="Search...">
-					<button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
+					<button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
 				</div>
 			</form>
 			
 			<a href="#" class="notification">
-				<i class='bx bxs-bell' ></i>
+				<i class='bx bxs-bell'></i>
 				<span class="num"></span>
 			</a>
 			<a href="profile.php" class="profile">
-                <img src="images/<?php echo $profile_image; ?>" alt="Profile Image">
-                 <div class="dropdown-content">
-                    <p><strong>Name:</strong> <?php echo $name; ?></p>
-                    <p><strong>Position:</strong> <?php echo $position; ?></p>
-                </div>
-            </a>
+				<img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture">
+			</a>
 		</nav>
-		<!-- NAVBAR -->
 
 		<!-- MAIN -->
 		<main>
@@ -140,38 +148,34 @@ $stmt->close();
 				<div class="left">
 					<h1>Dashboard</h1>
 					<ul class="breadcrumb">
-						<li>
-							<a href="#">Dashboard</a>
-						</li>
-						<li><i class='bx bx-chevron-right' ></i></li>
-						<li>
-							<a class="active" href="#">Home</a>
-						</li>
+						<li><a href="#">Dashboard</a></li>
+						<li><i class='bx bx-chevron-right'></i></li>
+						<li><a class="active" href="#">Home</a></li>
 					</ul>
 				</div>
 				<a href="#" class="btn-download">
-					<i class='bx bxs-cloud-download' ></i>
+					<i class='bx bxs-cloud-download'></i>
 					<span class="text">Download PDF</span>
 				</a>
 			</div>
 
 			<ul class="box-info">
 				<li>
-					<i class='bx bxs-calendar-check' ></i>
+					<i class='bx bxs-calendar-check'></i>
 					<span class="text">
 						<h3>1020</h3>
 						<p>New Order</p>
 					</span>
 				</li>
 				<li>
-					<i class='bx bxs-group' ></i>
+					<i class='bx bxs-group'></i>
 					<span class="text">
 						<h3>2834</h3>
 						<p>Visitors</p>
 					</span>
 				</li>
 				<li>
-					<i class='bx bxs-dollar-circle' ></i>
+					<i class='bx bxs-dollar-circle'></i>
 					<span class="text">
 						<h3>RM 2543</h3>
 						<p>Total Sales</p>
@@ -179,13 +183,12 @@ $stmt->close();
 				</li>
 			</ul>
 
-
 			<div class="table-data">
 				<div class="order">
 					<div class="head">
 						<h3>Recent Orders</h3>
-						<i class='bx bx-search' ></i>
-						<i class='bx bx-filter' ></i>
+						<i class='bx bx-search'></i>
+						<i class='bx bx-filter'></i>
 					</div>
 					<table>
 						<thead>
@@ -197,70 +200,40 @@ $stmt->close();
 						</thead>
 						<tbody>
 							<tr>
-								<td>
-									<img src="image/people1.jpg">
-									<p>Kevin</p>
-								</td>
+								<td><img src="image/people1.jpg"><p>Kevin</p></td>
 								<td>01-01-2025</td>
 								<td><span class="status completed">Completed</span></td>
 							</tr>
 							<tr>
-								<td>
-									<img src="image/people2.jpg">
-									<p>Brian</p>
-								</td>
+								<td><img src="image/people2.jpg"><p>Brian</p></td>
 								<td>06-01-2025</td>
 								<td><span class="status pending">Pending</span></td>
 							</tr>
 							<tr>
-								<td>
-									<img src="image/woman1.jpg">
-									<p>Camila</p>
-								</td>
+								<td><img src="image/woman1.jpg"><p>Camila</p></td>
 								<td>07-02-2025</td>
 								<td><span class="status process">Process</span></td>
 							</tr>
-				
 						</tbody>
 					</table>
 				</div>
 				<div class="todo">
 					<div class="head">
-						<h3>To do </h3>
-						<i class='bx bx-plus' ></i>
-						<i class='bx bx-filter' ></i>
+						<h3>To do</h3>
+						<i class='bx bx-plus'></i>
+						<i class='bx bx-filter'></i>
 					</div>
 					<ul class="todo-list">
-						<li class="completed">
-							<p>Todo List</p>
-							<i class='bx bx-dots-vertical-rounded' ></i>
-						</li>
-						<li class="completed">
-							<p>Todo List</p>
-							<i class='bx bx-dots-vertical-rounded' ></i>
-						</li>
-						<li class="not-completed">
-							<p>Todo List</p>
-							<i class='bx bx-dots-vertical-rounded' ></i>
-						</li>
-						<li class="completed">
-							<p>Todo List</p>
-							<i class='bx bx-dots-vertical-rounded' ></i>
-						</li>
-						<li class="not-completed">
-							<p>Todo List</p>
-							<i class='bx bx-dots-vertical-rounded' ></i>
-						</li>
+						<li class="completed"><p>Todo List</p><i class='bx bx-dots-vertical-rounded'></i></li>
+						<li class="completed"><p>Todo List</p><i class='bx bx-dots-vertical-rounded'></i></li>
+						<li class="not-completed"><p>Todo List</p><i class='bx bx-dots-vertical-rounded'></i></li>
+						<li class="completed"><p>Todo List</p><i class='bx bx-dots-vertical-rounded'></i></li>
+						<li class="not-completed"><p>Todo List</p><i class='bx bx-dots-vertical-rounded'></i></li>
 					</ul>
 				</div>
 			</div>
 		</main>
-		<!--MAIN-->
 	</section>
-	<!-- CONTENT -->
-
-
-	
 
 	<script src="script.js"></script>
 </body>
