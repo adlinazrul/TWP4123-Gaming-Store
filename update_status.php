@@ -6,39 +6,32 @@ if (!isset($_SESSION['admin_id'])) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $id = $_POST['id'] ?? null;
-    $status_ordered = $_POST['status_ordered'] ?? null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $order_id = intval($_POST['order_id'] ?? 0);
+    $statuses = $_POST['status_order'] ?? [];
+    $item_ids = $_POST['item_id'] ?? [];
 
-    if ($id && $status_ordered) {
-        $servername = "localhost";
-        $username = "root";
-        $password = "";
-        $dbname = "gaming_store";
-
-        $conn = new mysqli($servername, $username, $password, $dbname);
-
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
-
-        $allowed_status = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-        if (!in_array($status_ordered, $allowed_status)) {
-            die("Invalid status");
-        }
-
-        $stmt = $conn->prepare("UPDATE items_ordered SET status_ordered = ? WHERE id = ?");
-        $stmt->bind_param("si", $status_ordered, $id);
-        $stmt->execute();
-        $stmt->close();
-        $conn->close();
-
-        header("Location: order.php");
-        exit;
-    } else {
-        die("Missing parameters");
+    $conn = new mysqli("localhost", "root", "", "gaming_store");
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
     }
-} else {
-    die("Invalid request");
+
+    $stmt = $conn->prepare("UPDATE items_ordered SET status_order = ? WHERE id = ?");
+    if (!$stmt) {
+        die("Prepare failed: " . $conn->error);
+    }
+
+    foreach ($item_ids as $index => $item_id) {
+        $status = $statuses[$index] ?? '';
+        $stmt->bind_param("si", $status, $item_id);
+        $stmt->execute();
+    }
+
+    $stmt->close();
+    $conn->close();
+
+    // Redirect back to the same order details page
+    header("Location: order.php?order_id=" . $order_id);
+    exit;
 }
 ?>

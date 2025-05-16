@@ -11,16 +11,13 @@ $username = "root";
 $password = "";
 $dbname = "gaming_store";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get the order ID from the URL
 $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
 
-// Fetch order details
 $stmt = $conn->prepare("SELECT * FROM items_ordered WHERE order_id = ?");
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
@@ -31,13 +28,11 @@ if ($result->num_rows == 0) {
     exit;
 }
 
-// Fetch all items into an array to use twice (once for total calculation)
 $items = [];
 while ($row = $result->fetch_assoc()) {
     $items[] = $row;
 }
 
-// Get admin profile image
 $admin_id = $_SESSION['admin_id'];
 $query = "SELECT image FROM admin_list WHERE id = ?";
 $img_stmt = $conn->prepare($query);
@@ -51,48 +46,71 @@ $img_stmt->close();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Order Details</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="manageadmin.css" />
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        table th, table td {
-            padding: 12px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-        table img {
-            border-radius: 5px;
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-        }
-        .details-container {
-            padding: 20px;
-        }
-        .total-table {
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: 0;
-            border: 1px solid #ddd;
-        }
-        .total-table th, .total-table td {
-            padding: 10px;
-            text-align: right;
-            border: none;
-            font-weight: bold;
-        }
-        select.status-select {
-            padding: 5px;
-            border-radius: 4px;
-        }
-    </style>
+<meta charset="UTF-8" />
+<title>Order Details</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+<link rel="stylesheet" href="manageadmin.css" />
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    table th, table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+    table img {
+        border-radius: 5px;
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+    }
+    .details-container {
+        padding: 20px;
+    }
+    .total-table {
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: 0;
+        border: 1px solid #ddd;
+    }
+    .total-table th, .total-table td {
+        padding: 10px;
+        text-align: right;
+        border: none;
+        font-weight: bold;
+    }
+    select.status-select {
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        font-weight: 600;
+        color: #333;
+        cursor: pointer;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    select.status-select:hover {
+        background-color: #e0e0e0;
+        border-color: #888;
+    }
+    button.update-btn {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    button.update-btn:hover {
+        background-color: #45a049;
+    }
+</style>
 </head>
 <body>
 
@@ -163,7 +181,7 @@ $img_stmt->close();
                                 <td><?= number_format($row['price_items'], 2) ?></td>
                                 <td><?= htmlspecialchars($row['quantity_items']) ?></td>
                                 <td>
-                                    <select name="status_order[<?= $index ?>]" class="status-select">
+                                    <select name="status_order[<?= $index ?>]" class="status-select" required>
                                         <?php
                                         $statuses = ['Pending', 'Processing', 'Completed', 'Cancelled'];
                                         foreach ($statuses as $status) {
@@ -178,14 +196,12 @@ $img_stmt->close();
                                 <td><?= nl2br(htmlspecialchars($row['address_cust'])) ?></td>
                                 <td><?= htmlspecialchars($row['date']) ?></td>
                             </tr>
-                            <!-- Hidden input to keep track of which item -->
                             <input type="hidden" name="item_id[<?= $index ?>]" value="<?= $row['id'] ?>">
                         <?php } ?>
                     </tbody>
                 </table>
 
                 <?php
-                // Calculate total price
                 $total_price = 0;
                 foreach ($items as $row) {
                     $total_price += $row['price_items'] * $row['quantity_items'];
@@ -200,7 +216,7 @@ $img_stmt->close();
                 </table>
 
                 <div style="text-align: right; margin-top: 10px;">
-                    <button type="submit" style="padding: 10px 20px; font-size: 16px;">Update Status</button>
+                    <button type="submit" class="update-btn">Update Status</button>
                 </div>
             </form>
         </div>
