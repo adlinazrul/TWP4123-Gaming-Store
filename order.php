@@ -176,7 +176,7 @@ $img_stmt->close();
                     <tbody>
                         <?php foreach ($items as $index => $row) { ?>
                             <tr>
-                                <td><img src="uploads/<?= htmlspecialchars($row['image_items']) ?>" alt="Product Image"></td>
+                                <td><img src="/TWP4123-Gaming-Store/<?= htmlspecialchars($row['image_items']) ?>" alt="Product Image" /></td>
                                 <td><?= htmlspecialchars($row['product_name']) ?></td>
                                 <td><?= number_format($row['price_items'], 2) ?></td>
                                 <td><?= htmlspecialchars($row['quantity_items']) ?></td>
