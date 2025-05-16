@@ -1,49 +1,67 @@
 <?php
 session_start();
 
-if (isset($_SESSION['admin_id'])) {
-    $admin_id = $_SESSION['admin_id'];
-} else {
+if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
 
+$admin_id = $_SESSION['admin_id'];
+
+// DB connection setup
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "gaming_store";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$admin_id = $_SESSION['admin_id'];
-
-if ($admin_id) {
-    $query = "SELECT image FROM admin_list WHERE id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $admin_id);
-    $stmt->execute();
-    $stmt->bind_result($image);
-    if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'image/' . $image;
-    } else {
-        $profile_image = 'image/default_profile.jpg';
-    }
-    $stmt->close();
+// Fetch admin profile image
+$query = "SELECT image FROM admin_list WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $admin_id);
+$stmt->execute();
+$stmt->bind_result($image);
+if ($stmt->fetch() && !empty($image)) {
+    $profile_image = 'image/' . $image;
 } else {
     $profile_image = 'image/default_profile.jpg';
 }
+$stmt->close();
 
-// Fetch total orders count for chart
+// Fetch total orders count
 $orderCountQuery = "SELECT COUNT(DISTINCT order_id) AS total_orders FROM orders WHERE order_id > 0";
 $result = $conn->query($orderCountQuery);
-
 $totalOrders = 0;
 if ($result && $row = $result->fetch_assoc()) {
     $totalOrders = (int)$row['total_orders'];
+}
+
+// Fetch recent 5 orders with user info
+$recentOrders = [];
+$sql = "SELECT o.order_id, u.name AS username, o.order_date, o.status
+        FROM orders o
+        JOIN users u ON o.user_id = u.id
+        ORDER BY o.order_date DESC
+        LIMIT 5";
+$result = $conn->query($sql);
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $recentOrders[] = $row;
+    }
+}
+
+// Fetch recent 5 customers (example, adjust as needed)
+$recentCustomers = [];
+$sqlCust = "SELECT name FROM users ORDER BY created_at DESC LIMIT 5";
+$resultCust = $conn->query($sqlCust);
+if ($resultCust) {
+    while ($row = $resultCust->fetch_assoc()) {
+        $recentCustomers[] = $row['name'];
+    }
 }
 
 $conn->close();
@@ -56,8 +74,7 @@ $conn->close();
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet' />
 	<link rel="stylesheet" href="admindashboard.css" />
-	<title>Admin</title>
-	<!-- Chart.js CDN -->
+	<title>Admin Dashboard</title>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<style>
 		.chart-container {
@@ -181,15 +198,15 @@ $conn->close();
 				<li>
 					<i class='bx bxs-calendar-check'></i>
 					<span class="text">
-						<h3>1020</h3>
-						<p>New Order</p>
+						<h3><?php echo $totalOrders; ?></h3>
+						<p>New Orders</p>
 					</span>
 				</li>
 				<li>
 					<i class='bx bxs-group'></i>
 					<span class="text">
-						<h3>2834</h3>
-						<p>Visitors</p>
+						<h3><?php echo count($recentCustomers); ?></h3>
+						<p>Recent Customers</p>
 					</span>
 				</li>
 				<li>
@@ -260,47 +277,53 @@ $conn->close();
 							</tr>
 						</thead>
 						<tbody>
-							<tr>
-								<td><img src="image/people1.jpg" /><p>Kevin</p></td>
-								<td>01-01-2025</td>
-								<td><span class="status completed">Completed</span></td>
-							</tr>
-							<tr>
-								<td><img src="image/people2.jpg" /><p>Brian</p></td>
-								<td>06-01-2025</td>
-								<td><span class="status pending">Pending</span></td>
-							</tr>
-							<tr>
-								<td><img src="image/woman1.jpg" /><p>Camila</p></td>
-								<td>07-02-2025</td>
-								<td><span class="status process">Process</span></td>
-							</tr>
+							<?php foreach ($recentOrders as $order): ?>
+								<tr>
+									<td><p><?php echo htmlspecialchars($order['username']); ?></p></td>
+									<td><?php echo htmlspecialchars(date('d-m-Y', strtotime($order['order_date']))); ?></td>
+									<td>
+										<span class="status 
+											<?php 
+												echo $order['status'] === 'Completed' ? 'completed' : 
+													 ($order['status'] === 'Pending' ? 'pending' : 'process'); 
+											?>">
+											<?php echo htmlspecialchars($order['status']); ?>
+										</span>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+							<?php if(empty($recentOrders)) : ?>
+								<tr><td colspan="3" style="text-align:center;">No recent orders found</td></tr>
+							<?php endif; ?>
 						</tbody>
 					</table>
 				</div>
 
 				<div class="todo">
 					<div class="head">
-						<h3>Recent Customer</h3>
-						<i class='bx bx-plus'></i>
-						<i class='bx bx-filter'></i>
+						<h3>Recent Customers</h3>
 					</div>
 					<ul class="todo-list">
-						<li class="completed">
-							<p>Kevin</p>
-						</li>
-						<li class="completed">
-							<p>Brian</p>
-						</li>
-						<li class="not-completed">
-							<p>Camila</p>
-						</li>
+						<?php foreach ($recentCustomers as $customer): ?>
+							<li class="completed">
+								<p><?php echo htmlspecialchars($customer); ?></p>
+							</li>
+						<?php endforeach; ?>
+						<?php if(empty($recentCustomers)) : ?>
+							<li><p>No recent customers found</p></li>
+						<?php endif; ?>
 					</ul>
 				</div>
 			</div>
 		</main>
 	</section>
 
-	<script src="admindashboard.js"></script>
+	<script>
+		const btn = document.querySelector("nav .bx-menu");
+		const sidebar = document.getElementById("sidebar");
+		btn.onclick = function () {
+			sidebar.classList.toggle("active");
+		};
+	</script>
 </body>
 </html>
