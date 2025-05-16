@@ -166,6 +166,7 @@ $img_stmt->close();
                             <th>Product Name</th>
                             <th>Price (RM)</th>
                             <th>Quantity</th>
+                            <th>Total (RM)</th>
                             <th>Status</th>
                             <th>Customer Name</th>
                             <th>Contact</th>
@@ -174,39 +175,38 @@ $img_stmt->close();
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($items as $index => $row) { ?>
-                            <tr>
-                                <td><img src="/TWP4123-Gaming-Store/<?= htmlspecialchars($row['image_items']) ?>" alt="Product Image" /></td>
-                                <td><?= htmlspecialchars($row['product_name']) ?></td>
-                                <td><?= number_format($row['price_items'], 2) ?></td>
-                                <td><?= htmlspecialchars($row['quantity_items']) ?></td>
-                                <td>
-                                    <select name="status_order[<?= $index ?>]" class="status-select" required>
-                                        <?php
-                                        $statuses = ['Pending', 'Processing', 'Completed', 'Cancelled'];
-                                        foreach ($statuses as $status) {
-                                            $selected = ($status == $row['status_order']) ? 'selected' : '';
-                                            echo "<option value=\"$status\" $selected>$status</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </td>
-                                <td><?= htmlspecialchars($row['name_cust']) ?></td>
-                                <td><?= htmlspecialchars($row['num_tel_cust']) ?></td>
-                                <td><?= nl2br(htmlspecialchars($row['address_cust'])) ?></td>
-                                <td><?= htmlspecialchars($row['date']) ?></td>
-                            </tr>
-                            <input type="hidden" name="item_id[<?= $index ?>]" value="<?= $row['id'] ?>">
+                        <?php
+                        $total_price = 0;
+                        foreach ($items as $index => $row) {
+                            $item_total = $row['price_items'] * $row['quantity_items'];
+                            $total_price += $item_total;
+                        ?>
+                        <tr>
+                            <td><img src="/TWP4123-Gaming-Store/<?= htmlspecialchars($row['image_items']) ?>" alt="Product Image" /></td>
+                            <td><?= htmlspecialchars($row['product_name']) ?></td>
+                            <td><?= number_format($row['price_items'], 2) ?></td>
+                            <td><?= htmlspecialchars($row['quantity_items']) ?></td>
+                            <td><?= number_format($item_total, 2) ?></td>
+                            <td>
+                                <select name="status_order[<?= $index ?>]" class="status-select" required>
+                                    <?php
+                                    $statuses = ['Pending', 'Processing', 'Completed', 'Cancelled'];
+                                    foreach ($statuses as $status) {
+                                        $selected = ($status == $row['status_order']) ? 'selected' : '';
+                                        echo "<option value=\"$status\" $selected>$status</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </td>
+                            <td><?= htmlspecialchars($row['name_cust']) ?></td>
+                            <td><?= htmlspecialchars($row['num_tel_cust']) ?></td>
+                            <td><?= nl2br(htmlspecialchars($row['address_cust'])) ?></td>
+                            <td><?= htmlspecialchars($row['date']) ?></td>
+                        </tr>
+                        <input type="hidden" name="item_id[<?= $index ?>]" value="<?= $row['id'] ?>">
                         <?php } ?>
                     </tbody>
                 </table>
-
-                <?php
-                $total_price = 0;
-                foreach ($items as $row) {
-                    $total_price += $row['price_items'] * $row['quantity_items'];
-                }
-                ?>
 
                 <table class="total-table">
                     <tr>
