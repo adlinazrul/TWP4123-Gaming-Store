@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['last_name'] = $row["last_name"];
 
             // Redirect to index.html
-            header("Location: index.html");
+            header("Location: index.php");
             exit();
         } else {
             echo "Invalid password.";

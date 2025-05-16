@@ -1,3 +1,38 @@
+<?php
+session_start();
+
+// Check if the user is logged in
+if (!isset($_SESSION['email'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Database connection
+$host = "localhost";
+$user = "root";
+$password = "";
+$dbname = "gaming_store";
+
+$conn = new mysqli($host, $user, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch user information
+$email = $_SESSION['email'];
+$sql = "SELECT * FROM customers WHERE email = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+
+if (!$user) {
+    echo "User not found!";
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,11 +43,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ff0000;
-            --secondary: #d10000;
+            --primary: #ff2a6d;
+            --secondary: #05d9e8;
             --dark: #0d0221;
-            --light: #ffffff;
-            --accent: #ff3333;
+            --light: #d1f7ff;
+            --accent: #f6019d;
         }
         
         body {
@@ -25,12 +60,14 @@
         }
         
         header {
-            background: var(--dark);
+            background: linear-gradient(135deg, var(--dark) 0%, #1a0638 100%);
+            color: white;
             padding: 15px 0;
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(5, 217, 232, 0.2);
+            border-bottom: 1px solid var(--secondary);
         }
         
         .nav-menu {
@@ -46,8 +83,11 @@
             font-family: 'Orbitron', sans-serif;
             font-size: 2rem;
             font-weight: 700;
-            color: var(--primary);
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 42, 109, 0.3);
         }
         
         .nav-links {
@@ -60,11 +100,29 @@
             text-decoration: none;
             font-family: 'Orbitron', sans-serif;
             font-weight: 400;
+            letter-spacing: 1px;
+            position: relative;
+            padding: 5px 0;
             transition: all 0.3s ease;
         }
         
         .nav-links a:hover {
-            color: var(--primary);
+            color: var(--secondary);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--secondary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
         }
         
         .icons-left, .icons-right {
@@ -80,7 +138,8 @@
         }
         
         .icons-left i:hover, .icons-right i:hover {
-            color: var(--primary);
+            color: var(--secondary);
+            transform: scale(1.1);
         }
         
         .banner {
@@ -90,6 +149,7 @@
             position: relative;
             overflow: hidden;
             border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(5, 217, 232, 0.2);
         }
         
         .hero {
@@ -111,8 +171,11 @@
             font-family: 'Orbitron', sans-serif;
             font-size: 4rem;
             margin: 0;
-            color: var(--primary);
-            text-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(5, 217, 232, 0.5);
         }
         
         .hero p {
@@ -122,7 +185,7 @@
         }
         
         .cta-button {
-            background: var(--primary);
+            background: linear-gradient(45deg, var(--primary), var(--accent));
             color: white;
             border: none;
             padding: 15px 40px;
@@ -131,11 +194,12 @@
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 42, 109, 0.4);
         }
         
         .cta-button:hover {
-            background: var(--accent);
             transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 42, 109, 0.6);
         }
         
         .featured-section {
@@ -149,7 +213,18 @@
             font-size: 2.5rem;
             text-align: center;
             margin-bottom: 50px;
-            color: var(--primary);
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
         }
         
         .products-grid {
@@ -163,11 +238,14 @@
             border-radius: 10px;
             overflow: hidden;
             transition: all 0.3s ease;
+            border: 1px solid rgba(5, 217, 232, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         .product-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(255, 0, 0, 0.2);
+            box-shadow: 0 15px 30px rgba(5, 217, 232, 0.2);
+            border: 1px solid rgba(5, 217, 232, 0.3);
         }
         
         .product-image {
@@ -183,7 +261,12 @@
         .product-info h3 {
             margin: 0 0 10px;
             font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
+            color: var(--secondary);
+        }
+        
+        .product-info p {
+            margin: 0 0 15px;
+            color: rgba(209, 247, 255, 0.7);
         }
         
         .product-price {
@@ -193,23 +276,21 @@
             margin-bottom: 15px;
         }
         
-        .view-product {
+        .add-to-cart {
             background: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
             padding: 8px 20px;
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: 'Orbitron', sans-serif;
             width: 100%;
-            text-decoration: none; 
         }
         
-        .view-product:hover {
-            background: var(--primary);
+        .add-to-cart:hover {
+            background: var(--secondary);
             color: var(--dark);
-            text-decoration: none; 
         }
         
         .deals-section {
@@ -227,11 +308,12 @@
             padding: 30px;
             text-align: center;
             transition: all 0.3s ease;
+            border: 1px solid rgba(5, 217, 232, 0.1);
         }
         
         .deal-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.2);
+            box-shadow: 0 10px 25px rgba(5, 217, 232, 0.2);
         }
         
         .deal-icon {
@@ -242,20 +324,38 @@
         
         .deal-card h3 {
             font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
+            color: var(--secondary);
         }
         
         .newsletter-section {
-            background: var(--dark);
+            background: linear-gradient(135deg, #1a0638 0%, var(--dark) 100%);
             padding: 80px 30px;
             text-align: center;
-            border-top: 1px solid var(--primary);
-            border-bottom: 1px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .newsletter-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(5, 217, 232, 0.1) 0%, transparent 70%);
+            animation: pulse 15s infinite linear;
+        }
+        
+        @keyframes pulse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .newsletter-content {
             max-width: 600px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
         
         .newsletter-form {
@@ -273,8 +373,12 @@
             font-family: 'Rubik', sans-serif;
         }
         
+        .newsletter-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
         .newsletter-button {
-            background: var(--primary);
+            background: linear-gradient(45deg, var(--primary), var(--accent));
             color: white;
             border: none;
             padding: 0 30px;
@@ -285,7 +389,7 @@
         }
         
         .newsletter-button:hover {
-            background: var(--accent);
+            background: linear-gradient(45deg, var(--accent), var(--primary));
         }
         
         footer {
@@ -308,7 +412,7 @@
         }
         
         .footer-links a:hover {
-            color: var(--primary);
+            color: var(--secondary);
         }
         
         .social-icons {
@@ -325,27 +429,30 @@
         }
         
         .social-icons a:hover {
-            color: var(--primary);
+            color: var(--secondary);
+            transform: translateY(-3px);
         }
         
         .copyright {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(209, 247, 255, 0.5);
             font-size: 0.9rem;
             margin-top: 30px;
             padding-top: 20px;
-            border-top: 1px solid rgba(255, 0, 0, 0.1);
+            border-top: 1px solid rgba(5, 217, 232, 0.1);
         }
         
-        /* Mobile menu styles */
+        /* Overlay menu styles */
         #menuOverlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
             display: none;
             z-index: 2000;
+            transition: opacity 0.3s ease-in-out;
         }
         
         #menuContainer {
@@ -354,11 +461,12 @@
             left: -400px;
             width: 400px;
             height: 100%;
-            background: var(--dark);
+            background: linear-gradient(135deg, #1a0638 0%, var(--dark) 100%);
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            transition: left 0.4s ease;
+            transition: left 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             z-index: 2001;
-            border-right: 1px solid var(--primary);
+            border-right: 1px solid var(--secondary);
         }
         
         #closeMenu {
@@ -368,6 +476,12 @@
             position: absolute;
             top: 20px;
             right: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        #closeMenu:hover {
+            transform: rotate(90deg);
+            color: var(--secondary);
         }
         
         #menuOverlay.active {
@@ -378,9 +492,13 @@
             left: 0;
         }
         
+        #menuContent {
+            margin-top: 50px;
+        }
+        
         .menu-item {
             padding: 15px 0;
-            border-bottom: 1px solid rgba(255, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(5, 217, 232, 0.1);
         }
         
         .menu-item a {
@@ -393,7 +511,8 @@
         }
         
         .menu-item a:hover {
-            color: var(--primary);
+            color: var(--secondary);
+            padding-left: 10px;
         }
         
         /* Responsive adjustments */
@@ -460,7 +579,7 @@
             </div>
             
             <div class="icons-right">
-                <a href="custlogin.html">
+                <a href="custeditprofile.html">
                     <i class="fas fa-user"></i>
                 </a>
                 <i class="fas fa-shopping-cart"></i>
@@ -493,39 +612,37 @@
     <section class="featured-section">
         <h2 class="section-title">FEATURED PRODUCTS</h2>
         <div class="products-grid">
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1592155931584-901ac15763e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>DualSense Controller</h3>
-                    <div class="product-price">RM269.00</div>
-                    <a href="NEW_PS5.html" class="view-product">View Product</a>
-                </div>
-            </div>
-    
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://wallpapercave.com/wp/wp9957698.jpg');"></div>
-                <div class="product-info">
-                    <h3>Nintendo Switch</h3>
-                    <div class="product-price">RM1,499.00</div>
-                    <a href="NEW_PS5.html" class="view-product">View Product</a>
-                </div>
-            </div>
-    
-            <!-- Product 3 -->
             <div class="product-card">
                 <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1607853202273-797f1c22a38e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
                 <div class="product-info">
                     <h3>PS5 PRO CONTROLLER</h3>
-                    <div class="product-price">RM2,399.00</div>
-                    <a href="NEW_PS5.html" class="view-product">View Product</a>
+                    <p>Enhanced precision with adaptive triggers and haptic feedback</p>
+                    <div class="product-price">$89.99</div>
+                    <button class="add-to-cart">ADD TO CART</button>
+                </div>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1591488320449-011701bb6704?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                <div class="product-info">
+                    <h3>XBOX SERIES X</h3>
+                    <p>Next-gen performance with 12 teraflops of power</p>
+                    <div class="product-price">$499.99</div>
+                    <button class="add-to-cart">ADD TO CART</button>
+                </div>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1592155931584-901ac15763e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                <div class="product-info">
+                    <h3>NINTENDO SWITCH OLED</h3>
+                    <p>Vivid 7-inch OLED screen with enhanced audio</p>
+                    <div class="product-price">$349.99</div>
+                    <button class="add-to-cart">ADD TO CART</button>
                 </div>
             </div>
         </div>
     </section>
-    
-
 
     <!-- Deals Section -->
     <section class="featured-section">
@@ -568,7 +685,6 @@
             </form>
         </div>
     </section>
-
 
     <!-- Footer -->
     <footer>
