@@ -1,12 +1,11 @@
 <?php
-
 session_start();
 
 // Check if the session variable is set
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 } else {
-    // Handle the case when the admin is not logged in (e.g., redirect to login page)
+    // Redirect if not logged in
     header("Location: login_admin.php");
     exit;
 }
@@ -33,37 +32,34 @@ if ($result === false) {
     die("Error: " . $conn->error);
 }
 
+// Fetch admin profile image
 if ($admin_id) {
-    // Correct SQL query to fetch the profile image (use 'image' column)
     $query = "SELECT image FROM admin_list WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $admin_id);
     $stmt->execute();
     $stmt->bind_result($image);
     if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'image/' . $image; // Path to the image in 'image' folder
+        $profile_image = 'image/' . $image;
     } else {
-        $profile_image = 'image/default_profile.jpg'; // Default image in 'image' folder
+        $profile_image = 'image/default_profile.jpg';
     }
     $stmt->close();
 } else {
-    $profile_image = 'image/default_profile.jpg'; // Default image if not logged in
+    $profile_image = 'image/default_profile.jpg';
 }
-
-
 
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Order Management</title>
     <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="manageadmin.css">
+    <link rel="stylesheet" href="manageadmin.css" />
     <style>
-        /* Your custom CSS styles */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -79,24 +75,26 @@ if ($admin_id) {
             border-radius: 5px;
         }
 
-        table button {
-            padding: 5px 10px;
-            background-color: #ef4444;
-            color: white;
-            border: none;
+        select {
+            padding: 5px;
             border-radius: 5px;
+            border: 1px solid #ccc;
             cursor: pointer;
         }
 
-        table button:hover {
-            background-color: #dc2626;
+        select:hover {
+            border-color: #888;
+        }
+
+        form {
+            margin: 0;
         }
     </style>
 </head>
 <body>
 
 <section id="sidebar">
-<a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
+    <a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
     <ul class="side-menu top">
         <li><a href="admindashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
         <li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
@@ -117,12 +115,12 @@ if ($admin_id) {
         <a href="managecategory.html" class="nav-link">Categories</a>
         <form action="#">
             <div class="form-input">
-                <input type="search" placeholder="Search...">
+                <input type="search" placeholder="Search..." />
                 <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
             </div>
         </form>
         <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
-        <a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
+        <a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture" /></a>
     </nav>
 
     <main>
@@ -145,21 +143,33 @@ if ($admin_id) {
                         <tr>
                             <th>Order ID</th>
                             <th>Product Name</th>
-                            <th>Price</th>
+                            <th>Price (RM)</th>
                             <th>Quantity</th>
                             <th>Image</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php 
-                        // Loop through the results and display each order
                         while ($row = $result->fetch_assoc()) { ?>
                             <tr>
-                                <td><?= $row['order_id'] ?></td>
-                                <td><?= $row['product_name'] ?></td>
-                                <td>RM <?= number_format($row['price_items'], 2) ?></td>
-                                <td><?= $row['quantity_items'] ?></td>
-                                <td><img src="uploads/<?= $row['image_items'] ?>" width="50"></td>
+                                <td><?= htmlspecialchars($row['order_id']) ?></td>
+                                <td><?= htmlspecialchars($row['product_name']) ?></td>
+                                <td><?= number_format($row['price_items'], 2) ?></td>
+                                <td><?= htmlspecialchars($row['quantity_items']) ?></td>
+                                <td><img src="uploads/<?= htmlspecialchars($row['image_items']) ?>" width="50" alt="Product Image" /></td>
+                                <td>
+                                    <form method="POST" action="update_status.php">
+                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                        <select name="status_ordered" onchange="this.form.submit()">
+                                            <option value="pending" <?= $row['status_ordered'] === 'pending' ? 'selected' : '' ?>>Pending</option>
+                                            <option value="processing" <?= $row['status_ordered'] === 'processing' ? 'selected' : '' ?>>Processing</option>
+                                            <option value="shipped" <?= $row['status_ordered'] === 'shipped' ? 'selected' : '' ?>>Shipped</option>
+                                            <option value="delivered" <?= $row['status_ordered'] === 'delivered' ? 'selected' : '' ?>>Delivered</option>
+                                            <option value="cancelled" <?= $row['status_ordered'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                        </select>
+                                    </form>
+                                </td>
                             </tr>
                         <?php } ?>
                     </tbody>
@@ -173,6 +183,5 @@ if ($admin_id) {
 </html>
 
 <?php 
-// Close connection
 $conn->close();
 ?>
