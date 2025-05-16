@@ -96,7 +96,7 @@ $conn->close();
             --red: #a93226; /* Changed from blue to deep red */
             --light-red: #f5d0ce; /* Light version of the red */
             --grey: #eee;
-            --dark-grey: #aaaaaa;
+            --dark-grey:rgb(83, 80, 80);
             --dark: #342e37;
             --red-alt: #c0392b; /* Alternative red */
             --yellow: #ffce26;
