@@ -1,50 +1,51 @@
 <?php
 session_start();
-require_once 'db_config.php';  // Include your database configuration file
+require_once 'db_config.php';  // include your DB connection
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['uname'];
     $password = $_POST['psw'];
-    $role = $_POST['role'];  // Get the selected role
+    $selectedRole = $_POST['role'];  // value from radio button
 
-    // Check if the fields are empty
-    if (empty($username) || empty($password) || empty($role)) {
+    if (empty($username) || empty($password) || empty($selectedRole)) {
         echo "Please fill in all fields and select a role.";
         exit();
     }
 
-    // Prepare SQL query to check if the user exists in the admin_list table
-    $stmt = $conn->prepare("SELECT * FROM admin_list WHERE username=?");
-    $stmt->bind_param("s", $username);  // Bind the username to the query
+    $stmt = $conn->prepare("SELECT * FROM admin_list WHERE username = ?");
+    $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        // Fetch the user data
         $user = $result->fetch_assoc();
 
-        // Verify the password (plain text check)
-        if ($password === $user['password']) {
-            // Set session variables
-            $_SESSION['admin_id'] = $user['id'];
-            $_SESSION['admin_username'] = $user['username'];
-            $_SESSION['admin_email'] = $user['email'];
+        if ($password === $user['password']) {  // you can switch to password_verify() if using hashed passwords
+            // Compare selected role with user_type in DB
+            if ($selectedRole === strtolower($user['user_type'])) {
+                // Set session variables
+                $_SESSION['admin_id'] = $user['id'];
+                $_SESSION['admin_username'] = $user['username'];
+                $_SESSION['admin_email'] = $user['email'];
 
-            // Redirect based on selected role
-            if ($role === "admin") {
-                header("Location: dashboard.php");
-                exit();
-            } elseif ($role === "superadmin") {
-                header("Location: admindashboard.php");
-                exit();
+                // Redirect based on role
+                if ($selectedRole === 'admin') {
+                    header("Location: dashboard.php");
+                    exit();
+                } elseif ($selectedRole === 'superadmin') {
+                    header("Location: admindashboard.php");
+                    exit();
+                } else {
+                    echo "Invalid role.";
+                }
             } else {
-                echo "Invalid role selected.";
+                echo "Role mismatch. You selected the wrong role.";
             }
         } else {
             echo "Incorrect password.";
         }
     } else {
-        echo "No such user found.";
+        echo "User not found.";
     }
 
     $stmt->close();
