@@ -1,280 +1,342 @@
 <?php
 session_start();
-require_once "connection.php"; // Your database connection
 
-// Example: get admin ID from session (adjust as needed)
-$admin_id = $_SESSION['admin_id'] ?? 1; // fallback to 1 for testing
+// Check if admin is logged in
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login_admin.php");
+    exit;
+}
 
-// Handle form submission to update profile
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Sanitize input
-    $username = $_POST['username'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $salary = $_POST['salary'] ?? '';
-    $password = $_POST['password'] ?? '';
-    
-    // Handle image upload if exists
-    $imageName = null;
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $imageTmpPath = $_FILES['image']['tmp_name'];
-        $imageName = basename($_FILES['image']['name']);
-        $uploadDir = "image/";
-        $uploadFile = $uploadDir . $imageName;
-        move_uploaded_file($imageTmpPath, $uploadFile);
-    }
+$admin_id = $_SESSION['admin_id'];
 
-    // Update query, only update image if new image uploaded
-    if ($imageName) {
-        $sql = "UPDATE admin_list SET username=?, email=?, salary=?, password=?, image=? WHERE id=?";
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "gaming_store";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Handle form submission to update data
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'];
+    $email = $_POST['email'];
+    $position = $_POST['position'];  // will not be changed because readonly in form
+    $salary = $_POST['salary'];
+    $password = $_POST['password'];
+
+    if (!empty($_FILES['image']['name'])) {
+        $image = $_FILES['image']['name'];
+        $target = "image/" . basename($image);
+        move_uploaded_file($_FILES['image']['tmp_name'], $target);
+
+        $sql = "UPDATE admin_list SET username=?, email=?, position=?, salary=?, password=?, image=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssissi", $username, $email, $salary, $password, $imageName, $admin_id);
+        $stmt->bind_param("ssssssi", $username, $email, $position, $salary, $password, $image, $admin_id);
     } else {
-        $sql = "UPDATE admin_list SET username=?, email=?, salary=?, password=? WHERE id=?";
+        $sql = "UPDATE admin_list SET username=?, email=?, position=?, salary=?, password=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssii", $username, $email, $salary, $password, $admin_id);
+        $stmt->bind_param("sssssi", $username, $email, $position, $salary, $password, $admin_id);
     }
-    $stmt->execute();
+
+    if ($stmt->execute()) {
+        echo "<script>alert('Profile updated successfully!'); window.location.href='admindashboard.php';</script>";
+    } else {
+        echo "Error updating profile: " . $stmt->error;
+    }
+
     $stmt->close();
 }
 
-// Fetch admin data from database
-$sql = "SELECT * FROM admin_list WHERE id = ?";
-$stmt = $conn->prepare($sql);
+$query = "SELECT * FROM admin_list WHERE id = ?";
+$stmt = $conn->prepare($query);
 $stmt->bind_param("i", $admin_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $admin = $result->fetch_assoc();
 $stmt->close();
-$conn->close();
 
-// Fallbacks for empty fields
-$imageSrc = !empty($admin['image']) ? "image/" . htmlspecialchars($admin['image']) : "image/default_profile.jpg";
-$role = htmlspecialchars($admin['role'] ?? 'Admin'); // Default role Admin if empty
+$conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Admin Profile</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f0f0f0;
-    margin: 0; padding: 0;
-  }
-  .container {
-    max-width: 480px;
-    margin: 40px auto;
-    background: #fff;
-    padding: 30px 40px 40px 40px;
-    border-radius: 15px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-  }
-  h2 {
-    text-align: center;
-    margin-bottom: 35px;
-    color: #333;
-  }
+    <title>Admin Profile</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+        }
 
-  /* Profile image wrapper */
-  .profile-image-wrapper {
-    position: relative;
-    width: 180px;
-    height: 180px;
-    margin: 0 auto 10px auto;
-    border-radius: 50%;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  }
-  .profile-image-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: filter 0.3s ease;
-  }
-  .profile-image-wrapper:hover img {
-    filter: brightness(0.5);
-  }
-  .overlay-text {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-weight: 700;
-    font-size: 18px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    user-select: none;
-  }
-  .profile-image-wrapper:hover .overlay-text,
-  .profile-image-wrapper:focus .overlay-text {
-    opacity: 1;
-  }
-  #imageInput {
-    display: none;
-  }
+        .container {
+            max-width: 600px;
+            margin: 60px auto 80px;
+            padding: 30px 30px 40px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
 
-  /* Role badge */
-  .role-badge {
-    max-width: 180px;
-    margin: 10px auto 30px auto;
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #ef4444, #f97316);
-    color: white;
-    font-weight: 700;
-    font-size: 16px;
-    border-radius: 30px;
-    text-align: center;
-    letter-spacing: 0.1em;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
-    user-select: none;
-    text-transform: uppercase;
-  }
+        h2 {
+            text-align: center;
+            color: #ef4444;
+            margin-bottom: 20px;
+        }
 
-  label {
-    display: block;
-    margin-bottom: 6px;
-    color: #444;
-    font-weight: 600;
-  }
-  input[type="text"], input[type="email"], input[type="number"], input[type="password"] {
-    width: 100%;
-    padding: 10px 14px;
-    margin-bottom: 22px;
-    border-radius: 10px;
-    border: 1.5px solid #ddd;
-    font-size: 16px;
-    transition: border-color 0.3s ease;
-  }
-  input[type="text"]:focus, input[type="email"]:focus, input[type="number"]:focus, input[type="password"]:focus {
-    outline: none;
-    border-color: #f97316;
-  }
-  input[readonly] {
-    background: #eee;
-    cursor: not-allowed;
-    color: #777;
-  }
+        /* Profile Image Container */
+        .profile-image-wrapper {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 10px auto;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transition: box-shadow 0.3s ease;
+        }
 
-  /* Password container and toggle button */
-  .password-container {
-    position: relative;
-  }
-  .toggle-password {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #f97316;
-    border: none;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-  }
-  .toggle-password:hover {
-    background: #ef4444;
-  }
+        .profile-image-wrapper:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
 
-  input[type="submit"] {
-    width: 100%;
-    background: #f97316;
-    color: white;
-    font-weight: 700;
-    font-size: 18px;
-    padding: 14px;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  input[type="submit"]:hover {
-    background: #ef4444;
-  }
-</style>
+        .profile-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-image-wrapper:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Overlay text on hover */
+        .overlay-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(239, 68, 68, 0.7); /* red with transparency */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            font-weight: 600;
+            font-size: 16px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            letter-spacing: 0.05em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            border-radius: 50%;
+            transition: opacity 0.3s ease;
+            user-select: none;
+            text-align: center;
+            padding: 0 10px; /* some padding for longer text */
+        }
+
+        .profile-image-wrapper:hover .overlay-text {
+            opacity: 1;
+        }
+
+        /* Role Badge */
+        .role-badge {
+            text-align: center;
+            margin: 10px auto 30px auto;
+            max-width: 200px;
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            padding: 8px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
+            letter-spacing: 0.1em;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            transition: transform 0.3s ease;
+            cursor: default;
+            text-transform: uppercase;
+        }
+
+        .role-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.8);
+        }
+
+        form label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        form input[type="text"],
+        form input[type="email"],
+        form input[type="number"],
+        form input[type="password"] {
+            width: 100%;
+            height: 40px;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        /* Readonly style for position input */
+        input[readonly] {
+            background: #eee;
+            cursor: not-allowed;
+        }
+
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-container input[type="password"],
+        .password-container input[type="text"] {
+            flex: 1;
+            padding-right: 90px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            height: 28px;
+            padding: 0 14px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-password:hover {
+            background-color: #dc2626;
+        }
+
+        /* Hide actual file input */
+        input[type="file"] {
+            display: none;
+        }
+
+        form input[type="submit"] {
+            margin-top: 25px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        form input[type="submit"]:hover {
+            background-color: #dc2626;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container" role="main" aria-label="Admin Profile Form">
-  <h2>My Profile</h2>
+<div class="container">
+    <h2>My Profile</h2>
 
-  <form method="post" enctype="multipart/form-data" id="profileForm" aria-describedby="profileDesc">
-    <div id="profileDesc" class="sr-only">Update your profile details including username, email, salary, and password. You can also change your profile image by clicking on it.</div>
+    <form method="post" enctype="multipart/form-data" id="profileForm">
+        <!-- Profile Image with overlay -->
+        <div class="profile-image-wrapper" id="imageWrapper" tabindex="0" aria-label="Change Profile Image">
+            <?php
+            $imgSrc = !empty($admin['image']) ? "image/" . htmlspecialchars($admin['image']) : "image/default_profile.jpg";
+            ?>
+            <img src="<?= $imgSrc ?>" alt="Profile Image" id="profileImage">
+            <div class="overlay-text">Change Image Profile</div>
+            <input type="file" name="image" id="imageInput" accept="image/*">
+        </div>
 
-    <div class="profile-image-wrapper" id="imageWrapper" tabindex="0" aria-label="Change Profile Image">
-      <img src="<?= $imageSrc ?>" alt="Profile Image" id="profileImage" />
-      <div class="overlay-text">Change Image Profile</div>
-      <input type="file" name="image" id="imageInput" accept="image/*" aria-label="Upload new profile image" />
-    </div>
+        <!-- Role Badge under profile image -->
+        <div class="role-badge" aria-label="User Role">
+            <?= htmlspecialchars($admin['user_type']) ?>
+        </div>
 
-    <div class="role-badge" aria-label="User Role Badge"><?= $role ?></div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required>
 
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required aria-required="true" />
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required>
 
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required aria-required="true" />
+        <label for="position">Position:</label>
+        <input type="text" id="position" name="position" value="<?= htmlspecialchars($admin['position']) ?>" readonly>
 
-    <label for="position">Position:</label>
-    <input type="text" id="position" name="position" value="<?= htmlspecialchars($admin['position']) ?>" readonly aria-readonly="true" />
+        <label for="salary">Salary:</label>
+        <input type="number" id="salary" name="salary" value="<?= htmlspecialchars($admin['salary']) ?>" min="0" required>
 
-    <label for="salary">Salary:</label>
-    <input type="number" id="salary" name="salary" value="<?= htmlspecialchars($admin['salary']) ?>" required aria-required="true" />
+        <label for="password">Password:</label>
+        <div class="password-container">
+            <input type="password" id="password" name="password" value="<?= htmlspecialchars($admin['password']) ?>" required>
+            <button type="button" id="togglePassword" class="toggle-password" aria-label="Show or hide password">Show</button>
+        </div>
 
-    <label for="password">Password:</label>
-    <div class="password-container">
-      <input type="password" id="password" name="password" value="<?= htmlspecialchars($admin['password']) ?>" required aria-required="true" />
-      <button type="button" class="toggle-password" onclick="togglePasswordVisibility()" aria-pressed="false" aria-label="Toggle password visibility">Show</button>
-    </div>
-
-    <input type="submit" value="Update Profile" />
-  </form>
+        <input type="submit" value="Update Profile">
+    </form>
 </div>
 
 <script>
-  function togglePasswordVisibility() {
+    // Toggle password visibility
+    const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
-    const toggleBtn = document.querySelector('.toggle-password');
-    if (passwordInput.type === 'password') {
-      passwordInput.type = 'text';
-      toggleBtn.textContent = 'Hide';
-      toggleBtn.setAttribute('aria-pressed', 'true');
-    } else {
-      passwordInput.type = 'password';
-      toggleBtn.textContent = 'Show';
-      toggleBtn.setAttribute('aria-pressed', 'false');
-    }
-  }
 
-  // Clicking the image wrapper triggers the hidden file input
-  document.getElementById('imageWrapper').addEventListener('click', () => {
-    document.getElementById('imageInput').click();
-  });
+    togglePassword.addEventListener('click', () => {
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            togglePassword.textContent = 'Hide';
+        } else {
+            passwordInput.type = 'password';
+            togglePassword.textContent = 'Show';
+        }
+    });
 
-  // Preview chosen image immediately
-  document.getElementById('imageInput').addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        document.getElementById('profileImage').src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  });
+    // Clicking on the profile image wrapper triggers file input
+    const imageWrapper = document.getElementById('imageWrapper');
+    const imageInput = document.getElementById('imageInput');
 
-  // Keyboard accessibility for imageWrapper (Enter key)
-  document.getElementById('imageWrapper').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      document.getElementById('imageInput').click();
-    }
-  });
+    imageWrapper.addEventListener('click', () => {
+        imageInput.click();
+    });
+
+    // Preview new profile image when selected
+    imageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profileImage').src = e.target.result;
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Allow keyboard access: press Enter or Space on image wrapper to open file dialog
+    imageWrapper.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            imageInput.click();
+        }
+    });
 </script>
 
 </body>
