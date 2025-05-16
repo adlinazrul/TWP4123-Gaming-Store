@@ -23,7 +23,7 @@ if ($conn->connect_error) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $position = $_POST['position'];
+    $position = $_POST['position'];  // will not be changed because readonly in form
     $salary = $_POST['salary'];
     $password = $_POST['password'];
 
@@ -95,7 +95,7 @@ $conn->close();
             position: relative;
             width: 140px;
             height: 140px;
-            margin: 0 auto 30px auto;
+            margin: 0 auto 10px auto;
             cursor: pointer;
             border-radius: 50%;
             overflow: hidden;
@@ -149,6 +149,31 @@ $conn->close();
             opacity: 1;
         }
 
+        /* Role Badge */
+        .role-badge {
+            text-align: center;
+            margin: 10px auto 30px auto;
+            max-width: 200px;
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            padding: 8px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
+            letter-spacing: 0.1em;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            transition: transform 0.3s ease;
+            cursor: default;
+            text-transform: uppercase;
+        }
+
+        .role-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.8);
+        }
+
         form label {
             display: block;
             margin-top: 15px;
@@ -167,6 +192,12 @@ $conn->close();
             border-radius: 5px;
             border: 1px solid #ccc;
             box-sizing: border-box;
+        }
+
+        /* Readonly style for position input */
+        input[readonly] {
+            background: #eee;
+            cursor: not-allowed;
         }
 
         .password-container {
@@ -238,6 +269,11 @@ $conn->close();
             <input type="file" name="image" id="imageInput" accept="image/*">
         </div>
 
+        <!-- Role Badge under profile image -->
+        <div class="role-badge" aria-label="User Role">
+            <?= htmlspecialchars($admin['position']) ?>
+        </div>
+
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required>
 
@@ -245,15 +281,15 @@ $conn->close();
         <input type="email" id="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required>
 
         <label for="position">Position:</label>
-        <input type="text" id="position" name="position" value="<?= htmlspecialchars($admin['position']) ?>" required>
+        <input type="text" id="position" name="position" value="<?= htmlspecialchars($admin['position']) ?>" readonly>
 
-        <label for="salary">Salary (RM):</label>
-        <input type="number" id="salary" name="salary" step="0.01" value="<?= htmlspecialchars($admin['salary']) ?>" required>
+        <label for="salary">Salary:</label>
+        <input type="number" id="salary" name="salary" value="<?= htmlspecialchars($admin['salary']) ?>" min="0" required>
 
         <label for="password">Password:</label>
         <div class="password-container">
-            <input type="password" id="passwordField" name="password" value="<?= htmlspecialchars($admin['password']) ?>" required>
-            <button type="button" class="toggle-password" onclick="togglePassword()">Show</button>
+            <input type="password" id="password" name="password" value="<?= htmlspecialchars($admin['password']) ?>" required>
+            <button type="button" id="togglePassword" class="toggle-password" aria-label="Show or hide password">Show</button>
         </div>
 
         <input type="submit" value="Update Profile">
@@ -262,42 +298,40 @@ $conn->close();
 
 <script>
     // Toggle password visibility
-    function togglePassword() {
-        const passwordField = document.getElementById("passwordField");
-        const toggleBtn = document.querySelector(".toggle-password");
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
 
-        if (passwordField.type === "password") {
-            passwordField.type = "text";
-            toggleBtn.textContent = "Hide";
+    togglePassword.addEventListener('click', () => {
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            togglePassword.textContent = 'Hide';
         } else {
-            passwordField.type = "password";
-            toggleBtn.textContent = "Show";
+            passwordInput.type = 'password';
+            togglePassword.textContent = 'Show';
         }
-    }
+    });
 
-    // Click on image wrapper triggers file input click
+    // Clicking on the profile image wrapper triggers file input
     const imageWrapper = document.getElementById('imageWrapper');
     const imageInput = document.getElementById('imageInput');
-    const profileImage = document.getElementById('profileImage');
 
     imageWrapper.addEventListener('click', () => {
         imageInput.click();
     });
 
-    // Optional: update image preview immediately after selecting a new file
-    imageInput.addEventListener('change', () => {
-        const file = imageInput.files[0];
-        if (file) {
+    // Preview new profile image when selected
+    imageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                profileImage.src = e.target.result;
+                document.getElementById('profileImage').src = e.target.result;
             }
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(this.files[0]);
         }
     });
 
-    // Accessibility: allow keyboard enter/space to trigger file input
-    imageWrapper.addEventListener('keydown', (e) => {
+    // Allow keyboard access: press Enter or Space on image wrapper to open file dialog
+    imageWrapper.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             imageInput.click();
