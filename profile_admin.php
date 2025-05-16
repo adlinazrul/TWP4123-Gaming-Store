@@ -133,11 +133,16 @@ $conn->close();
             align-items: center;
             justify-content: center;
             opacity: 0;
-            font-weight: bold;
-            font-size: 14px;
+            font-weight: 600;
+            font-size: 16px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            letter-spacing: 0.05em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
             border-radius: 50%;
             transition: opacity 0.3s ease;
             user-select: none;
+            text-align: center;
+            padding: 0 10px; /* some padding for longer text */
         }
 
         .profile-image-wrapper:hover .overlay-text {
