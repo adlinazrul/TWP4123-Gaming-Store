@@ -37,16 +37,25 @@ if ($admin_id) {
     $profile_image = 'image/default_profile.jpg';
 }
 
+// Fetch total orders count for chart
+$orderCountQuery = "SELECT COUNT(DISTINCT order_id) AS total_orders FROM orders WHERE order_id > 0";
+$result = $conn->query($orderCountQuery);
+
+$totalOrders = 0;
+if ($result && $row = $result->fetch_assoc()) {
+    $totalOrders = (int)$row['total_orders'];
+}
+
 $conn->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-	<link rel="stylesheet" href="admindashboard.css">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet' />
+	<link rel="stylesheet" href="admindashboard.css" />
 	<title>Admin</title>
 	<!-- Chart.js CDN -->
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -71,7 +80,7 @@ $conn->close();
 	<!-- SIDEBAR -->
 	<section id="sidebar">
 		<a href="#" class="brand">
-			<br>
+			<br />
 			<span class="text">Admin Dashboard</span>
 		</a>
 		<ul class="side-menu top">
@@ -136,8 +145,10 @@ $conn->close();
 			<a href="managecategory.html" class="nav-link">Categories</a>
 			<form action="#">
 				<div class="form-input">
-					<input type="search" placeholder="Search...">
-					<button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
+					<input type="search" placeholder="Search..." />
+					<button type="submit" class="search-btn">
+						<i class='bx bx-search'></i>
+					</button>
 				</div>
 			</form>
 			<a href="#" class="notification">
@@ -145,7 +156,7 @@ $conn->close();
 				<span class="num"></span>
 			</a>
 			<a href="profile_admin.php" class="profile">
-				<img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture">
+				<img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture" />
 			</a>
 		</nav>
 
@@ -200,29 +211,21 @@ $conn->close();
 				new Chart(ctx, {
 					type: 'bar',
 					data: {
-						labels: ['New Orders', 'Visitors', 'Sales'],
+						labels: ['Total Orders'],
 						datasets: [{
-							label: 'Statistics',
-							data: [1020, 2834, 2543],
-							backgroundColor: ['#007bff', '#28a745', '#ffc107'],
+							label: 'Number of Orders',
+							data: [<?php echo $totalOrders; ?>],
+							backgroundColor: ['#007bff'],
 							borderRadius: 15,
-							hoverBackgroundColor: ['#0056b3', '#1e7e34', '#e0a800']
+							hoverBackgroundColor: ['#0056b3']
 						}]
 					},
 					options: {
 						responsive: true,
-						animations: {
-							tension: {
-								duration: 1000,
-								easing: 'easeInOutBounce',
-								from: 1,
-								to: 0,
-								loop: false
-							}
-						},
 						scales: {
 							y: {
-								beginAtZero: true
+								beginAtZero: true,
+								stepSize: 1
 							}
 						},
 						plugins: {
@@ -230,9 +233,7 @@ $conn->close();
 								display: true,
 								labels: {
 									color: '#333',
-									font: {
-										size: 14
-									}
+									font: { size: 14 }
 								}
 							},
 							tooltip: {
@@ -260,41 +261,46 @@ $conn->close();
 						</thead>
 						<tbody>
 							<tr>
-								<td><img src="image/people1.jpg"><p>Kevin</p></td>
+								<td><img src="image/people1.jpg" /><p>Kevin</p></td>
 								<td>01-01-2025</td>
 								<td><span class="status completed">Completed</span></td>
 							</tr>
 							<tr>
-								<td><img src="image/people2.jpg"><p>Brian</p></td>
+								<td><img src="image/people2.jpg" /><p>Brian</p></td>
 								<td>06-01-2025</td>
 								<td><span class="status pending">Pending</span></td>
 							</tr>
 							<tr>
-								<td><img src="image/woman1.jpg"><p>Camila</p></td>
+								<td><img src="image/woman1.jpg" /><p>Camila</p></td>
 								<td>07-02-2025</td>
 								<td><span class="status process">Process</span></td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
+
 				<div class="todo">
 					<div class="head">
-						<h3>To do</h3>
+						<h3>Recent Customer</h3>
 						<i class='bx bx-plus'></i>
 						<i class='bx bx-filter'></i>
 					</div>
 					<ul class="todo-list">
-						<li class="completed"><p>Todo List</p><i class='bx bx-dots-vertical-rounded'></i></li>
-						<li class="completed"><p>Todo List</p><i class='bx bx-dots-vertical-rounded'></i></li>
-						<li class="not-completed"><p>Todo List</p><i class='bx bx-dots-vertical-rounded'></i></li>
-						<li class="completed"><p>Todo List</p><i class='bx bx-dots-vertical-rounded'></i></li>
-						<li class="not-completed"><p>Todo List</p><i class='bx bx-dots-vertical-rounded'></i></li>
+						<li class="completed">
+							<p>Kevin</p>
+						</li>
+						<li class="completed">
+							<p>Brian</p>
+						</li>
+						<li class="not-completed">
+							<p>Camila</p>
+						</li>
 					</ul>
 				</div>
 			</div>
 		</main>
 	</section>
 
-	<script src="script.js"></script>
+	<script src="admindashboard.js"></script>
 </body>
 </html>
