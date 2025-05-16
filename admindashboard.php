@@ -32,21 +32,29 @@ if ($stmt->fetch() && !empty($image)) {
 }
 $stmt->close();
 
-// Fetch total orders count
-$orderCountQuery = "SELECT COUNT(DISTINCT order_id) AS total_orders FROM orders WHERE order_id > 0";
+// Fetch total unique orders count from items_ordered table
+$orderCountQuery = "SELECT COUNT(DISTINCT order_id) AS total_orders FROM items_ordered";
 $result = $conn->query($orderCountQuery);
 $totalOrders = 0;
 if ($result && $row = $result->fetch_assoc()) {
     $totalOrders = (int)$row['total_orders'];
 }
 
-// Fetch recent 5 orders with user info
+// Fetch recent 5 orders grouped by order_id, showing order_id, total price, date, status, customer name
 $recentOrders = [];
-$sql = "SELECT o.order_id, u.name AS username, o.order_date, o.status
-        FROM orders o
-        JOIN users u ON o.user_id = u.id
-        ORDER BY o.order_date DESC
-        LIMIT 5";
+$sql = "
+    SELECT 
+        order_id,
+        name_cust,
+        date,
+        status_order,
+        SUM(price_items * quantity_items) AS total_price,
+        COUNT(*) AS items_count
+    FROM items_ordered
+    GROUP BY order_id, name_cust, date, status_order
+    ORDER BY date DESC
+    LIMIT 5
+";
 $result = $conn->query($sql);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
@@ -54,13 +62,19 @@ if ($result) {
     }
 }
 
-// Fetch recent 5 customers (example, adjust as needed)
+// Fetch recent 5 distinct customers (name_cust) from items_ordered ordered by latest date
 $recentCustomers = [];
-$sqlCust = "SELECT name FROM users ORDER BY created_at DESC LIMIT 5";
+$sqlCust = "
+    SELECT DISTINCT name_cust 
+    FROM items_ordered
+    WHERE name_cust IS NOT NULL AND name_cust != ''
+    ORDER BY date DESC
+    LIMIT 5
+";
 $resultCust = $conn->query($sqlCust);
 if ($resultCust) {
     while ($row = $resultCust->fetch_assoc()) {
-        $recentCustomers[] = $row['name'];
+        $recentCustomers[] = $row['name_cust'];
     }
 }
 
@@ -90,6 +104,16 @@ $conn->close();
 			width: 100% !important;
 			height: auto !important;
 		}
+		.status {
+			padding: 4px 10px;
+			border-radius: 12px;
+			color: white;
+			font-weight: 600;
+			font-size: 0.85rem;
+		}
+		.status.completed { background-color: #28a745; }
+		.status.pending { background-color: #ffc107; }
+		.status.process { background-color: #17a2b8; }
 	</style>
 </head>
 <body>
@@ -212,7 +236,19 @@ $conn->close();
 				<li>
 					<i class='bx bxs-dollar-circle'></i>
 					<span class="text">
-						<h3>RM 2543</h3>
+						<h3>RM 
+							<?php 
+								// Calculate total sales (sum of price_items * quantity_items)
+								$conn2 = new mysqli($servername, $username, $password, $dbname);
+								$salesResult = $conn2->query("SELECT SUM(price_items * quantity_items) AS total_sales FROM items_ordered");
+								$totalSales = 0;
+								if ($salesResult && $salesRow = $salesResult->fetch_assoc()) {
+									$totalSales = $salesRow['total_sales'] ?? 0;
+								}
+								$conn2->close();
+								echo number_format($totalSales, 2);
+							?>
+						</h3>
 						<p>Total Sales</p>
 					</span>
 				</li>
@@ -238,92 +274,94 @@ $conn->close();
 						}]
 					},
 					options: {
-						responsive: true,
 						scales: {
 							y: {
 								beginAtZero: true,
-								stepSize: 1
+								ticks: { stepSize: 1 }
 							}
 						},
 						plugins: {
-							legend: {
-								display: true,
-								labels: {
-									color: '#333',
-									font: { size: 14 }
-								}
-							},
-							tooltip: {
-								enabled: true
-							}
+							legend: { display: false }
 						}
 					}
 				});
 			</script>
 
+			<!-- RECENT ORDERS TABLE -->
 			<div class="table-data">
 				<div class="order">
 					<div class="head">
 						<h3>Recent Orders</h3>
-						<i class='bx bx-search'></i>
-						<i class='bx bx-filter'></i>
 					</div>
 					<table>
 						<thead>
 							<tr>
-								<th>User</th>
-								<th>Date Order</th>
+								<th>Order ID</th>
+								<th>Customer</th>
+								<th>Date</th>
 								<th>Status</th>
+								<th>Total Price (RM)</th>
 							</tr>
 						</thead>
 						<tbody>
-							<?php foreach ($recentOrders as $order): ?>
-								<tr>
-									<td><p><?php echo htmlspecialchars($order['username']); ?></p></td>
-									<td><?php echo htmlspecialchars(date('d-m-Y', strtotime($order['order_date']))); ?></td>
-									<td>
-										<span class="status 
-											<?php 
-												echo $order['status'] === 'Completed' ? 'completed' : 
-													 ($order['status'] === 'Pending' ? 'pending' : 'process'); 
-											?>">
-											<?php echo htmlspecialchars($order['status']); ?>
-										</span>
-									</td>
-								</tr>
-							<?php endforeach; ?>
-							<?php if(empty($recentOrders)) : ?>
-								<tr><td colspan="3" style="text-align:center;">No recent orders found</td></tr>
+							<?php if (count($recentOrders) > 0): ?>
+								<?php foreach ($recentOrders as $order): ?>
+									<tr>
+										<td><?php echo htmlspecialchars($order['order_id']); ?></td>
+										<td><?php echo htmlspecialchars($order['name_cust']); ?></td>
+										<td><?php echo htmlspecialchars($order['date']); ?></td>
+										<td>
+											<?php
+												$statusClass = '';
+												switch (strtolower($order['status_order'])) {
+													case 'completed': $statusClass = 'completed'; break;
+													case 'pending': $statusClass = 'pending'; break;
+													case 'process': $statusClass = 'process'; break;
+													default: $statusClass = 'pending';
+												}
+											?>
+											<span class="status <?php echo $statusClass; ?>">
+												<?php echo htmlspecialchars($order['status_order']); ?>
+											</span>
+										</td>
+										<td><?php echo number_format($order['total_price'], 2); ?></td>
+									</tr>
+								<?php endforeach; ?>
+							<?php else: ?>
+								<tr><td colspan="5" style="text-align:center;">No orders found</td></tr>
 							<?php endif; ?>
 						</tbody>
 					</table>
 				</div>
 
-				<div class="todo">
-					<div class="head">
-						<h3>Recent Customers</h3>
+				<!-- RECENT CUSTOMERS -->
+				<div class="customers">
+					<div class="cardHeader">
+						<h2>Recent Customers</h2>
 					</div>
 					<ul class="todo-list">
-						<?php foreach ($recentCustomers as $customer): ?>
-							<li class="completed">
-								<p><?php echo htmlspecialchars($customer); ?></p>
-							</li>
-						<?php endforeach; ?>
-						<?php if(empty($recentCustomers)) : ?>
-							<li><p>No recent customers found</p></li>
+						<?php if (count($recentCustomers) > 0): ?>
+							<?php foreach ($recentCustomers as $cust): ?>
+								<li><?php echo htmlspecialchars($cust); ?></li>
+							<?php endforeach; ?>
+						<?php else: ?>
+							<li>No customers found</li>
 						<?php endif; ?>
 					</ul>
 				</div>
 			</div>
+
 		</main>
 	</section>
 
 	<script>
-		const btn = document.querySelector("nav .bx-menu");
-		const sidebar = document.getElementById("sidebar");
-		btn.onclick = function () {
+		// Sidebar toggle
+		let sidebar = document.querySelector("#sidebar");
+		let sidebarBtn = document.querySelector("nav .bx-menu");
+
+		sidebarBtn.addEventListener("click", () => {
 			sidebar.classList.toggle("active");
-		};
+		});
 	</script>
 </body>
 </html>
