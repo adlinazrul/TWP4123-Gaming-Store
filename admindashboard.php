@@ -1,50 +1,41 @@
 <?php
-
 session_start();
 
-// Check if the session variable is set
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 } else {
-    // Handle the case when the admin is not logged in (e.g., redirect to login page)
     header("Location: login_admin.php");
     exit;
 }
 
-// Database connection
 $servername = "localhost";
-$username = "root"; // Use your MySQL username
-$password = ""; // Use your MySQL password
-$dbname = "gaming_store"; // Use your database name
+$username = "root";
+$password = "";
+$dbname = "gaming_store";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Assuming you have a session or other way to get the logged-in admin ID
-$admin_id = $_SESSION['admin_id']; // Example session variable
+$admin_id = $_SESSION['admin_id'];
 
 if ($admin_id) {
-    // Correct SQL query to fetch the profile image (use 'image' column)
     $query = "SELECT image FROM admin_list WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $admin_id);
     $stmt->execute();
     $stmt->bind_result($image);
     if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'image/' . $image; // Path to the image in 'image' folder
+        $profile_image = 'image/' . $image;
     } else {
-        $profile_image = 'image/default_profile.jpg'; // Default image in 'image' folder
+        $profile_image = 'image/default_profile.jpg';
     }
     $stmt->close();
 } else {
-    $profile_image = 'image/default_profile.jpg'; // Default image if not logged in
+    $profile_image = 'image/default_profile.jpg';
 }
-
 
 $conn->close();
 ?>
@@ -57,6 +48,23 @@ $conn->close();
 	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
 	<link rel="stylesheet" href="admindashboard.css">
 	<title>Admin</title>
+	<!-- Chart.js CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<style>
+		.chart-container {
+			width: 100%;
+			max-width: 700px;
+			margin: 40px auto;
+			background: #fff;
+			padding: 20px;
+			border-radius: 20px;
+			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+		}
+		canvas {
+			width: 100% !important;
+			height: auto !important;
+		}
+	</style>
 </head>
 <body>
 
@@ -132,7 +140,6 @@ $conn->close();
 					<button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
 				</div>
 			</form>
-			
 			<a href="#" class="notification">
 				<i class='bx bxs-bell'></i>
 				<span class="num"></span>
@@ -182,6 +189,59 @@ $conn->close();
 					</span>
 				</li>
 			</ul>
+
+			<!-- CHART -->
+			<div class="chart-container">
+				<canvas id="dashboardChart"></canvas>
+			</div>
+
+			<script>
+				const ctx = document.getElementById('dashboardChart').getContext('2d');
+				new Chart(ctx, {
+					type: 'bar',
+					data: {
+						labels: ['New Orders', 'Visitors', 'Sales'],
+						datasets: [{
+							label: 'Statistics',
+							data: [1020, 2834, 2543],
+							backgroundColor: ['#007bff', '#28a745', '#ffc107'],
+							borderRadius: 15,
+							hoverBackgroundColor: ['#0056b3', '#1e7e34', '#e0a800']
+						}]
+					},
+					options: {
+						responsive: true,
+						animations: {
+							tension: {
+								duration: 1000,
+								easing: 'easeInOutBounce',
+								from: 1,
+								to: 0,
+								loop: false
+							}
+						},
+						scales: {
+							y: {
+								beginAtZero: true
+							}
+						},
+						plugins: {
+							legend: {
+								display: true,
+								labels: {
+									color: '#333',
+									font: {
+										size: 14
+									}
+								}
+							},
+							tooltip: {
+								enabled: true
+							}
+						}
+					}
+				});
+			</script>
 
 			<div class="table-data">
 				<div class="order">
