@@ -13,18 +13,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $position = $_POST['position'];
     $salary = $_POST['salary'];
+    $user_type = $_POST['user_type']; // Get user_type from form
 
     if (!empty($_FILES["image"]["name"])) {
         $image_name = basename($_FILES["image"]["name"]);
         $target_file = "uploads/" . $image_name;
         move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
-        $sql = "UPDATE admin_list SET username=?, email=?, position=?, salary=?, image=? WHERE id=?";
+        $sql = "UPDATE admin_list SET username=?, email=?, position=?, salary=?, image=?, user_type=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssssi", $username, $email, $position, $salary, $image_name, $id);
+        $stmt->bind_param("ssssssi", $username, $email, $position, $salary, $image_name, $user_type, $id);
     } else {
-        $sql = "UPDATE admin_list SET username=?, email=?, position=?, salary=? WHERE id=?";
+        $sql = "UPDATE admin_list SET username=?, email=?, position=?, salary=?, user_type=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssi", $username, $email, $position, $salary, $id);
+        $stmt->bind_param("sssssi", $username, $email, $position, $salary, $user_type, $id);
     }
 
     if ($stmt->execute()) {
@@ -74,6 +75,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 6px;
             box-sizing: border-box;
         }
+        .role-buttons {
+            margin-top: 5px;
+        }
+        .role-buttons input[type="radio"] {
+            margin-right: 8px;
+        }
         button {
             margin-top: 20px;
             width: 100%;
@@ -86,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             cursor: pointer;
         }
         button:hover {
-            background-color: #d03b3b;
+            background-color: #a82828;
         }
         .back-link {
             display: block;
@@ -117,6 +124,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <label>Profile Image:</label>
             <input type="file" name="image">
+
+            <label>Roles:</label>
+            <div class="role-buttons">
+                <input type="radio" id="admin" name="user_type" value="Admin" <?= ($row['user_type'] == 'Admin') ? 'checked' : '' ?> required>
+                <label for="admin">Admin</label>
+
+                <input type="radio" id="superadmin" name="user_type" value="Super Admin" <?= ($row['user_type'] == 'Super Admin') ? 'checked' : '' ?>>
+                <label for="superadmin">Super Admin</label>
+            </div>
 
             <button type="submit">Update Admin</button>
         </form>
