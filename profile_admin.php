@@ -76,17 +76,72 @@ $conn->close();
 
         .container {
             max-width: 600px;
-            margin: 60px auto;
-            padding: 30px;
+            margin: 60px auto 80px;
+            padding: 30px 30px 40px;
             background-color: #ffffff;
             border-radius: 12px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         h2 {
             text-align: center;
             color: #ef4444;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+
+        /* Profile Image Container */
+        .profile-image-wrapper {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 30px auto;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .profile-image-wrapper:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
+
+        .profile-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-image-wrapper:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Overlay text on hover */
+        .overlay-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(239, 68, 68, 0.7); /* red with transparency */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 50%;
+            transition: opacity 0.3s ease;
+            user-select: none;
+        }
+
+        .profile-image-wrapper:hover .overlay-text {
+            opacity: 1;
         }
 
         form label {
@@ -99,8 +154,7 @@ $conn->close();
         form input[type="text"],
         form input[type="email"],
         form input[type="number"],
-        form input[type="password"],
-        form input[type="file"] {
+        form input[type="password"] {
             width: 100%;
             height: 40px;
             padding: 10px;
@@ -140,14 +194,13 @@ $conn->close();
             background-color: #dc2626;
         }
 
-        form img {
-            margin-top: 10px;
-            width: 120px;
-            border-radius: 10px;
+        /* Hide actual file input */
+        input[type="file"] {
+            display: none;
         }
 
         form input[type="submit"] {
-            margin-top: 20px;
+            margin-top: 25px;
             background-color: #ef4444;
             color: white;
             border: none;
@@ -168,48 +221,83 @@ $conn->close();
 
 <div class="container">
     <h2>My Profile</h2>
-    <form method="post" enctype="multipart/form-data">
-        <label>Username:</label>
-        <input type="text" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required>
 
-        <label>Email:</label>
-        <input type="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required>
-
-        <label>Position:</label>
-        <input type="text" name="position" value="<?= htmlspecialchars($admin['position']) ?>" required>
-
-        <label>Salary (RM):</label>
-        <input type="number" name="salary" step="0.01" value="<?= htmlspecialchars($admin['salary']) ?>" required>
-
-        <label>Password:</label>
-        <div class="password-container">
-            <input type="password" name="password" id="passwordField" value="<?= htmlspecialchars($admin['password']) ?>" required>
-            <button type="button" class="toggle-password" onclick="togglePassword()">Show</button>
+    <form method="post" enctype="multipart/form-data" id="profileForm">
+        <!-- Profile Image with overlay -->
+        <div class="profile-image-wrapper" id="imageWrapper" tabindex="0" aria-label="Change Profile Image">
+            <?php
+            $imgSrc = !empty($admin['image']) ? "image/" . htmlspecialchars($admin['image']) : "image/default_profile.jpg";
+            ?>
+            <img src="<?= $imgSrc ?>" alt="Profile Image" id="profileImage">
+            <div class="overlay-text">Change Image Profile</div>
+            <input type="file" name="image" id="imageInput" accept="image/*">
         </div>
 
-        <label>Profile Image:</label>
-        <?php if (!empty($admin['image'])): ?>
-            <br><img src="image/<?= htmlspecialchars($admin['image']) ?>" alt="Profile Image"><br>
-        <?php endif; ?>
-        <input type="file" name="image">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required>
+
+        <label for="position">Position:</label>
+        <input type="text" id="position" name="position" value="<?= htmlspecialchars($admin['position']) ?>" required>
+
+        <label for="salary">Salary (RM):</label>
+        <input type="number" id="salary" name="salary" step="0.01" value="<?= htmlspecialchars($admin['salary']) ?>" required>
+
+        <label for="password">Password:</label>
+        <div class="password-container">
+            <input type="password" id="passwordField" name="password" value="<?= htmlspecialchars($admin['password']) ?>" required>
+            <button type="button" class="toggle-password" onclick="togglePassword()">Show</button>
+        </div>
 
         <input type="submit" value="Update Profile">
     </form>
 </div>
 
 <script>
-function togglePassword() {
-    const passwordField = document.getElementById("passwordField");
-    const toggleBtn = document.querySelector(".toggle-password");
+    // Toggle password visibility
+    function togglePassword() {
+        const passwordField = document.getElementById("passwordField");
+        const toggleBtn = document.querySelector(".toggle-password");
 
-    if (passwordField.type === "password") {
-        passwordField.type = "text";
-        toggleBtn.textContent = "Hide";
-    } else {
-        passwordField.type = "password";
-        toggleBtn.textContent = "Show";
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            toggleBtn.textContent = "Hide";
+        } else {
+            passwordField.type = "password";
+            toggleBtn.textContent = "Show";
+        }
     }
-}
+
+    // Click on image wrapper triggers file input click
+    const imageWrapper = document.getElementById('imageWrapper');
+    const imageInput = document.getElementById('imageInput');
+    const profileImage = document.getElementById('profileImage');
+
+    imageWrapper.addEventListener('click', () => {
+        imageInput.click();
+    });
+
+    // Optional: update image preview immediately after selecting a new file
+    imageInput.addEventListener('change', () => {
+        const file = imageInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                profileImage.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Accessibility: allow keyboard enter/space to trigger file input
+    imageWrapper.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            imageInput.click();
+        }
+    });
 </script>
 
 </body>
