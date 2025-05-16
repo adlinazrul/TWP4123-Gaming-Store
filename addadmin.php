@@ -273,26 +273,25 @@ if ($admin_id) {
                         <input type="radio" id="admin" name="user_type" value="Admin" required>
                         <label for="admin">Admin</label>
 
-                        <input type="radio" id="superadmin" name="user_type" value="Super Admin">
+                        <input type="radio" id="superadmin" name="user_type" value="Super Admin" required>
                         <label for="superadmin">Super Admin</label>
                     </div>
 
-                    <button type="submit">Add Admin</button>
+                    <button type="submit" name="submit">Add Admin</button>
                 </form>
             </section>
 
             <section id="view-employees">
-                <h2>View Admins</h2>
+                <h2>Admin List</h2>
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Username</th>
                             <th>Email</th>
                             <th>Position</th>
                             <th>Salary (RM)</th>
-                            <th>Image</th>
                             <th>Roles</th>
+                            <th>Image</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -300,21 +299,36 @@ if ($admin_id) {
                         <?php if ($result && $result->num_rows > 0): ?>
                             <?php while ($row = $result->fetch_assoc()): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($row['id']); ?></td>
                                     <td><?php echo htmlspecialchars($row['username']); ?></td>
                                     <td><?php echo htmlspecialchars($row['email']); ?></td>
                                     <td><?php echo htmlspecialchars($row['position']); ?></td>
-                                    <td><?php echo htmlspecialchars(number_format((float)$row['salary'], 2)); ?></td>
-                                    <td><img src="image/<?php echo htmlspecialchars($row['image']); ?>" width="80" height="80" alt="Admin Image"></td>
-                                    <td><?php echo htmlspecialchars($row['user_type']); ?></td>
+                                    <td><?php echo htmlspecialchars(number_format($row['salary'], 2)); ?></td>
                                     <td>
-                                        <button onclick="editAdmin(<?php echo $row['id']; ?>)">Edit</button>
-                                        <button onclick="if(confirm('Are you sure you want to delete this admin?')) { window.location.href='deleteadmin.php?id=<?php echo $row['id']; ?>'; }">Delete</button>
+                                        <?php
+                                        $role = strtolower(trim($row['user_type']));
+                                        if ($role === 'superadmin' || $role === 'super admin') {
+                                            echo "Super Admin";
+                                        } elseif ($role === 'admin') {
+                                            echo "Admin";
+                                        } else {
+                                            echo htmlspecialchars($row['user_type']);
+                                        }
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        $imgPath = !empty($row['image']) ? "uploads/" . htmlspecialchars($row['image']) : "image/default_profile.jpg";
+                                        ?>
+                                        <img src="<?php echo $imgPath; ?>" alt="Admin Image" width="100" height="100">
+                                    </td>
+                                    <td>
+                                        <button><a href="edit_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;">Edit</a></button>
+                                        <button><a href="delete_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</a></button>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
-                            <tr><td colspan="8">No admins found.</td></tr>
+                            <tr><td colspan="7">No admins found.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -324,11 +338,18 @@ if ($admin_id) {
 </section>
 
 <script>
-function editAdmin(id) {
-    window.location.href = "edit_admin.php?id=" + id;
-}
+    // Sidebar toggle
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.querySelector('nav .bx-menu');
+
+    menuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('close');
+    });
 </script>
 
-<script src="script.js"></script>
 </body>
 </html>
+
+<?php
+$conn->close();
+?>
