@@ -522,7 +522,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <h1>GAMING STORE</h1>
             <h2>Admin Portal</h2>
         </div>
-        
+        <br>
+        <br>
+        <br>
         <div class="avatar-container floating">
             <img src="image/admin.jpg" alt="Admin Avatar" class="avatar">
         </div>
@@ -570,7 +572,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <label for="remember">Remember me</label>
                     </div>
                     <div class="forgot-password">
-                        <a href="#"><i class="fas fa-key"></i> Forgot password?</a>
+                        <a href="forgot_password.php"><i class="fas fa-key"></i> Forgot password?</a>
                     </div>
                 </div>
                 
