@@ -11,21 +11,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $position = $_POST['position'];
+    $user_type = $_POST['user_type'];  // role: Admin or Super Admin
     $salary = $_POST['salary'];
-    $user_type = $_POST['user_type']; // Get user_type from form
 
     if (!empty($_FILES["image"]["name"])) {
         $image_name = basename($_FILES["image"]["name"]);
         $target_file = "uploads/" . $image_name;
         move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
-        $sql = "UPDATE admin_list SET username=?, email=?, position=?, salary=?, image=?, user_type=? WHERE id=?";
+        $sql = "UPDATE admin_list SET username=?, email=?, user_type=?, salary=?, image=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssssi", $username, $email, $position, $salary, $image_name, $user_type, $id);
+        $stmt->bind_param("sssssi", $username, $email, $user_type, $salary, $image_name, $id);
     } else {
-        $sql = "UPDATE admin_list SET username=?, email=?, position=?, salary=?, user_type=? WHERE id=?";
+        $sql = "UPDATE admin_list SET username=?, email=?, user_type=?, salary=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssssi", $username, $email, $position, $salary, $user_type, $id);
+        $stmt->bind_param("sss si", $username, $email, $user_type, $salary, $id);
     }
 
     if ($stmt->execute()) {
@@ -75,12 +74,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 6px;
             box-sizing: border-box;
         }
-        .role-buttons {
-            margin-top: 5px;
-        }
-        .role-buttons input[type="radio"] {
-            margin-right: 8px;
-        }
         button {
             margin-top: 20px;
             width: 100%;
@@ -93,7 +86,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             cursor: pointer;
         }
         button:hover {
-            background-color: #a82828;
+            background-color: #a72a2a;
         }
         .back-link {
             display: block;
@@ -101,6 +94,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-top: 15px;
             text-decoration: none;
             color: #333;
+        }
+        .role-buttons {
+            margin-top: 5px;
+            display: flex;
+            gap: 20px; /* space between the radio options */
+            align-items: center;
+        }
+        .role-buttons label {
+            margin: 0;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -116,16 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <label>Email:</label>
             <input type="email" name="email" value="<?= htmlspecialchars($row['email']) ?>" required>
 
-            <label>Position:</label>
-            <input type="text" name="position" value="<?= htmlspecialchars($row['position']) ?>" required>
-
-            <label>Salary (RM):</label>
-            <input type="number" name="salary" value="<?= htmlspecialchars($row['salary']) ?>" required>
-
-            <label>Profile Image:</label>
-            <input type="file" name="image">
-
-            <label>Roles:</label>
+            <label>Role:</label>
             <div class="role-buttons">
                 <input type="radio" id="admin" name="user_type" value="Admin" <?= ($row['user_type'] == 'Admin') ? 'checked' : '' ?> required>
                 <label for="admin">Admin</label>
@@ -133,6 +127,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="radio" id="superadmin" name="user_type" value="Super Admin" <?= ($row['user_type'] == 'Super Admin') ? 'checked' : '' ?>>
                 <label for="superadmin">Super Admin</label>
             </div>
+
+            <label>Salary (RM):</label>
+            <input type="number" name="salary" value="<?= htmlspecialchars($row['salary']) ?>" required>
+
+            <label>Profile Image:</label>
+            <input type="file" name="image">
 
             <button type="submit">Update Admin</button>
         </form>
