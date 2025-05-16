@@ -106,7 +106,7 @@ $conn->close();
             --green: #28a745;
             --light-green: #d1f5d9;
             --teal: #17a2b8;
-            --light-teal: #d1f0f5;
+            --light-teal:rgb(98, 98, 98);
         }
 
         /* CHART STYLES */
