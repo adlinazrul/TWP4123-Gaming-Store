@@ -20,7 +20,7 @@ if ($conn->connect_error) {
 // Get the order ID from the URL
 $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
 
-// Fetch order detail
+// Fetch order details
 $stmt = $conn->prepare("SELECT * FROM items_ordered WHERE order_id = ?");
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
@@ -29,6 +29,12 @@ $result = $stmt->get_result();
 if ($result->num_rows == 0) {
     echo "Order not found.";
     exit;
+}
+
+// Fetch all items into an array to use twice (once for total calculation)
+$items = [];
+while ($row = $result->fetch_assoc()) {
+    $items[] = $row;
 }
 
 // Get admin profile image
@@ -54,6 +60,7 @@ $img_stmt->close();
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
         table th, table td {
             padding: 12px;
@@ -63,9 +70,27 @@ $img_stmt->close();
         table img {
             border-radius: 5px;
             width: 60px;
+            height: 60px;
+            object-fit: cover;
         }
         .details-container {
             padding: 20px;
+        }
+        .total-table {
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: 0;
+            border: 1px solid #ddd;
+        }
+        .total-table th, .total-table td {
+            padding: 10px;
+            text-align: right;
+            border: none;
+            font-weight: bold;
+        }
+        select.status-select {
+            padding: 5px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -114,36 +139,70 @@ $img_stmt->close();
         </div>
 
         <div class="details-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Price (RM)</th>
-                        <th>Quantity</th>
-                        <th>Image</th>
-                        <th>Status</th>
-                        <th>Customer Name</th>
-                        <th>Contact</th>
-                        <th>Address</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($row = $result->fetch_assoc()) { ?>
+            <form action="update_order_status.php" method="POST">
+                <input type="hidden" name="order_id" value="<?= $order_id ?>">
+                <table>
+                    <thead>
                         <tr>
-                            <td><?= htmlspecialchars($row['product_name']) ?></td>
-                            <td><?= number_format($row['price_items'], 2) ?></td>
-                            <td><?= htmlspecialchars($row['quantity_items']) ?></td>
-                            <td><img src="uploads/<?= htmlspecialchars($row['image_items']) ?>" alt="Product Image"></td>
-                            <td><?= htmlspecialchars($row['status_order']) ?></td>
-                            <td><?= htmlspecialchars($row['name_cust']) ?></td>
-                            <td><?= htmlspecialchars($row['num_tel_cust']) ?></td>
-                            <td><?= nl2br(htmlspecialchars($row['address_cust'])) ?></td>
-                            <td><?= htmlspecialchars($row['date']) ?></td>
+                            <th>Image</th>
+                            <th>Product Name</th>
+                            <th>Price (RM)</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Customer Name</th>
+                            <th>Contact</th>
+                            <th>Address</th>
+                            <th>Date</th>
                         </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($items as $index => $row) { ?>
+                            <tr>
+                                <td><img src="uploads/<?= htmlspecialchars($row['image_items']) ?>" alt="Product Image"></td>
+                                <td><?= htmlspecialchars($row['product_name']) ?></td>
+                                <td><?= number_format($row['price_items'], 2) ?></td>
+                                <td><?= htmlspecialchars($row['quantity_items']) ?></td>
+                                <td>
+                                    <select name="status_order[<?= $index ?>]" class="status-select">
+                                        <?php
+                                        $statuses = ['Pending', 'Processing', 'Completed', 'Cancelled'];
+                                        foreach ($statuses as $status) {
+                                            $selected = ($status == $row['status_order']) ? 'selected' : '';
+                                            echo "<option value=\"$status\" $selected>$status</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+                                <td><?= htmlspecialchars($row['name_cust']) ?></td>
+                                <td><?= htmlspecialchars($row['num_tel_cust']) ?></td>
+                                <td><?= nl2br(htmlspecialchars($row['address_cust'])) ?></td>
+                                <td><?= htmlspecialchars($row['date']) ?></td>
+                            </tr>
+                            <!-- Hidden input to keep track of which item -->
+                            <input type="hidden" name="item_id[<?= $index ?>]" value="<?= $row['id'] ?>">
+                        <?php } ?>
+                    </tbody>
+                </table>
+
+                <?php
+                // Calculate total price
+                $total_price = 0;
+                foreach ($items as $row) {
+                    $total_price += $row['price_items'] * $row['quantity_items'];
+                }
+                ?>
+
+                <table class="total-table">
+                    <tr>
+                        <th>Total Price:</th>
+                        <td>RM <?= number_format($total_price, 2) ?></td>
+                    </tr>
+                </table>
+
+                <div style="text-align: right; margin-top: 10px;">
+                    <button type="submit" style="padding: 10px 20px; font-size: 16px;">Update Status</button>
+                </div>
+            </form>
         </div>
     </main>
 </section>
