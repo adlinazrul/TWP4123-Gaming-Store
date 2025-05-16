@@ -157,7 +157,7 @@ $img_stmt->close();
         </div>
 
         <div class="details-container">
-            <form action="update_order_status.php" method="POST">
+            <form action="update_status.php" method="POST">
                 <input type="hidden" name="order_id" value="<?= $order_id ?>">
                 <table>
                     <thead>
