@@ -670,7 +670,7 @@ $conn->close();
                         <?php if (count($recentOrders) > 0): ?>
                             <?php foreach ($recentOrders as $order): ?>
                                 <div class="order-item">
-                                    <div class="order-id">#<?php echo htmlspecialchars($order['order_id']); ?></div>
+                                    <div class="id">#<?php echo htmlspecialchars($order['id']); ?></div>
                                     <div class="order-details">
                                         <div class="customer-name">
                                             <i class='bx bxs-user'></i> <?php echo htmlspecialchars($order['name_cust']); ?>
