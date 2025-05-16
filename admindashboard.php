@@ -93,12 +93,12 @@ $conn->close();
     <style>
         :root {
             --light: #f9f9f9;
-            --blue: #3c91e6;
-            --light-blue: #cfe8ff;
+            --red: #a93226; /* Changed from blue to deep red */
+            --light-red: #f5d0ce; /* Light version of the red */
             --grey: #eee;
             --dark-grey: #aaaaaa;
             --dark: #342e37;
-            --red: #db504a;
+            --red-alt: #c0392b; /* Alternative red */
             --yellow: #ffce26;
             --light-yellow: #fff2c6;
             --orange: #fd7238;
@@ -159,8 +159,8 @@ $conn->close();
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 123, 255, 0.1);
-            color: var(--blue);
+            background: rgba(169, 50, 38, 0.1); /* Changed to red with opacity */
+            color: var(--red);
             font-size: 24px;
         }
         
@@ -209,8 +209,8 @@ $conn->close();
         }
         
         .card-actions .view-all {
-            background: rgba(0, 123, 255, 0.1);
-            color: var(--blue);
+            background: rgba(169, 50, 38, 0.1); /* Changed to red with opacity */
+            color: var(--red);
             border: none;
             padding: 6px 12px;
             border-radius: 8px;
@@ -220,7 +220,7 @@ $conn->close();
         }
         
         .card-actions .view-all:hover {
-            background: var(--blue);
+            background: var(--red);
             color: white;
         }
         
@@ -239,8 +239,8 @@ $conn->close();
         
         .order-id {
             font-weight: 600;
-            color: var(--blue);
-            background: rgba(0, 123, 255, 0.1);
+            color: var(--red);
+            background: rgba(169, 50, 38, 0.1); /* Changed to red with opacity */
             padding: 5px 10px;
             border-radius: 8px;
             font-size: 13px;
@@ -312,7 +312,7 @@ $conn->close();
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: var(--blue);
+            background: var(--red); /* Changed to red */
             color: white;
             display: flex;
             align-items: center;
@@ -345,7 +345,7 @@ $conn->close();
         }
         
         .customer-action:hover {
-            color: var(--blue);
+            color: var(--red); /* Changed to red */
             transform: scale(1.1);
         }
         
@@ -535,9 +535,9 @@ $conn->close();
                         datasets: [{
                             label: 'Number of Orders',
                             data: [<?php echo $totalOrders; ?>],
-                            backgroundColor: ['#3c91e6'],
+                            backgroundColor: ['#a93226'], /* Changed to deep red */
                             borderRadius: 15,
-                            hoverBackgroundColor: ['#2a7bc8']
+                            hoverBackgroundColor: ['#7d241b'] /* Darker red for hover */
                         }]
                     },
                     options: {
