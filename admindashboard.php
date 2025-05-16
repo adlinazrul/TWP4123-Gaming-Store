@@ -106,10 +106,10 @@ $conn->close();
             --light: #f9f9f9;
             --red: #a93226;
             --light-red: #f5d0ce;
+            --dark-red: #7d241b;
             --grey: #eee;
-            --dark-grey: #777777; /* Darker grey for better readability */
+            --dark-grey: #777777;
             --dark: #342e37;
-            --red-alt: #c0392b;
             --yellow: #ffce26;
             --light-yellow: #fff2c6;
             --orange: #fd7238;
@@ -118,10 +118,6 @@ $conn->close();
             --light-green: #d1f5d9;
             --teal: #17a2b8;
             --light-teal: #d1f0f5;
-            --blue: #3c91e6;
-            --light-blue: #cfe8ff;
-            --purple: #9b59b6;
-            --light-purple: #e8d6f0;
         }
 
         /* CHART STYLES */
@@ -253,6 +249,8 @@ $conn->close();
             font-size: 13px;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
         }
         
         .card-actions .view-all:hover {
@@ -334,8 +332,8 @@ $conn->close();
         }
         
         .order-status.processing { 
-            background-color: rgba(23, 162, 184, 0.2);
-            color: #0d7c8c;
+            background-color: rgba(253, 114, 56, 0.2); /* Using orange instead of teal */
+            color: #c94a1f;
         }
         
         .order-status.completed { 
@@ -344,8 +342,8 @@ $conn->close();
         }
         
         .order-status.cancelled { 
-            background-color: rgba(219, 80, 74, 0.2);
-            color: #a93226;
+            background-color: rgba(169, 50, 38, 0.2);
+            color: var(--red);
         }
         
         /* CUSTOMER LIST STYLES */
@@ -609,14 +607,14 @@ $conn->close();
                                 <?php echo $statusCounts['cancelled']; ?>
                             ],
                             backgroundColor: [
-                                'rgba(255, 193, 7, 0.7)',
-                                'rgba(23, 162, 184, 0.7)',
-                                'rgba(40, 167, 69, 0.7)',
-                                'rgba(169, 50, 38, 0.7)'
+                                'rgba(255, 193, 7, 0.7)', // Yellow for pending
+                                'rgba(253, 114, 56, 0.7)', // Orange for processing
+                                'rgba(40, 167, 69, 0.7)', // Green for completed
+                                'rgba(169, 50, 38, 0.7)'  // Red for cancelled
                             ],
                             borderColor: [
                                 'rgba(255, 193, 7, 1)',
-                                'rgba(23, 162, 184, 1)',
+                                'rgba(253, 114, 56, 1)',
                                 'rgba(40, 167, 69, 1)',
                                 'rgba(169, 50, 38, 1)'
                             ],
@@ -624,7 +622,7 @@ $conn->close();
                             borderRadius: 8,
                             hoverBackgroundColor: [
                                 'rgba(255, 193, 7, 1)',
-                                'rgba(23, 162, 184, 1)',
+                                'rgba(253, 114, 56, 1)',
                                 'rgba(40, 167, 69, 1)',
                                 'rgba(169, 50, 38, 1)'
                             ]
@@ -670,7 +668,7 @@ $conn->close();
                         <?php if (count($recentOrders) > 0): ?>
                             <?php foreach ($recentOrders as $order): ?>
                                 <div class="order-item">
-                                    <div class="id">#<?php echo htmlspecialchars($order['id']); ?></div>
+                                    <div class="order-id">#<?php echo htmlspecialchars($order['order_id']); ?></div>
                                     <div class="order-details">
                                         <div class="customer-name">
                                             <i class='bx bxs-user'></i> <?php echo htmlspecialchars($order['name_cust']); ?>
