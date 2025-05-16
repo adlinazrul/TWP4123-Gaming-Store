@@ -32,15 +32,26 @@ if ($stmt->fetch() && !empty($image)) {
 }
 $stmt->close();
 
-// Fetch total unique orders count from items_ordered table
-$orderCountQuery = "SELECT COUNT(DISTINCT order_id) AS total_orders FROM items_ordered";
-$result = $conn->query($orderCountQuery);
-$totalOrders = 0;
-if ($result && $row = $result->fetch_assoc()) {
-    $totalOrders = (int)$row['total_orders'];
+// Fetch order status counts for the chart
+$statusCounts = [
+    'pending' => 0,
+    'processing' => 0,
+    'completed' => 0,
+    'cancelled' => 0
+];
+
+$statusQuery = "SELECT status_order, COUNT(DISTINCT order_id) as count FROM items_ordered GROUP BY status_order";
+$result = $conn->query($statusQuery);
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $status = strtolower($row['status_order']);
+        if (isset($statusCounts[$status])) {
+            $statusCounts[$status] = (int)$row['count'];
+        }
+    }
 }
 
-// Fetch recent 5 orders grouped by order_id, showing order_id, total price, date, status, customer name
+// Fetch recent 5 orders grouped by order_id
 $recentOrders = [];
 $sql = "
     SELECT 
@@ -62,7 +73,7 @@ if ($result) {
     }
 }
 
-// Fetch recent 5 distinct customers (name_cust) from items_ordered ordered by latest date
+// Fetch recent 5 distinct customers
 $recentCustomers = [];
 $sqlCust = "
     SELECT DISTINCT name_cust 
@@ -93,12 +104,12 @@ $conn->close();
     <style>
         :root {
             --light: #f9f9f9;
-            --red: #a93226; /* Changed from blue to deep red */
-            --light-red: #f5d0ce; /* Light version of the red */
+            --red: #a93226;
+            --light-red: #f5d0ce;
             --grey: #eee;
-            --dark-grey:rgb(83, 80, 80);
+            --dark-grey: #777777; /* Darker grey for better readability */
             --dark: #342e37;
-            --red-alt: #c0392b; /* Alternative red */
+            --red-alt: #c0392b;
             --yellow: #ffce26;
             --light-yellow: #fff2c6;
             --orange: #fd7238;
@@ -106,7 +117,11 @@ $conn->close();
             --green: #28a745;
             --light-green: #d1f5d9;
             --teal: #17a2b8;
-            --light-teal:rgb(98, 98, 98);
+            --light-teal: #d1f0f5;
+            --blue: #3c91e6;
+            --light-blue: #cfe8ff;
+            --purple: #9b59b6;
+            --light-purple: #e8d6f0;
         }
 
         /* CHART STYLES */
@@ -118,7 +133,14 @@ $conn->close();
             padding: 20px;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        
+        .chart-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
         canvas {
             width: 100% !important;
             height: auto !important;
@@ -145,11 +167,12 @@ $conn->close();
             align-items: center;
             gap: 24px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
         }
         
         .box-info li:hover {
             transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
         
         .icon-circle {
@@ -159,9 +182,15 @@ $conn->close();
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(169, 50, 38, 0.1); /* Changed to red with opacity */
+            background: rgba(169, 50, 38, 0.1);
             color: var(--red);
             font-size: 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .box-info li:hover .icon-circle {
+            background: rgba(169, 50, 38, 0.2);
+            transform: scale(1.05);
         }
         
         .box-info .text h3 {
@@ -172,8 +201,9 @@ $conn->close();
         }
         
         .box-info .text p {
-            color: var(--dark-grey);
+            color: var(--dark);
             font-size: 14px;
+            font-weight: 500;
         }
         
         /* DATA CONTAINER STYLES */
@@ -189,6 +219,12 @@ $conn->close();
             border-radius: 20px;
             padding: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .data-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
         
         .card-header {
@@ -209,7 +245,7 @@ $conn->close();
         }
         
         .card-actions .view-all {
-            background: rgba(169, 50, 38, 0.1); /* Changed to red with opacity */
+            background: rgba(169, 50, 38, 0.1);
             color: var(--red);
             border: none;
             padding: 6px 12px;
@@ -222,6 +258,7 @@ $conn->close();
         .card-actions .view-all:hover {
             background: var(--red);
             color: white;
+            transform: translateY(-2px);
         }
         
         /* ORDER ITEM STYLES */
@@ -231,6 +268,12 @@ $conn->close();
             padding: 15px 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             gap: 15px;
+            transition: all 0.2s ease;
+        }
+        
+        .order-item:hover {
+            background: rgba(0, 0, 0, 0.02);
+            transform: translateX(5px);
         }
         
         .order-item:last-child {
@@ -240,10 +283,15 @@ $conn->close();
         .order-id {
             font-weight: 600;
             color: var(--red);
-            background: rgba(169, 50, 38, 0.1); /* Changed to red with opacity */
+            background: rgba(169, 50, 38, 0.1);
             padding: 5px 10px;
             border-radius: 8px;
             font-size: 13px;
+            transition: all 0.3s ease;
+        }
+        
+        .order-item:hover .order-id {
+            background: rgba(169, 50, 38, 0.2);
         }
         
         .order-details {
@@ -263,7 +311,7 @@ $conn->close();
         }
         
         .order-date {
-            color: var(--grey);
+            color: var(--dark-grey);
             margin-top: 3px;
         }
         
@@ -277,21 +325,27 @@ $conn->close();
             border-radius: 20px;
             font-size: 12px;
             font-weight: 500;
-        }
-        
-        .order-status.completed { 
-            background-color: rgba(40, 167, 69, 0.1);
-            color: var(--green);
+            transition: all 0.3s ease;
         }
         
         .order-status.pending { 
-            background-color: rgba(255, 193, 7, 0.1);
-            color: var(--yellow);
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #b38f00;
         }
         
-        .order-status.process { 
-            background-color: rgba(23, 162, 184, 0.1);
-            color: var(--teal);
+        .order-status.processing { 
+            background-color: rgba(23, 162, 184, 0.2);
+            color: #0d7c8c;
+        }
+        
+        .order-status.completed { 
+            background-color: rgba(40, 167, 69, 0.2);
+            color: #1e7d34;
+        }
+        
+        .order-status.cancelled { 
+            background-color: rgba(219, 80, 74, 0.2);
+            color: #a93226;
         }
         
         /* CUSTOMER LIST STYLES */
@@ -306,18 +360,30 @@ $conn->close();
             align-items: center;
             padding: 12px 0;
             gap: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .customer-item:hover {
+            background: rgba(0, 0, 0, 0.02);
+            transform: translateX(5px);
         }
         
         .customer-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: var(--red); /* Changed to red */
+            background: var(--red);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .customer-item:hover .customer-avatar {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(169, 50, 38, 0.2);
         }
         
         .customer-info {
@@ -332,21 +398,22 @@ $conn->close();
         
         .customer-activity {
             font-size: 12px;
-            color: var(--grey);
+            color: var(--dark-grey);
             margin-top: 2px;
+            font-weight: 500;
         }
         
         .customer-action {
             background: none;
             border: none;
-            color: var(--grey);
+            color: var(--dark-grey);
             cursor: pointer;
             transition: all 0.3s ease;
         }
         
         .customer-action:hover {
-            color: var(--red); /* Changed to red */
-            transform: scale(1.1);
+            color: var(--red);
+            transform: scale(1.2);
         }
         
         /* NO DATA STYLES */
@@ -356,7 +423,7 @@ $conn->close();
             align-items: center;
             justify-content: center;
             padding: 40px 0;
-            color: var(--grey);
+            color: var(--dark-grey);
         }
         
         .no-data i {
@@ -368,6 +435,7 @@ $conn->close();
         .no-data p {
             margin: 0;
             font-size: 14px;
+            font-weight: 500;
         }
         
         /* RESPONSIVE STYLES */
@@ -486,8 +554,8 @@ $conn->close();
                         <i class='bx bxs-calendar-check'></i>
                     </div>
                     <span class="text">
-                        <h3><?php echo $totalOrders; ?></h3>
-                        <p>New Orders</p>
+                        <h3><?php echo array_sum($statusCounts); ?></h3>
+                        <p>Total Orders</p>
                     </span>
                 </li>
                 <li>
@@ -507,7 +575,7 @@ $conn->close();
                         <h3>RM 
                             <?php 
                                 $conn2 = new mysqli($servername, $username, $password, $dbname);
-                                $salesResult = $conn2->query("SELECT SUM(price_items * quantity_items) AS total_sales FROM items_ordered");
+                                $salesResult = $conn2->query("SELECT SUM(price_items * quantity_items) AS total_sales FROM items_ordered WHERE status_order = 'completed'");
                                 $totalSales = 0;
                                 if ($salesResult && $salesRow = $salesResult->fetch_assoc()) {
                                     $totalSales = $salesRow['total_sales'] ?? 0;
@@ -531,24 +599,58 @@ $conn->close();
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Total Orders'],
+                        labels: ['Pending', 'Processing', 'Completed', 'Cancelled'],
                         datasets: [{
-                            label: 'Number of Orders',
-                            data: [<?php echo $totalOrders; ?>],
-                            backgroundColor: ['#a93226'], /* Changed to deep red */
-                            borderRadius: 15,
-                            hoverBackgroundColor: ['#7d241b'] /* Darker red for hover */
+                            label: 'Order Status',
+                            data: [
+                                <?php echo $statusCounts['pending']; ?>,
+                                <?php echo $statusCounts['processing']; ?>,
+                                <?php echo $statusCounts['completed']; ?>,
+                                <?php echo $statusCounts['cancelled']; ?>
+                            ],
+                            backgroundColor: [
+                                'rgba(255, 193, 7, 0.7)',
+                                'rgba(23, 162, 184, 0.7)',
+                                'rgba(40, 167, 69, 0.7)',
+                                'rgba(169, 50, 38, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(23, 162, 184, 1)',
+                                'rgba(40, 167, 69, 1)',
+                                'rgba(169, 50, 38, 1)'
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            hoverBackgroundColor: [
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(23, 162, 184, 1)',
+                                'rgba(40, 167, 69, 1)',
+                                'rgba(169, 50, 38, 1)'
+                            ]
                         }]
                     },
                     options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.raw;
+                                    }
+                                }
+                            }
+                        },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: { stepSize: 1 }
+                                ticks: {
+                                    stepSize: 1
+                                }
                             }
-                        },
-                        plugins: {
-                            legend: { display: false }
                         }
                     }
                 });
@@ -561,7 +663,7 @@ $conn->close();
                     <div class="card-header">
                         <h3><i class='bx bxs-receipt'></i> Recent Orders</h3>
                         <div class="card-actions">
-                            <button class="view-all">View All</button>
+                            <a href="order.php" class="view-all">View All</a>
                         </div>
                     </div>
                     <div class="card-body">
@@ -581,16 +683,13 @@ $conn->close();
                                         RM <?php echo number_format($order['total_price'], 2); ?>
                                     </div>
                                     <?php
-                                        $statusClass = '';
-                                        switch (strtolower($order['status_order'])) {
-                                            case 'completed': $statusClass = 'completed'; break;
-                                            case 'pending': $statusClass = 'pending'; break;
-                                            case 'process': $statusClass = 'process'; break;
-                                            default: $statusClass = 'pending';
+                                        $statusClass = strtolower($order['status_order']);
+                                        if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled'])) {
+                                            $statusClass = 'pending';
                                         }
                                     ?>
                                     <div class="order-status <?php echo $statusClass; ?>">
-                                        <?php echo htmlspecialchars($order['status_order']); ?>
+                                        <?php echo ucfirst($statusClass); ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -608,7 +707,7 @@ $conn->close();
                     <div class="card-header">
                         <h3><i class='bx bxs-user-detail'></i> Recent Customers</h3>
                         <div class="card-actions">
-                            <button class="view-all">View All</button>
+                            <a href="customer_list.php" class="view-all">View All</a>
                         </div>
                     </div>
                     <div class="card-body">
@@ -649,6 +748,12 @@ $conn->close();
         sidebarBtn.addEventListener("click", () => {
             sidebar.classList.toggle("active");
         });
+
+        // Add smooth transitions to all interactive elements
+        document.querySelectorAll('.box-info li, .data-card, .order-item, .customer-item, .icon-circle, .view-all, .customer-action')
+            .forEach(element => {
+                element.style.transition = 'all 0.3s ease';
+            });
     </script>
 </body>
 </html>
