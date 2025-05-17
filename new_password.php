@@ -216,7 +216,8 @@ if (isset($_POST['reset'])) {
             <div class="form-group">
                 <label for="new_password">New Password</label>
                 <input type="password" name="new_password" id="new_password" required minlength="6" placeholder="Enter your new password">
-                <div class="password-hint">Password must be at least 6 characters long</div>
+                <br>
+                <br><div class="password-hint">Password must be at least 6 characters long</div>
             </div>
 
             <button type="submit" name="reset">Reset Password</button>
