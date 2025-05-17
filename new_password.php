@@ -1,24 +1,23 @@
 <?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    include "db_connection.php";
+session_start();
+$conn = new mysqli("localhost", "root", "", "gaming store");
 
-    $email = $_POST["email"];
-    $new_password = password_hash($_POST["new_password"], PASSWORD_DEFAULT);
+if (isset($_POST['reset'])) {
+    $new_pass = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+    $email = $_SESSION['reset_email'];
 
-    $stmt = $conn->prepare("UPDATE admin_list SET password = ?, reset_code = NULL, reset_expiry = NULL WHERE email = ?");
-    $stmt->bind_param("ss", $new_password, $email);
-    $stmt->execute();
-
-    if ($stmt->affected_rows > 0) {
-        echo "Password successfully updated.";
+    $update = $conn->query("UPDATE admin_list SET password='$new_pass' WHERE email='$email'");
+    if ($update) {
+        session_destroy();
+        echo "Password updated successfully. <a href='login.php'>Login</a>";
     } else {
-        echo "Failed to update password.";
+        echo "Error updating password.";
     }
 }
 ?>
 
 <form method="POST">
-    <input type="hidden" name="email" value="<?= htmlspecialchars($_GET['email']) ?>">
-    <input type="password" name="new_password" required placeholder="New Password">
-    <button type="submit">Set New Password</button>
+    <label>Enter new password:</label>
+    <input type="password" name="new_password" required>
+    <button type="submit" name="reset">Reset Password</button>
 </form>

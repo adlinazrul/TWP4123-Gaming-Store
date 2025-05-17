@@ -1,25 +1,43 @@
 <?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    include "db_connection.php"; // your DB connection
+session_start();
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-    $email = $_POST["email"];
-    $code = rand(100000, 999999);
-    $expiry = date("Y-m-d H:i:s", strtotime("+10 minutes"));
+require 'phpmailer/PHPMailer.php';
+require 'phpmailer/SMTP.php';
+require 'phpmailer/Exception.php';
+$conn = new mysqli("localhost", "root", "", "gaming store");
 
-    $stmt = $conn->prepare("UPDATE admin_list SET reset_code = ?, reset_expiry = ? WHERE email = ?");
-    $stmt->bind_param("sss", $code, $expiry, $email);
-    $stmt->execute();
+if (isset($_POST['send_code'])) {
+    $email = $_POST['email'];
+    $result = $conn->query("SELECT * FROM admin_list WHERE email = '$email'");
 
-    if ($stmt->affected_rows > 0) {
-        // Send email
-        $to = $email;
-        $subject = "Password Reset Verification Code";
-        $message = "Your verification code is: $code";
-        $headers = "From: no-reply@gamingstore.com";
+    if ($result->num_rows > 0) {
+        $code = rand(100000, 999999);
+        $_SESSION['verification_code'] = $code;
+        $_SESSION['reset_email'] = $email;
 
-        mail($to, $subject, $message, $headers);
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'yourgmail@gmail.com';
+            $mail->Password = 'your_app_password';
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
 
-        echo "Verification code sent to your email.";
+            $mail->setFrom('yourgmail@gmail.com', 'Gaming Store');
+            $mail->addAddress($email);
+            $mail->isHTML(true);
+            $mail->Subject = 'Password Reset Code';
+            $mail->Body = "Your verification code is <b>$code</b>";
+
+            $mail->send();
+            echo "Verification code sent. <a href='verify_code.php'>Click here to verify</a>";
+        } catch (Exception $e) {
+            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        }
     } else {
         echo "Email not found.";
     }
@@ -27,6 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <form method="POST">
-    <input type="email" name="email" required placeholder="Enter your email">
-    <button type="submit">Send Verification Code</button>
+    <label>Enter your email:</label>
+    <input type="email" name="email" required>
+    <button type="submit" name="send_code">Send Verification Code</button>
 </form>

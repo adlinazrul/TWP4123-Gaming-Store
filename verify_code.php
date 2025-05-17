@@ -1,28 +1,18 @@
 <?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    include "db_connection.php";
-
-    $email = $_POST["email"];
-    $code = $_POST["code"];
-
-    $stmt = $conn->prepare("SELECT reset_code, reset_expiry FROM admin_list WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $stmt->bind_result($reset_code, $reset_expiry);
-    $stmt->fetch();
-    $stmt->close();
-
-    if ($code == $reset_code && strtotime($reset_expiry) > time()) {
-        header("Location: new_password.php?email=" . urlencode($email));
-        exit;
+session_start();
+if (isset($_POST['verify'])) {
+    $entered_code = $_POST['code'];
+    if ($entered_code == $_SESSION['verification_code']) {
+        header("Location: reset_password.php");
+        exit();
     } else {
-        echo "Invalid or expired code.";
+        echo "Invalid code. Try again.";
     }
 }
 ?>
 
 <form method="POST">
-    <input type="email" name="email" required placeholder="Enter your email">
-    <input type="text" name="code" required placeholder="Enter verification code">
-    <button type="submit">Verify</button>
+    <label>Enter the verification code sent to your email:</label>
+    <input type="text" name="code" required>
+    <button type="submit" name="verify">Verify Code</button>
 </form>
