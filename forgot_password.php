@@ -82,12 +82,13 @@ if (isset($_POST['send_code'])) {
     <title>Reset Your Password - Gaming Store</title>
     <style>
         :root {
-            --primary: #6c5ce7;
-            --secondary: #a29bfe;
-            --dark: #2d3436;
-            --light: #f5f6fa;
-            --success: #00b894;
-            --error: #d63031;
+            --primary: #ef4444;
+            --primary-dark: #dc2626;
+            --secondary: #fca5a5;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --success: #10b981;
+            --error: #b91c1c;
         }
         
         * {
@@ -98,7 +99,7 @@ if (isset($_POST['send_code'])) {
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            background: linear-gradient(135deg, #0f172a, #1e293b);
             color: var(--light);
             min-height: 100vh;
             display: flex;
@@ -108,14 +109,14 @@ if (isset($_POST['send_code'])) {
         }
         
         .container {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 30px;
             width: 100%;
             max-width: 500px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
             position: relative;
             overflow: hidden;
         }
@@ -127,7 +128,7 @@ if (isset($_POST['send_code'])) {
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(108, 92, 231, 0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 70%);
             animation: rotate 20s linear infinite;
             z-index: -1;
         }
@@ -142,7 +143,7 @@ if (isset($_POST['send_code'])) {
             margin-bottom: 30px;
             font-size: 28px;
             color: var(--primary);
-            text-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
         }
         
         .form-group {
@@ -153,13 +154,14 @@ if (isset($_POST['send_code'])) {
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
+            color: var(--secondary);
         }
         
         input[type="email"] {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            background: rgba(15, 23, 42, 0.5);
             border-radius: 8px;
             color: white;
             font-size: 16px;
@@ -169,14 +171,14 @@ if (isset($_POST['send_code'])) {
         input[type="email"]:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3);
-            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+            background: rgba(15, 23, 42, 0.7);
         }
         
         button {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
             border: none;
             border-radius: 8px;
             color: white;
@@ -184,12 +186,12 @@ if (isset($_POST['send_code'])) {
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
         }
         
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.6);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
         }
         
         button:active {
@@ -199,7 +201,7 @@ if (isset($_POST['send_code'])) {
         .success-message {
             margin-top: 20px;
             padding: 15px;
-            background: rgba(0, 184, 148, 0.2);
+            background: rgba(16, 185, 129, 0.2);
             border-left: 4px solid var(--success);
             border-radius: 4px;
         }
@@ -207,7 +209,7 @@ if (isset($_POST['send_code'])) {
         .error-message {
             margin-top: 20px;
             padding: 15px;
-            background: rgba(214, 48, 49, 0.2);
+            background: rgba(185, 28, 28, 0.2);
             border-left: 4px solid var(--error);
             border-radius: 4px;
         }
@@ -215,10 +217,10 @@ if (isset($_POST['send_code'])) {
         .debug-info {
             margin-top: 20px;
             padding: 15px;
-            background: rgba(45, 52, 54, 0.5);
+            background: rgba(30, 41, 59, 0.8);
             border-radius: 4px;
             font-size: 14px;
-            color: #ccc;
+            color: #cbd5e1;
         }
         
         .gaming-icon {
@@ -226,6 +228,7 @@ if (isset($_POST['send_code'])) {
             font-size: 50px;
             margin-bottom: 20px;
             animation: pulse 2s infinite;
+            color: var(--primary);
         }
         
         @keyframes pulse {
