@@ -14,8 +14,11 @@ if ($conn->connect_error) {
 }
 
 if (isset($_POST['send_code'])) {
-    $email = $_POST['email'];
-    $result = $conn->query("SELECT * FROM admin_list WHERE email = '$email'");
+    $email = strtolower(trim($_POST['email'])); // clean email
+    $stmt = $conn->prepare("SELECT * FROM admin_list WHERE LOWER(email) = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
         $code = rand(100000, 999999);
@@ -28,7 +31,7 @@ if (isset($_POST['send_code'])) {
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
             $mail->Username = 'adlina.mlk@gmail.com'; // ✅ Your Gmail
-            $mail->Password = 'ewpuqoqxjlksvgaf';     // ✅ Your Gmail App Password
+            $mail->Password = 'ewpuqoqxjlksvgaf';     // ✅ Your App Password
             $mail->SMTPSecure = 'tls';
             $mail->Port = 587;
 
