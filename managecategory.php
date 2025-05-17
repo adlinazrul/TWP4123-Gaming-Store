@@ -192,8 +192,6 @@ $result = $conn->query($sql);
 <!-- CONTENT -->
 <section id="content">
 	<nav>
-		<i class='bx bx-menu'></i>
-		<a href="managecategory.php" class="nav-link">Categories</a>
 		<form action="#">
 			<div class="form-input">
 				<input type="search" placeholder="Search...">
