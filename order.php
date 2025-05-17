@@ -1,12 +1,7 @@
 <?php
-
 session_start();
 
-// Check if the session variable is set
-if (isset($_SESSION['admin_id'])) {
-    $admin_id = $_SESSION['admin_id'];
-} else {
-    // Handle the case when the admin is not logged in (e.g., redirect to login page)
+if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
@@ -16,87 +11,111 @@ $username = "root";
 $password = "";
 $dbname = "gaming_store";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch orders from the items_ordered table
-$sql = "SELECT * FROM items_ordered";
-$result = $conn->query($sql);
+$order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
 
-// Check if the query was successful
-if ($result === false) {
-    die("Error: " . $conn->error);
+$stmt = $conn->prepare("SELECT * FROM items_ordered WHERE order_id = ?");
+$stmt->bind_param("i", $order_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows == 0) {
+    echo "Order not found.";
+    exit;
 }
 
-if ($admin_id) {
-    // Correct SQL query to fetch the profile image (use 'image' column)
-    $query = "SELECT image FROM admin_list WHERE id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $admin_id);
-    $stmt->execute();
-    $stmt->bind_result($image);
-    if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'image/' . $image; // Path to the image in 'image' folder
-    } else {
-        $profile_image = 'image/default_profile.jpg'; // Default image in 'image' folder
-    }
-    $stmt->close();
-} else {
-    $profile_image = 'image/default_profile.jpg'; // Default image if not logged in
+$items = [];
+while ($row = $result->fetch_assoc()) {
+    $items[] = $row;
 }
 
-
-
+$admin_id = $_SESSION['admin_id'];
+$query = "SELECT image FROM admin_list WHERE id = ?";
+$img_stmt = $conn->prepare($query);
+$img_stmt->bind_param("i", $admin_id);
+$img_stmt->execute();
+$img_stmt->bind_result($image);
+$profile_image = ($img_stmt->fetch() && !empty($image)) ? 'image/' . $image : 'image/default_profile.jpg';
+$img_stmt->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Management</title>
-    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="manageadmin.css">
-    <style>
-        /* Your custom CSS styles */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table th, table td {
-            padding: 12px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-
-        table img {
-            border-radius: 5px;
-        }
-
-        table button {
-            padding: 5px 10px;
-            background-color: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        table button:hover {
-            background-color: #dc2626;
-        }
-    </style>
+<meta charset="UTF-8" />
+<title>Order Details</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+<link rel="stylesheet" href="manageadmin.css" />
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    table th, table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+    table img {
+        border-radius: 5px;
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+    }
+    .details-container {
+        padding: 20px;
+    }
+    .total-table {
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: 0;
+        border: 1px solid #ddd;
+    }
+    .total-table th, .total-table td {
+        padding: 10px;
+        text-align: right;
+        border: none;
+        font-weight: bold;
+    }
+    select.status-select {
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        font-weight: 600;
+        color: #333;
+        cursor: pointer;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    select.status-select:hover {
+        background-color: #e0e0e0;
+        border-color: #888;
+    }
+    button.update-btn {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    button.update-btn:hover {
+        background-color: #45a049;
+    }
+</style>
 </head>
 <body>
 
 <section id="sidebar">
-<a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
+    <a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
     <ul class="side-menu top">
         <li><a href="admindashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
         <li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
@@ -117,54 +136,89 @@ if ($admin_id) {
         <a href="managecategory.html" class="nav-link">Categories</a>
         <form action="#">
             <div class="form-input">
-                <input type="search" placeholder="Search...">
+                <input type="search" placeholder="Search..." />
                 <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
             </div>
         </form>
         <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
-        <a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
+        <a href="profile_admin.php" class="profile"><img src="<?= htmlspecialchars($profile_image) ?>" alt="Profile Picture" /></a>
     </nav>
 
     <main>
         <div class="head-title" style="margin-bottom: 30px;">
             <div class="left">
-                <h1>Order Management</h1>
+                <h1>Order Details</h1>
                 <ul class="breadcrumb">
                     <li><a href="#">Dashboard</a></li>
                     <li><i class='bx bx-chevron-right'></i></li>
-                    <li><a class="active" href="#">Order Management</a></li>
+                    <li><a class="active" href="#">Order Details</a></li>
                 </ul>
             </div>
         </div>
 
-        <div class="container">
-            <section id="view-orders">
-                <h2>Order List</h2>
+        <div class="details-container">
+            <form action="update_status.php" method="POST">
+                <input type="hidden" name="order_id" value="<?= $order_id ?>">
                 <table>
                     <thead>
                         <tr>
-                            <th>Order ID</th>
-                            <th>Product Name</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
                             <th>Image</th>
+                            <th>Product Name</th>
+                            <th>Price (RM)</th>
+                            <th>Quantity</th>
+                            <th>Total (RM)</th>
+                            <th>Status</th>
+                            <th>Customer Name</th>
+                            <th>Contact</th>
+                            <th>Address</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php 
-                        // Loop through the results and display each order
-                        while ($row = $result->fetch_assoc()) { ?>
-                            <tr>
-                                <td><?= $row['order_id'] ?></td>
-                                <td><?= $row['product_name'] ?></td>
-                                <td>RM <?= number_format($row['price_items'], 2) ?></td>
-                                <td><?= $row['quantity_items'] ?></td>
-                                <td><img src="uploads/<?= $row['image_items'] ?>" width="50"></td>
-                            </tr>
+                        <?php
+                        $total_price = 0;
+                        foreach ($items as $index => $row) {
+                            $item_total = $row['price_items'] * $row['quantity_items'];
+                            $total_price += $item_total;
+                        ?>
+                        <tr>
+                            <td><img src="/TWP4123-Gaming-Store/<?= htmlspecialchars($row['image_items']) ?>" alt="Product Image" /></td>
+                            <td><?= htmlspecialchars($row['product_name']) ?></td>
+                            <td><?= number_format($row['price_items'], 2) ?></td>
+                            <td><?= htmlspecialchars($row['quantity_items']) ?></td>
+                            <td><?= number_format($item_total, 2) ?></td>
+                            <td>
+                                <select name="status_order[<?= $index ?>]" class="status-select" required>
+                                    <?php
+                                    $statuses = ['Pending', 'Processing', 'Completed', 'Cancelled'];
+                                    foreach ($statuses as $status) {
+                                        $selected = ($status == $row['status_order']) ? 'selected' : '';
+                                        echo "<option value=\"$status\" $selected>$status</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </td>
+                            <td><?= htmlspecialchars($row['name_cust']) ?></td>
+                            <td><?= htmlspecialchars($row['num_tel_cust']) ?></td>
+                            <td><?= nl2br(htmlspecialchars($row['address_cust'])) ?></td>
+                            <td><?= htmlspecialchars($row['date']) ?></td>
+                        </tr>
+                        <input type="hidden" name="item_id[<?= $index ?>]" value="<?= $row['id'] ?>">
                         <?php } ?>
                     </tbody>
                 </table>
-            </section>
+
+                <table class="total-table">
+                    <tr>
+                        <th>Total Price:</th>
+                        <td>RM <?= number_format($total_price, 2) ?></td>
+                    </tr>
+                </table>
+
+                <div style="text-align: right; margin-top: 10px;">
+                    <button type="submit" class="update-btn">Update Status</button>
+                </div>
+            </form>
         </div>
     </main>
 </section>
@@ -172,7 +226,7 @@ if ($admin_id) {
 </body>
 </html>
 
-<?php 
-// Close connection
+<?php
+$stmt->close();
 $conn->close();
 ?>
