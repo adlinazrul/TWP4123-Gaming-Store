@@ -478,7 +478,7 @@ $conn->close();
                 </a>
             </li>
             <li>
-                <a href="customer_list.php">
+                <a href="cust_list.php">
                     <i class='bx bxs-user'></i>
                     <span class="text">Customer</span>
                 </a>
