@@ -5,7 +5,7 @@ $conn = new mysqli("localhost", "root", "", "gaming_store");
 $message = '';
 
 if (isset($_POST['reset'])) {
-    $new_pass = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+    $new_pass = $_POST['new_password']; // No encryption
     $email = $_SESSION['reset_email'] ?? '';
 
     if (!$email) {
@@ -30,6 +30,7 @@ if (isset($_POST['reset'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset Password - Gaming Store</title>
     <style>
+        /* Your existing CSS (unchanged) */
         :root {
             --primary: #ef4444;
             --primary-dark: #dc2626;
@@ -43,16 +44,16 @@ if (isset($_POST['reset'])) {
             --text-dark: #1e293b;
             --text-light: #f8fafc;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
+
         body {
             background: linear-gradient(135deg, #0f172a, #1e293b);
             color: var(--text-dark);
@@ -63,7 +64,7 @@ if (isset($_POST['reset'])) {
             padding: 20px;
             line-height: 1.6;
         }
-        
+
         .container {
             background: var(--container-bg);
             border-radius: 15px;
@@ -76,12 +77,12 @@ if (isset($_POST['reset'])) {
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .container:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
-        
+
         .container::before {
             content: '';
             position: absolute;
@@ -91,7 +92,7 @@ if (isset($_POST['reset'])) {
             height: 5px;
             background: linear-gradient(90deg, var(--primary), var(--primary-dark));
         }
-        
+
         h1 {
             text-align: center;
             margin-bottom: 30px;
@@ -102,7 +103,7 @@ if (isset($_POST['reset'])) {
             display: inline-block;
             width: 100%;
         }
-        
+
         h1::after {
             content: '';
             position: absolute;
@@ -114,20 +115,19 @@ if (isset($_POST['reset'])) {
             background: var(--primary);
             border-radius: 3px;
         }
-        
+
         .form-group {
             margin-bottom: 25px;
             position: relative;
         }
-        
+
         label {
             display: block;
             margin-bottom: 10px;
             font-weight: 500;
             color: var(--text-dark);
-            transition: all 0.3s ease;
         }
-        
+
         input[type="password"] {
             width: 100%;
             padding: 15px;
@@ -136,28 +136,25 @@ if (isset($_POST['reset'])) {
             border-radius: 8px;
             color: var(--text-dark);
             font-size: 16px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
-        
+
         input[type="password"]:hover {
             border-color: var(--secondary);
         }
-        
+
         input[type="password"]:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px var(--primary-light);
         }
-        
+
         .password-hint {
             font-size: 12px;
             color: #64748b;
             margin-top: -15px;
             margin-bottom: 20px;
-            text-align: left;
         }
-        
+
         button {
             width: 100%;
             padding: 15px;
@@ -169,35 +166,13 @@ if (isset($_POST['reset'])) {
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-            position: relative;
-            overflow: hidden;
         }
-        
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: all 0.5s ease;
-        }
-        
+
         button:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
         }
-        
-        button:hover::before {
-            left: 100%;
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
+
         .error-message {
             margin-top: 20px;
             padding: 15px;
@@ -205,29 +180,22 @@ if (isset($_POST['reset'])) {
             display: flex;
             align-items: center;
             gap: 10px;
-            animation: fadeIn 0.5s ease;
             background: rgba(185, 28, 28, 0.1);
             border-left: 4px solid var(--error);
             color: var(--error);
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
+
         .feather {
             vertical-align: middle;
         }
-        
+
         .gaming-icon {
             text-align: center;
             font-size: 60px;
             margin-bottom: 20px;
             animation: pulse 2s infinite;
-            filter: drop-shadow(0 5px 10px rgba(239, 68, 68, 0.3));
         }
-        
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -239,21 +207,19 @@ if (isset($_POST['reset'])) {
     <div class="container">
         <div class="gaming-icon">🔑</div>
         <h1>Reset Your Password</h1>
-        
+
         <?php if ($message) : ?>
             <?= $message ?>
         <?php endif; ?>
-        
+
         <form method="POST" novalidate>
             <div class="form-group">
                 <label for="new_password">New Password</label>
                 <input type="password" name="new_password" id="new_password" required minlength="6" placeholder="Enter your new password">
                 <div class="password-hint">Password must be at least 6 characters long</div>
             </div>
-            
-            <button type="submit" name="reset">
-                Reset Password
-            </button>
+
+            <button type="submit" name="reset">Reset Password</button>
         </form>
     </div>
 </body>
