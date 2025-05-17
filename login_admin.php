@@ -1,13 +1,13 @@
 <?php
 session_start();
-require_once 'db_config.php';  // Ensure this points to your DB config
+require_once 'db_config.php';  // Make sure this path is correct
 
 $message = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['uname'];
     $password = $_POST['psw'];
-    $selectedRole = $_POST['role'];
+    $selectedRole = strtolower($_POST['role']);
 
     if (empty($username) || empty($password) || empty($selectedRole)) {
         $message = "Please fill in all fields and select a role.";
@@ -19,21 +19,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($result->num_rows > 0) {
             $user = $result->fetch_assoc();
+            $dbPassword = $user['password'];
+            $dbRole = strtolower($user['user_type']);
 
-            if ($password === $user['password']) {
-                if (strtolower($selectedRole) === strtolower($user['user_type'])) {
+            if ($password === $dbPassword) {
+                if ($selectedRole === $dbRole) {
+                    // Set session
                     $_SESSION['admin_id'] = $user['id'];
                     $_SESSION['admin_username'] = $user['username'];
                     $_SESSION['admin_email'] = $user['email'];
 
-                    if ($selectedRole === 'admin') {
+                    // Redirect based on role
+                    if ($dbRole === 'admin') {
                         header("Location: dashboard.php");
                         exit();
-                    } elseif ($selectedRole === 'superadmin') {
+                    } elseif ($dbRole === 'superadmin') {
                         header("Location: admindashboard.php");
                         exit();
                     } else {
-                        $message = "Invalid role selected.";
+                        $message = "Unknown role. Cannot redirect.";
                     }
                 } else {
                     $message = "Role mismatch. Please select the correct role.";
@@ -50,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
