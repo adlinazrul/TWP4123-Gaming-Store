@@ -6,7 +6,12 @@ use PHPMailer\PHPMailer\Exception;
 require 'phpmailer/PHPMailer.php';
 require 'phpmailer/SMTP.php';
 require 'phpmailer/Exception.php';
+
 $conn = new mysqli("localhost", "root", "", "gaming_store");
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
 if (isset($_POST['send_code'])) {
     $email = $_POST['email'];
@@ -22,30 +27,38 @@ if (isset($_POST['send_code'])) {
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
-            $mail->Username = 'yourgmail@gmail.com';
-            $mail->Password = 'ewpuqoqxjlksvgaf';
+            $mail->Username = 'adlina.mlk@gmail.com'; // ✅ Your Gmail
+            $mail->Password = 'ewpuqoqxjlksvgaf';     // ✅ Your Gmail App Password
             $mail->SMTPSecure = 'tls';
             $mail->Port = 587;
 
-            $mail->setFrom('yourgmail@gmail.com', 'Gaming Store');
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                ]
+            ];
+
+            $mail->setFrom('adlina.mlk@gmail.com', 'Gaming Store');
             $mail->addAddress($email);
             $mail->isHTML(true);
             $mail->Subject = 'Password Reset Code';
             $mail->Body = "Your verification code is <b>$code</b>";
 
             $mail->send();
-            echo "Verification code sent. <a href='verify_code.php'>Click here to verify</a>";
+            echo "✅ Verification code sent. <a href='verify_code.php'>Click here to verify</a>";
         } catch (Exception $e) {
-            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            echo "❌ Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
         }
     } else {
-        echo "Email not found.";
+        echo "❌ Email not found in our system.";
     }
 }
 ?>
 
 <form method="POST">
-    <label>Enter your email:</label>
-    <input type="email" name="email" required>
+    <label>Enter your email:</label><br>
+    <input type="email" name="email" required><br><br>
     <button type="submit" name="send_code">Send Verification Code</button>
 </form>
