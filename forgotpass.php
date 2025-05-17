@@ -27,7 +27,7 @@ if (isset($_POST['send_code'])) {
     $email = strtolower(trim($_POST['email']));
 
     // DEBUG: Show the raw SQL being executed
-    echo "DEBUG SQL: SELECT * FROM admin_list WHERE LOWER(email) = '$email'<br>";
+    echo "DEBUG SQL: SELECT * FROM customers WHERE LOWER(email) = '$email'<br>";
 
     $stmt = $conn->prepare("SELECT * FROM customers WHERE LOWER(email) = ?");
     $stmt->bind_param("s", $email);
