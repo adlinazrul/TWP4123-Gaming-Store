@@ -154,19 +154,19 @@ $result = $conn->query($sql);
 			</a>
 		</li>
 		<li>
-			<a href="order.php">
+			<a href="order_admin.php">
 				<i class='bx bxs-doughnut-chart'></i>
 				<span class="text">Order</span>
 			</a>
 		</li>
 		<li>
-			<a href="customer_list.php">
+			<a href="cust_list.php">
 				<i class='bx bxs-user'></i>
 				<span class="text">Customer</span>
 			</a>
 		</li>
 		<li>
-			<a href="addadmin.php">
+			<a href="view_admin.php">
 				<i class='bx bxs-group'></i>
 				<span class="text">Admin</span>
 			</a>

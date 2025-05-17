@@ -460,31 +460,31 @@ $conn->close();
                 </a>
             </li>
             <li>
-                <a href="manageproduct.php">
+                <a href="manage_product.php">
                     <i class='bx bxs-shopping-bag-alt'></i>
                     <span class="text">Product Management</span>
                 </a>
             </li>
             <li>
-                <a href="manage_category.php">
+                <a href="managecategory.php">
                     <i class='bx bxs-category'></i>
                     <span class="text">Category Management</span>
                 </a>
             </li>
             <li>
-                <a href="order.php">
+                <a href="order_admin.php">
                     <i class='bx bxs-doughnut-chart'></i>
                     <span class="text">Order</span>
                 </a>
             </li>
             <li>
-                <a href="customer_list.php">
+                <a href="cust_list.php">
                     <i class='bx bxs-user'></i>
                     <span class="text">Customer</span>
                 </a>
             </li>
             <li>
-                <a href="addadmin.php">
+                <a href="view_admin.php">
                     <i class='bx bxs-group'></i>
                     <span class="text">Admin</span>
                 </a>
@@ -510,8 +510,6 @@ $conn->close();
     <section id="content">
         <!-- NAVBAR -->
         <nav>
-            <i class='bx bx-menu'></i>
-            <a href="managecategory.html" class="nav-link">Categories</a>
             <form action="#">
                 <div class="form-input">
                     <input type="search" placeholder="Search..." />
