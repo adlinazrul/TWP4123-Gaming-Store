@@ -466,7 +466,7 @@ $conn->close();
                 </a>
             </li>
             <li>
-                <a href="manage_category.php">
+                <a href="managecategory.php">
                     <i class='bx bxs-category'></i>
                     <span class="text">Category Management</span>
                 </a>
