@@ -23,7 +23,7 @@ if (isset($_POST['send_code'])) {
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
             $mail->Username = 'yourgmail@gmail.com';
-            $mail->Password = 'your_app_password';
+            $mail->Password = 'ewpu qoqx jlks vgaf';
             $mail->SMTPSecure = 'tls';
             $mail->Port = 587;
 
