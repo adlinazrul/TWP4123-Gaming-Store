@@ -108,177 +108,469 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
-
-<!-- HTML Section Starts -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Edit Profile | Gamers Hideout</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-     <style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS | Edit Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff0000;
+            --secondary: #d10000;
+            --dark: #0d0221;
+            --light: #ffffff;
+            --accent: #ff3333;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #fff5f5;
+            font-family: 'Rubik', sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
-
-        .container {
-            max-width: 700px;
-            margin: 60px auto;
-            padding: 40px;
-            background-color: #ffffff;
-            border: 1px solid #ffb3b3;
-            border-radius: 10px;
-            box-shadow: 0 0 12px rgba(255, 0, 0, 0.1);
+        
+        header {
+            background: var(--dark);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
         }
-
-        h2 {
-            text-align: center;
-            color: #b30000;
-            margin-bottom: 30px;
-            font-size: 28px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #cc0000;
-            font-weight: bold;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        input[type="date"],
-        textarea,
-        input[type="file"] {
-            width: 100%;
-            padding: 10px 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ff9999;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-
-        textarea {
-            resize: vertical;
-        }
-
-        .profile-image {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .profile-image img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 2px solid #ff6666;
-            object-fit: cover;
-        }
-
-        .btn-container {
+        
+        .nav-menu {
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
         }
-
-        .btn {
-            padding: 10px 25px;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 400;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .icons-left, .icons-right {
+            display: flex;
+            gap: 25px;
+        }
+        
+        .icons-left i, .icons-right i {
+            font-size: 1.5rem;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.3s ease;
+            color: var(--light);
         }
-
+        
+        .icons-left i:hover, .icons-right i:hover {
+            color: var(--primary);
+        }
+        
+        .profile-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(255, 0, 0, 0.2);
+        }
+        
+        .profile-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+        
+        .profile-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 5px;
+            color: var(--light);
+            font-family: 'Rubik', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+        
+        .form-control[readonly] {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .profile-image-container {
+            grid-column: span 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+        }
+        
+        .btn-container {
+            grid-column: span 2;
+            display: flex;
+            justify-content: flex-end;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 400;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
         .btn-cancel {
-            background-color: #fff0f0;
-            color: #b30000;
-            border: 1px solid #ff9999;
+            background: transparent;
+            color: var(--light);
+            border: 1px solid var(--primary);
         }
-
+        
         .btn-cancel:hover {
-            background-color: #ffe6e6;
+            background: rgba(255, 0, 0, 0.2);
         }
-
+        
         .btn-save {
-            background-color: #e60000;
-            color: white;
+            background: var(--primary);
+            color: var(--light);
         }
-
+        
         .btn-save:hover {
-            background-color: #cc0000;
+            background: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+        
+        /* Mobile menu styles */
+        #menuOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            z-index: 2000;
+        }
+        
+        #menuContainer {
+            position: fixed;
+            top: 0;
+            left: -400px;
+            width: 400px;
+            height: 100%;
+            background: var(--dark);
+            padding: 40px;
+            transition: left 0.4s ease;
+            z-index: 2001;
+            border-right: 1px solid var(--primary);
+        }
+        
+        #closeMenu {
+            font-size: 2rem;
+            color: var(--primary);
+            cursor: pointer;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        #menuOverlay.active {
+            display: block;
+        }
+        
+        #menuOverlay.active #menuContainer {
+            left: 0;
+        }
+        
+        .menu-item {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 0, 0, 0.1);
+        }
+        
+        .menu-item a {
+            color: var(--light);
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        
+        .menu-item a:hover {
+            color: var(--primary);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .profile-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-image-container,
+            .btn-container {
+                grid-column: span 1;
+            }
+            
+            .profile-container {
+                padding: 30px 20px;
+                margin: 30px 20px;
+            }
+            
+            .profile-title {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
-<body class="bg-red-50 font-sans">
-    <div class="container mx-auto max-w-3xl p-8 bg-white shadow-lg mt-8 rounded-xl border">
-        <h2 class="text-3xl font-bold text-red-800 mb-6">My Profile</h2>
- <div>
-                
-               
-               <?php if (!empty($user['profile_pic'])): ?>
-    <div class="flex justify-center mb-6">
-        <img src="<?= $user['profile_pic'] ?>" alt="Current Picture" class="w-32 h-32 rounded-full border-4 border-red-300 shadow-md object-cover">
-    </div>
-    <label class="block text-red-700">Profile Picture</label>
-     <input type="file" name="profile_pic" class="form-input w-full rounded border-red-300">
-<?php endif; ?>
+<body>
+    <header>
+        <nav class="nav-menu">
+            <div class="icons-left">
+                <i class="fas fa-search"></i>
+                <i class="fas fa-bars" id="menuIcon"></i>
             </div>
-
-
-
-        <form method="POST" enctype="multipart/form-data" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-red-700">First Name</label>
-                    <input type="text" name="first_name" class="form-input w-full rounded border-red-300" value="<?= htmlspecialchars($user['first_name']) ?>">
-                </div>
-                <div>
-                    <label class="block text-red-700">Last Name</label>
-                    <input type="text" name="last_name" class="form-input w-full rounded border-red-300" value="<?= htmlspecialchars($user['last_name']) ?>">
-                </div>
-                <div>
-                    <label class="block text-red-700">Email (read-only)</label>
-                    <input type="email" name="email" class="form-input w-full rounded border-red-300 bg-gray-100" value="<?= htmlspecialchars($user['email']) ?>" readonly>
-                </div>
-                <div>
-                    <label class="block text-red-700">Phone</label>
-                    <input type="tel" name="phone" class="form-input w-full rounded border-red-300" value="<?= htmlspecialchars($user['phone']) ?>">
-                </div>
-                <div>
-                    <label class="block text-red-700">Username</label>
-                    <input type="text" name="username" class="form-input w-full rounded border-red-300" value="<?= htmlspecialchars($user['username']) ?>">
-                </div>
-                <div>
-                    <label class="block text-red-700">Date of Birth</label>
-                    <input type="date" name="birthdate" class="form-input w-full rounded border-red-300" value="<?= htmlspecialchars($user['birthdate']) ?>">
-                </div>
+            
+            <div class="logo">NEXUS</div>
+            
+            <div class="nav-links">
+                <a href="#nintendo">NINTENDO</a>
+                <a href="#playstation">PLAYSTATION</a>
+                <a href="#xbox">XBOX</a>
+                <a href="PRODUCTLIST.html">ACCESSORIES</a>
+                <a href="#vr">VR</a>
             </div>
-            <div>
-                <label class="block text-red-700">Bio</label>
-                <textarea name="bio" rows="3" class="form-input w-full rounded border-red-300"><?= htmlspecialchars($user['bio']) ?></textarea>
+            
+            <div class="icons-right">
+                <a href="custlogin.html">
+                    <i class="fas fa-user"></i>
+                </a>
+                <i class="fas fa-shopping-cart"></i>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div>
-        <label class="block text-red-700">New Password</label>
-        <input type="password" name="new_password" class="form-input w-full rounded border-red-300">
+        </nav>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="menuOverlay">
+        <div id="menuContainer">
+            <span id="closeMenu">&times;</span>
+            <div id="menuContent">
+                <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
+                <div class="menu-item"><a href="custservice.html">HELP</a></div>
+                <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
+            </div>
+        </div>
     </div>
-    <div>
-        <label class="block text-red-700">Confirm New Password</label>
-        <input type="password" name="confirm_password" class="form-input w-full rounded border-red-300">
-    </div>
-</div>
-           
-            <div class="flex justify-end gap-4 pt-4">
-                <a href="index.php" class="px-4 py-2 border border-red-300 text-red-700 rounded hover:bg-red-50">Cancel</a>
-                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Save Changes</button>
+
+    <!-- Profile Edit Section -->
+    <div class="profile-container">
+        <h1 class="profile-title">EDIT PROFILE</h1>
+        
+        <form method="POST" enctype="multipart/form-data" class="profile-form">
+            <div class="profile-image-container">
+                <?php if (!empty($user['profile_pic'])): ?>
+                    <img src="<?= $user['profile_pic'] ?>" alt="Profile Picture" class="profile-image">
+                <?php else: ?>
+                    <div class="profile-image" style="background: rgba(255, 0, 0, 0.2); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-user" style="font-size: 3rem; color: var(--primary);"></i>
+                    </div>
+                <?php endif; ?>
+                <input type="file" name="profile_pic" class="form-control" style="width: auto;">
+            </div>
+            
+            <div class="form-group">
+                <label for="first_name">FIRST NAME</label>
+                <input type="text" id="first_name" name="first_name" class="form-control" value="<?= htmlspecialchars($user['first_name']) ?>">
+            </div>
+            
+            <div class="form-group">
+                <label for="last_name">LAST NAME</label>
+                <input type="text" id="last_name" name="last_name" class="form-control" value="<?= htmlspecialchars($user['last_name']) ?>">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">EMAIL</label>
+                <input type="email" id="email" name="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">PHONE</label>
+                <input type="tel" id="phone" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone']) ?>">
+            </div>
+            
+            <div class="form-group">
+                <label for="username">USERNAME</label>
+                <input type="text" id="username" name="username" class="form-control" value="<?= htmlspecialchars($user['username']) ?>">
+            </div>
+            
+            <div class="form-group">
+                <label for="birthdate">DATE OF BIRTH</label>
+                <input type="date" id="birthdate" name="birthdate" class="form-control" value="<?= htmlspecialchars($user['birthdate']) ?>">
+            </div>
+            
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="bio">BIO</label>
+                <textarea id="bio" name="bio" class="form-control"><?= htmlspecialchars($user['bio']) ?></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="new_password">NEW PASSWORD</label>
+                <input type="password" id="new_password" name="new_password" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm_password">CONFIRM PASSWORD</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control">
+            </div>
+            
+            <div class="btn-container">
+                <a href="index.php" class="btn btn-cancel">CANCEL</a>
+                <button type="submit" class="btn btn-save">SAVE CHANGES</button>
             </div>
         </form>
     </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="#about">ABOUT US</a>
+            <a href="#contact">CONTACT</a>
+            <a href="#shipping">SHIPPING</a>
+            <a href="#returns">RETURNS</a>
+            <a href="#faq">FAQ</a>
+        </div>
+        
+        <div class="social-icons">
+            <a href="#facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#youtube"><i class="fab fa-youtube"></i></a>
+            <a href="#twitch"><i class="fab fa-twitch"></i></a>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2025 NEXUS GAMING STORE. ALL RIGHTS RESERVED.
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let menuOverlay = document.getElementById("menuOverlay");
+            let menuContainer = document.getElementById("menuContainer");
+            let menuIcon = document.getElementById("menuIcon");
+            let closeMenu = document.getElementById("closeMenu");
+
+            // Open menu
+            menuIcon.addEventListener("click", function () {
+                menuOverlay.style.display = "block";
+                setTimeout(() => {
+                    menuOverlay.classList.add("active");
+                }, 10);
+            });
+
+            // Close menu when clicking "X"
+            closeMenu.addEventListener("click", function (e) {
+                e.stopPropagation();
+                menuOverlay.classList.remove("active");
+                setTimeout(() => {
+                    menuOverlay.style.display = "none";
+                }, 300);
+            });
+
+            // Close menu when clicking outside of menu container
+            menuOverlay.addEventListener("click", function (e) {
+                if (e.target === menuOverlay) {
+                    menuOverlay.classList.remove("active");
+                    setTimeout(() => {
+                        menuOverlay.style.display = "none";
+                    }, 300);
+                }
+            });
+            
+            // Add animation to form elements on load
+            const formElements = document.querySelectorAll('.form-group, .profile-image-container');
+            formElements.forEach((el, index) => {
+                el.style.opacity = "0";
+                el.style.transform = "translateY(20px)";
+                el.style.transition = "all 0.5s ease " + (index * 0.1) + "s";
+                setTimeout(() => {
+                    el.style.opacity = "1";
+                    el.style.transform = "translateY(0)";
+                }, 100);
+            });
+        });
+    </script>
 </body>
 </html>
