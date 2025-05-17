@@ -6,7 +6,7 @@ use PHPMailer\PHPMailer\Exception;
 require 'phpmailer/PHPMailer.php';
 require 'phpmailer/SMTP.php';
 require 'phpmailer/Exception.php';
-$conn = new mysqli("localhost", "root", "", "gaming store");
+$conn = new mysqli("localhost", "root", "", "gaming_store");
 
 if (isset($_POST['send_code'])) {
     $email = $_POST['email'];
