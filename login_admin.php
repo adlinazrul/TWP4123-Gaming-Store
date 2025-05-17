@@ -572,7 +572,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <label for="remember">Remember me</label>
                     </div>
                     <div class="forgot-password">
-                        <a href="forgot_password.php"><i class="fas fa-key"></i> Forgot password?</a>
+                        <a href="forgot_password.php"><i class="fas fa-key"></i> Forgot password ?</a>
                     </div>
                 </div>
                 
