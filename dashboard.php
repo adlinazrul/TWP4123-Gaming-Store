@@ -472,7 +472,7 @@ $conn->close();
                 </a>
             </li>
             <li>
-                <a href="order.php">
+                <a href="order_admin.php">
                     <i class='bx bxs-doughnut-chart'></i>
                     <span class="text">Order</span>
                 </a>
