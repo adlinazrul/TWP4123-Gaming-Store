@@ -166,7 +166,7 @@ $result = $conn->query($sql);
 			</a>
 		</li>
 		<li>
-			<a href="addadmin.php">
+			<a href="view_admin.php">
 				<i class='bx bxs-group'></i>
 				<span class="text">Admin</span>
 			</a>
