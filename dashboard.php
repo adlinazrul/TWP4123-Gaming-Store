@@ -460,7 +460,7 @@ $conn->close();
                 </a>
             </li>
             <li>
-                <a href="manageproduct.php">
+                <a href="manage_product.php">
                     <i class='bx bxs-shopping-bag-alt'></i>
                     <span class="text">Product Management</span>
                 </a>
