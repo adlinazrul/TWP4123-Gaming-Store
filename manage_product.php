@@ -160,13 +160,13 @@ $result = mysqli_query($conn, $sql);
 		</a>
 		<ul class="side-menu top">
 			<li>
-				<a href="admindashboard.php">
+				<a href="dashboard.php">
 					<i class='bx bxs-dashboard'></i>
 					<span class="text">Dashboard</span>
 				</a>
 			</li>
 			<li class="active">
-				<a href="manageproduct.php">
+				<a href="manage_product.php">
 					<i class='bx bxs-shopping-bag-alt'></i>
 					<span class="text">Product Management</span>
 				</a>

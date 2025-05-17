@@ -132,8 +132,6 @@ $img_stmt->close();
 
 <section id="content">
     <nav>
-        <i class='bx bx-menu'></i>
-        <a href="managecategory.html" class="nav-link">Categories</a>
         <form action="#">
             <div class="form-input">
                 <input type="search" placeholder="Search..." />
