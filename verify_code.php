@@ -3,7 +3,7 @@ session_start();
 if (isset($_POST['verify'])) {
     $entered_code = $_POST['code'];
     if ($entered_code == $_SESSION['verification_code']) {
-        header("Location: reset_password.php");
+        header("Location: new_password.php");
         exit();
     } else {
         echo "Invalid code. Try again.";
