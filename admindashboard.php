@@ -538,10 +538,11 @@ $conn->close();
                         <li><a class="active" href="#">Home</a></li>
                     </ul>
                 </div>
-                <a href="#" class="btn-download">
-                    <i class='bx bxs-cloud-download'></i>
-                    <span class="text">Download PDF</span>
+               <a href="generate_excel.php" class="btn-download">
+                 <i class='bx bxs-cloud-download'></i>
+                 <span class="text">Download Report</span>
                 </a>
+
             </div>
 
             <ul class="box-info">
