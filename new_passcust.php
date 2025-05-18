@@ -7,7 +7,9 @@ if ($conn->connect_error) {
 }
 
 // Check if reset_email is set in session
-if (!isset($_SESSION['reset_email']) || !isset($_SESSION['verified']) || $_SESSION['verified'] !== true) {
+if (!isset($_SESSION['reset_email']) || !isset($_SESSION['verified']) || $_SESSION['verified']) 
+
+{
     echo "<script>alert('⚠️ Unauthorized access. Please verify your code again.'); window.location.href = 'forgotpass.php';</script>";
     exit();
 }

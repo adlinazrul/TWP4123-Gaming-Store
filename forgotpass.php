@@ -395,13 +395,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['send_code'])) {
             
             <div class="logo">NEXUS</div>
             
-            <div class="nav-links">
-                <a href="#nintendo">NINTENDO</a>
-                <a href="#playstation">PLAYSTATION</a>
-                <a href="#xbox">XBOX</a>
-                <a href="PRODUCTLIST.html">ACCESSORIES</a>
-                <a href="#vr">VR</a>
-            </div>
             
             <div class="icons-right">
                 <a href="custlogin.html">

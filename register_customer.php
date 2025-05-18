@@ -1,20 +1,38 @@
 <?php
 include 'db_connect1.php';
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Simple sanitization function
+function sanitize($data) {
+    return htmlspecialchars(stripslashes(trim($data)));
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $first_name = $_POST["first-name"];
-    $last_name = $_POST["last-name"];
-    $email = $_POST["email"];
-    $phone = $_POST["phone"] ?? ''; // Optional field
-    $address = $_POST["address"]; // Add this line to capture the address
-    $password = password_hash($_POST["password"], PASSWORD_BCRYPT); // Hash password for security
+    // Get form data - note the underscores replacing hyphens
+    $first_name = sanitize($_POST["first_name"] ?? '');
+    $last_name = sanitize($_POST["last_name"] ?? '');
+    $email = sanitize($_POST["email"] ?? '');
+    $phone = sanitize($_POST["phone"] ?? '');
+    $address = sanitize($_POST["address"] ?? '');
+    $city = sanitize($_POST["city"] ?? '');
+    $state = sanitize($_POST["state"] ?? '');
+    $postcode = sanitize($_POST["postcode"] ?? '');
+    $country = sanitize($_POST["country"] ?? '');
+    $password = password_hash($_POST["password"] ?? '', PASSWORD_BCRYPT);
 
     // Insert into database
-    $sql = "INSERT INTO customers (first_name, last_name, email, phone, address, password) 
-            VALUES (?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO customers (first_name, last_name, email, phone, address, city, state, postcode, country, password) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssssss", $first_name, $last_name, $email, $phone, $address, $password);
+    if ($stmt === false) {
+        die("Prepare failed: " . $conn->error);
+    }
+    
+    $stmt->bind_param("ssssssssss", $first_name, $last_name, $email, $phone, $address, $city, $state, $postcode, $country, $password);
 
     if ($stmt->execute()) {
         echo "New customer registered successfully";

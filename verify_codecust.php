@@ -370,15 +370,7 @@ if (isset($_POST['verify'])) {
             </div>
             
             <div class="logo">NEXUS</div>
-            
-            <div class="nav-links">
-                <a href="#nintendo">NINTENDO</a>
-                <a href="#playstation">PLAYSTATION</a>
-                <a href="#xbox">XBOX</a>
-                <a href="PRODUCTLIST.html">ACCESSORIES</a>
-                <a href="#vr">VR</a>
-            </div>
-            
+               
             <div class="icons-right">
                 <a href="custlogin.html">
                     <i class="fas fa-user"></i>
@@ -432,10 +424,9 @@ if (isset($_POST['verify'])) {
         
         <div class="social-icons">
             <a href="#facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#twitter"><i class="fab fa-twitter"></i></a>
+       
             <a href="#instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#youtube"><i class="fab fa-youtube"></i></a>
-            <a href="#twitch"><i class="fab fa-twitch"></i></a>
+           
         </div>
         
         <div class="copyright">
