@@ -1,3 +1,4 @@
+forgot  password  new
 <?php
 session_start();
 use PHPMailer\PHPMailer\PHPMailer;

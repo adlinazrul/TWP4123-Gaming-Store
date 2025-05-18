@@ -12,7 +12,7 @@ if (!isset($_SESSION['reset_email'])) {
 }
 
 if (isset($_POST['verify'])) {
-    $email = $_SESSION['reset_email'];
+   $_SESSION['reset_email'] = $email ;
     $entered_code = $_POST['code'];
 
     // Check against database
