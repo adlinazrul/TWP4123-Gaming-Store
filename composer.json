@@ -12,6 +12,7 @@
             "email": "1231200872@mmu.edu.my"
         }
     ],
-    "minimum-stability": "stable",
-    "require": {}
+    "require": {
+        "phpoffice/phpspreadsheet": "^4.2"
+    }
 }
