@@ -35,7 +35,8 @@ foreach ($tables as $table) {
     if (!empty($rows)) {
         $colIndex = 1;
         foreach (array_keys($rows[0]) as $columnName) {
-            $sheet->setCellValueByColumnAndRow(int $column, int $row, mixed $value)
+            $sheet->setCellValueByColumnAndRow($column, $row, 'value');
+
 
             $colIndex++;
         }
