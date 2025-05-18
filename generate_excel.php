@@ -35,7 +35,10 @@ foreach ($tables as $table) {
     if (!empty($rows)) {
         $colIndex = 1;
         foreach (array_keys($rows[0]) as $columnName) {
-            $sheet->setCellValueByColumnAndRow($column, $row, 'value');
+            use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+
+$cell = Coordinate::stringFromColumnIndex($col) . $row;
+$sheet->setCellValue($cell, $value);
 
 
             $colIndex++;
