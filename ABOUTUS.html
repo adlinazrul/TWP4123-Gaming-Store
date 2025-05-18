@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Shopping Cart</title>
+    <title>NEXUS | About Us</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -85,6 +85,14 @@
             width: 100%;
         }
         
+        .nav-links a.active {
+            color: var(--primary);
+        }
+        
+        .nav-links a.active::after {
+            width: 100%;
+        }
+        
         .icons-left, .icons-right {
             display: flex;
             gap: 25px;
@@ -123,189 +131,187 @@
             position: relative;
         }
         
-        .cart-page {
-            max-width: 1400px;
+        .about-container {
+            max-width: 1200px;
             margin: 50px auto;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 0, 0, 0.1);
-            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.1);
+            padding: 0 30px;
         }
         
-        .cart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 0, 0, 0.2);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .cart-header h2 {
+        .section-title {
             font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
-            font-size: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .continue-shopping {
-            color: var(--light);
-            text-decoration: none;
-            font-family: 'Orbitron', sans-serif;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .continue-shopping:hover {
-            color: var(--primary);
-        }
-        
-        .cart-items {
-            margin-top: 20px;
-        }
-        
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 0, 0, 0.1);
-            padding: 20px 0;
-            transition: all 0.3s ease;
-        }
-        
-        .cart-item:hover {
-            background: rgba(255, 0, 0, 0.05);
-        }
-        
-        .cart-item img {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 5px;
-            border: 1px solid rgba(255, 0, 0, 0.2);
-        }
-        
-        .cart-item-details {
-            flex-grow: 1;
-            margin-left: 30px;
-        }
-        
-        .cart-item-details h3 {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-        }
-        
-        .cart-item-details p {
-            color: var(--gray);
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-        
-        .cart-item-price {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 15px;
-            min-width: 200px;
-        }
-        
-        .cart-item-price span {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-        
-        .cart-item-controls {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .cart-item-checkbox {
-            accent-color: var(--primary);
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        
-        .remove-item {
-            color: var(--gray);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .remove-item:hover {
-            color: var(--primary);
-            transform: scale(1.1);
-        }
-        
-        .cart-item-quantity {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .cart-item-quantity button {
-            padding: 5px 12px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Orbitron', sans-serif;
-            transition: all 0.3s ease;
-        }
-        
-        .cart-item-quantity button:hover {
-            background: var(--accent);
-            transform: translateY(-2px);
-        }
-        
-        .cart-item-quantity span {
-            min-width: 30px;
+            font-size: 2.5rem;
             text-align: center;
+            margin-bottom: 50px;
+            color: var(--primary);
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
         }
         
-        .cart-summary {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 0, 0, 0.2);
-            text-align: right;
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 3px;
+            background: var(--primary);
+            bottom: -10px;
+            left: 25%;
+            border-radius: 3px;
         }
         
-        .cart-total {
+        .about-hero {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            margin-bottom: 80px;
+        }
+        
+        .hero-image {
+            flex: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(255, 0, 0, 0.2);
+        }
+        
+        .hero-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .hero-content {
+            flex: 1;
+        }
+        
+        .hero-content h2 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
+            font-size: 2rem;
             color: var(--primary);
             margin-bottom: 20px;
         }
         
-        .checkout-button {
-            display: inline-block;
-            padding: 15px 40px;
-            background: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            font-family: 'Orbitron', sans-serif;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            font-size: 1.1rem;
+        .hero-content p {
+            line-height: 1.6;
+            margin-bottom: 20px;
         }
         
-        .checkout-button:hover {
-            background: var(--accent);
+        .mission-values {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+        
+        .mission-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 30px;
+            border: 1px solid rgba(255, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .mission-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.2);
+            border-color: rgba(255, 0, 0, 0.3);
+        }
+        
+        .mission-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .mission-card h3 i {
+            font-size: 1.5rem;
+        }
+        
+        .team-section {
+            margin-bottom: 80px;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .team-member {
+            text-align: center;
+        }
+        
+        .member-image {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 20px;
+            border: 3px solid var(--primary);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
+        }
+        
+        .member-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .team-member h3 {
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 5px;
+        }
+        
+        .team-member p {
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .social-links a {
+            color: var(--light);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            
+        }
+        
+        .social-links a:hover {
+            color: var(--primary);
             transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.3);
+        }
+        
+        .stats-section {
+            background: rgba(255, 0, 0, 0.1);
+            padding: 60px 30px;
+            border-radius: 10px;
+            margin-bottom: 80px;
+            border: 1px solid rgba(255, 0, 0, 0.2);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            text-align: center;
+        }
+        
+        .stat-item h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .stat-item p {
+            color: var(--gray);
         }
         
         footer {
@@ -369,7 +375,6 @@
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             text-decoration: none;
-
         }
         
         .social-icons a:hover {
@@ -458,18 +463,8 @@
                 gap: 15px;
             }
             
-            .cart-item {
-                flex-wrap: wrap;
-            }
-            
-            .cart-item-price {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                width: 100%;
-                margin-top: 15px;
-                padding-top: 15px;
-                border-top: 1px solid rgba(255, 0, 0, 0.1);
+            .about-hero {
+                gap: 30px;
             }
         }
         
@@ -482,13 +477,17 @@
                 font-size: 1.5rem;
             }
             
-            .cart-item img {
-                width: 80px;
-                height: 80px;
+            .section-title {
+                font-size: 2rem;
             }
             
-            .cart-item-details {
-                margin-left: 15px;
+            .about-hero {
+                flex-direction: column;
+            }
+            
+            .hero-image, .hero-content {
+                flex: none;
+                width: 100%;
             }
             
             #menuContainer {
@@ -502,22 +501,12 @@
         }
         
         @media (max-width: 480px) {
-            .cart-page {
-                padding: 20px;
+            .section-title {
+                font-size: 1.8rem;
             }
             
-            .cart-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            
-            .cart-item-details h3 {
-                font-size: 1rem;
-            }
-            
-            .cart-item-details p {
-                font-size: 0.8rem;
+            .mission-values, .team-grid, .stats-grid {
+                grid-template-columns: 1fr;
             }
             
             .footer-links {
@@ -540,7 +529,8 @@
             <div class="nav-links">
                 <a href="index.html">HOME</a>
                 <a href="NINTENDO.html">NINTENDO</a>
-                <a href="XBOX.html">CONSOLES</a>
+                <a href="PLAYSTATION.html">PLAYSTATION</a>
+                <a href="XBOX.html">XBOX</a>
                 <a href="ACCESSORIES.html">ACCESSORIES</a>
                 <a href="VR.html">VR</a>
             </div>
@@ -550,8 +540,7 @@
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="cart-icon-container">
-                    <i class="fas fa-shopping-cart" id="cartIcon"></i>
-                    
+                    <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
                 </div>
             </div>
         </nav>
@@ -569,92 +558,41 @@
         </div>
     </div>
 
-    <!-- Cart Page Content -->
-    <section class="cart-page">
-        <div class="cart-header">
-            <h2><i class="fas fa-shopping-cart"></i> YOUR CART</h2>
-            <a href="index.html" class="continue-shopping">
-                <i class="fas fa-arrow-left"></i> CONTINUE SHOPPING
-            </a>
-        </div>
+    <!-- About Us Section -->
+    <div class="about-container">
+        <h2 class="section-title">ABOUT US</h2>
         
-        <div class="cart-items">
-            <!-- Cart Item 1 -->
-            <div class="cart-item">
-                <img src="https://images.unsplash.com/photo-1551103782-8ab07afd45c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Nintendo Switch OLED">
-                <div class="cart-item-details">
-                    <h3>Nintendo Switch OLED</h3>
-                    <p>7-inch OLED screen, 64GB internal storage, enhanced audio for immersive gaming</p>
-                </div>
-                <div class="cart-item-price">
-                    <div class="cart-item-controls">
-                        <input type="checkbox" class="cart-item-checkbox" checked>
-                        <i class="fas fa-trash-alt remove-item" onclick="removeItem(this)"></i>
-                    </div>
-                    <span>RM1,499.00</span>
-                    <div class="cart-item-quantity">
-                        <button onclick="decreaseQuantity(this)">-</button>
-                        <span>1</span>
-                        <button onclick="increaseQuantity(this)">+</button>
-                    </div>
-                </div>
+        <div class="about-hero">
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="NEXUS Gaming Store">
             </div>
-            
-            <!-- Cart Item 2 -->
-            <div class="cart-item">
-                <img src="https://images.unsplash.com/photo-1591488320449-011701bb6704?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Joy-Con Controllers">
-                <div class="cart-item-details">
-                    <h3>Joy-Con Controllers (Pair)</h3>
-                    <p>Two Joy-Con controllers with wrist straps in various colors</p>
-                </div>
-                <div class="cart-item-price">
-                    <div class="cart-item-controls">
-                        <input type="checkbox" class="cart-item-checkbox" checked>
-                        <i class="fas fa-trash-alt remove-item" onclick="removeItem(this)"></i>
-                    </div>
-                    <span>RM349.00</span>
-                    <div class="cart-item-quantity">
-                        <button onclick="decreaseQuantity(this)">-</button>
-                        <span>1</span>
-                        <button onclick="increaseQuantity(this)">+</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Cart Item 3 -->
-            <div class="cart-item">
-                <img src="https://images.unsplash.com/photo-1605901309574-8185f8a76d14?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Super Mario Odyssey">
-                <div class="cart-item-details">
-                    <h3>Super Mario Odyssey</h3>
-                    <p>Explore incredible places far from the Mushroom Kingdom in this 3D Mario adventure</p>
-                </div>
-                <div class="cart-item-price">
-                    <div class="cart-item-controls">
-                        <input type="checkbox" class="cart-item-checkbox" checked>
-                        <i class="fas fa-trash-alt remove-item" onclick="removeItem(this)"></i>
-                    </div>
-                    <span>RM229.00</span>
-                    <div class="cart-item-quantity">
-                        <button onclick="decreaseQuantity(this)">-</button>
-                        <span>1</span>
-                        <button onclick="increaseQuantity(this)">+</button>
-                    </div>
-                </div>
+            <div class="hero-content">
+                <h2>YOUR ULTIMATE GAMING DESTINATION</h2>
+                <p>Founded in 2015, NEXUS Gaming Store has grown from a small local shop to Malaysia's premier destination for gaming enthusiasts. We're more than just a store - we're a community of passionate gamers dedicated to bringing you the best gaming experiences.</p>
+                <p>At NEXUS, we believe gaming is more than entertainment - it's a culture, a lifestyle, and a way to connect with others. That's why we carefully curate our selection of consoles, games, and accessories to ensure we offer only the best products on the market.</p>
+                <p>Our knowledgeable staff are gamers themselves, always ready to share their expertise and help you find exactly what you're looking for, whether you're a casual player or a competitive esports enthusiast.</p>
             </div>
         </div>
         
-        <div class="cart-summary">
-            <div class="cart-total">
-                TOTAL: RM2,077.00
+        <div class="mission-values">
+            <div class="mission-card">
+                <h3><i class="fas fa-crosshairs"></i> OUR MISSION</h3>
+                <p>To fuel the passion of gamers by providing premium products, expert advice, and exceptional service that enhances every gaming experience.</p>
             </div>
-            <button class="checkout-button" onclick="window.location.href='checkout.html'">PROCEED TO CHECKOUT</button>
+            <div class="mission-card">
+                <h3><i class="fas fa-eye"></i> OUR VISION</h3>
+                <p>To be the heart of gaming culture in Southeast Asia, connecting players with the latest technology and creating a community where gamers thrive.</p>
+            </div>
+            <div class="mission-card">
+                <h3><i class="fas fa-heart"></i> OUR VALUES</h3>
+                <p>Passion for gaming, commitment to quality, dedication to our community, and innovation in everything we do.</p>
+            </div>
         </div>
-    </section>
+        
 
     <!-- Footer -->
     <footer>
         <div class="footer-links">
-            <a href="ABOUTUS.html">ABOUT US</a>
             <a href="CONTACT.html">CONTACT</a>
             <a href="TOS.html">TERMS OF SERVICE</a>
         </div>
@@ -666,7 +604,7 @@
         
         <div class="copyright">
             &copy; 2025 NEXUS GAMING STORE. ALL RIGHTS RESERVED.<br>
-            NEXUS is not affiliated with Nintendo or any other game publishers.
+            NEXUS is not affiliated with any game publishers or console manufacturers.
         </div>
     </footer>
 
@@ -705,48 +643,29 @@
                 }
             });
 
-            // Cart icon click
-            document.getElementById("cartIcon").addEventListener("click", function() {
-                alert("You're already viewing your cart!");
-            });
 
             // Search icon click
             document.getElementById("searchIcon").addEventListener("click", function() {
                 alert("Search functionality would appear here. This is a demo.");
             });
+
+            // Add animation to mission cards on scroll
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = "1";
+                        entry.target.style.transform = "translateY(0)";
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.mission-card, .team-member').forEach(item => {
+                item.style.opacity = "0";
+                item.style.transform = "translateY(20px)";
+                item.style.transition = "all 0.5s ease";
+                observer.observe(item);
+            });
         });
-
-        function increaseQuantity(button) {
-            const quantitySpan = button.previousElementSibling;
-            let quantity = parseInt(quantitySpan.textContent);
-            quantity++;
-            quantitySpan.textContent = quantity;
-            updateTotal();
-        }
-
-        function decreaseQuantity(button) {
-            const quantitySpan = button.nextElementSibling;
-            let quantity = parseInt(quantitySpan.textContent);
-            if (quantity > 1) {
-                quantity--;
-                quantitySpan.textContent = quantity;
-                updateTotal();
-            }
-        }
-
-        function removeItem(icon) {
-            const cartItem = icon.closest('.cart-item');
-            cartItem.style.opacity = '0';
-            setTimeout(() => {
-                cartItem.remove();
-                updateTotal();
-            }, 300);
-        }
-
-        function updateTotal() {
-            // This would calculate the total based on quantities and prices
-            // For demo purposes, we'll keep the static total
-        }
     </script>
 </body>
 </html>
