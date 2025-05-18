@@ -3,7 +3,6 @@ require 'vendor/autoload.php'; // Path to Composer autoload
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 // DB connection settings
 $host = 'localhost';
@@ -32,20 +31,15 @@ foreach ($tables as $table) {
     $sheet = $spreadsheet->setActiveSheetIndex($sheetIndex);
     $sheet->setTitle($table);
 
-    // Add header
+    // Add header row (column names)
     if (!empty($rows)) {
         $colIndex = 1;
         foreach (array_keys($rows[0]) as $columnName) {
-            
-
-                $cell = Coordinate::stringFromColumnIndex($col) . $row;
-                 $sheet->setCellValue($cell, $value);
-
-
+            $sheet->setCellValueByColumnAndRow($colIndex, 1, $columnName);
             $colIndex++;
         }
 
-        // Add rows
+        // Add data rows starting from row 2
         $rowIndex = 2;
         foreach ($rows as $row) {
             $colIndex = 1;
