@@ -19,10 +19,9 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT id, first_name, last_name, email, phone, birthdate, username, bio, address FROM customers";
+$sql = "SELECT * FROM customers";
 $result = $conn->query($sql);
 
-// Fetch admin profile image
 if ($admin_id) {
     $query = "SELECT image FROM admin_list WHERE id = ?";
     $stmt = $conn->prepare($query);
@@ -44,6 +43,7 @@ if ($admin_id) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer List</title>
     <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="manageadmin.css">
@@ -68,6 +68,20 @@ if ($admin_id) {
 
         table th {
             background-color: #d03b3b;
+            color: white;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
         }
     </style>
 </head>
@@ -119,31 +133,37 @@ if ($admin_id) {
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Full Name</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Birthdate</th>
                         <th>Username</th>
                         <th>Bio</th>
                         <th>Address</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ($result->num_rows > 0): ?>
                         <?php while ($row = $result->fetch_assoc()): ?>
                             <tr>
-                                <td><?= htmlspecialchars($row['id']) ?></td>
-                                <td><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></td>
+                                <td><?= $row['id'] ?></td>
+                                <td><?= htmlspecialchars($row['first_name']) ?></td>
+                                <td><?= htmlspecialchars($row['last_name']) ?></td>
                                 <td><?= htmlspecialchars($row['email']) ?></td>
                                 <td><?= htmlspecialchars($row['phone']) ?></td>
                                 <td><?= htmlspecialchars($row['birthdate']) ?></td>
                                 <td><?= htmlspecialchars($row['username']) ?></td>
                                 <td><?= htmlspecialchars($row['bio']) ?></td>
                                 <td><?= htmlspecialchars($row['address']) ?></td>
+                                <td><button class="btn">View</button></td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <tr><td colspan="8">No customers found.</td></tr>
+                        <tr>
+                            <td colspan="10">No customers found.</td>
+                        </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
