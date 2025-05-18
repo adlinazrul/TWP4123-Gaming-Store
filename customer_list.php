@@ -1,16 +1,13 @@
 <?php
-
 session_start();
 
 // Check if the session variable is set
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 } else {
-    // Handle the case when the admin is not logged in (e.g., redirect to login page)
     header("Location: login_admin.php");
     exit;
 }
-
 
 $servername = "localhost";
 $username = "root";
@@ -22,32 +19,31 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM customer_list";
+$sql = "SELECT id, first_name, last_name, email, phone, birthdate, username, bio, address FROM customers";
 $result = $conn->query($sql);
+
+// Fetch admin profile image
 if ($admin_id) {
-    // Correct SQL query to fetch the profile image (use 'image' column)
     $query = "SELECT image FROM admin_list WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $admin_id);
     $stmt->execute();
     $stmt->bind_result($image);
     if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'image/' . $image; // Path to the image in 'image' folder
+        $profile_image = 'image/' . $image;
     } else {
-        $profile_image = 'image/default_profile.jpg'; // Default image in 'image' folder
+        $profile_image = 'image/default_profile.jpg';
     }
     $stmt->close();
 } else {
-    $profile_image = 'image/default_profile.jpg'; // Default image if not logged in
+    $profile_image = 'image/default_profile.jpg';
 }
-
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer List</title>
     <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="manageadmin.css">
@@ -102,7 +98,7 @@ if ($admin_id) {
             </div>
         </form>
         <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
-        <a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture""></a>
+        <a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
     </nav>
 
     <main>
@@ -123,9 +119,12 @@ if ($admin_id) {
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Name</th>
+                        <th>Full Name</th>
                         <th>Email</th>
                         <th>Phone</th>
+                        <th>Birthdate</th>
+                        <th>Username</th>
+                        <th>Bio</th>
                         <th>Address</th>
                     </tr>
                 </thead>
@@ -133,17 +132,18 @@ if ($admin_id) {
                     <?php if ($result->num_rows > 0): ?>
                         <?php while ($row = $result->fetch_assoc()): ?>
                             <tr>
-                                <td><?= $row['id'] ?></td>
-                                <td><?= $row['name'] ?></td>
-                                <td><?= $row['email'] ?></td>
-                                <td><?= $row['phone'] ?></td>
-                                <td><?= $row['address'] ?></td>
+                                <td><?= htmlspecialchars($row['id']) ?></td>
+                                <td><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></td>
+                                <td><?= htmlspecialchars($row['email']) ?></td>
+                                <td><?= htmlspecialchars($row['phone']) ?></td>
+                                <td><?= htmlspecialchars($row['birthdate']) ?></td>
+                                <td><?= htmlspecialchars($row['username']) ?></td>
+                                <td><?= htmlspecialchars($row['bio']) ?></td>
+                                <td><?= htmlspecialchars($row['address']) ?></td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <tr>
-                            <td colspan="5">No customers found.</td>
-                        </tr>
+                        <tr><td colspan="8">No customers found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
