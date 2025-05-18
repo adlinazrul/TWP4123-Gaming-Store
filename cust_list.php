@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 
 // Check if the session variable is set
@@ -20,10 +19,11 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Updated query to use the new table and fields
+// Query to get all customers
 $sql = "SELECT id, first_name, last_name, email, phone, birthdate, username, bio, address FROM customers";
 $result = $conn->query($sql);
 
+// Get admin profile image
 if ($admin_id) {
     $query = "SELECT image FROM admin_list WHERE id = ?";
     $stmt = $conn->prepare($query);
@@ -132,7 +132,7 @@ if ($admin_id) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if ($result->num_rows > 0): ?>
+                    <?php if ($result && $result->num_rows > 0): ?>
                         <?php while ($row = $result->fetch_assoc()): ?>
                             <tr>
                                 <td><?= htmlspecialchars($row['id']) ?></td>

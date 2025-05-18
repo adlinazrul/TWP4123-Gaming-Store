@@ -1,32 +1,70 @@
 <?php
-require 'vendor/autoload.php';  // Make sure path is correct
+require 'vendor/autoload.php'; // Path to Composer autoload
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
-// Create new Spreadsheet object
+// DB connection settings
+$host = 'localhost';
+$dbname = 'gaming_store';
+$username = 'root'; // change if needed
+$password = '';     // change if needed
+
+// Connect to database
+$pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+
+// Tables to export
+$tables = ['admin_list', 'customers', 'items_ordered', 'products', 'product_categories'];
+
 $spreadsheet = new Spreadsheet();
+$sheetIndex = 0;
 
-// Set document properties (optional)
-$spreadsheet->getProperties()->setCreator('Your Name')
-    ->setTitle('Sample Excel File');
+foreach ($tables as $table) {
+    // Run query to get all data
+    $stmt = $pdo->query("SELECT * FROM $table");
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Add some data
-$sheet = $spreadsheet->getActiveSheet();
-$sheet->setCellValue('A1', 'Name');
-$sheet->setCellValue('B1', 'Email');
-$sheet->setCellValue('A2', 'John Doe');
-$sheet->setCellValue('B2', 'john@example.com');
-$sheet->setCellValue('A3', 'Jane Smith');
-$sheet->setCellValue('B3', 'jane@example.com');
+    // Create or select sheet
+    if ($sheetIndex > 0) {
+        $spreadsheet->createSheet();
+    }
+    $sheet = $spreadsheet->setActiveSheetIndex($sheetIndex);
+    $sheet->setTitle($table);
 
-// Write to file (Xlsx)
-$writer = new Xlsx($spreadsheet);
+    // Add header row (column names)
+    if (!empty($rows)) {
+        $colIndex = 1;
+        foreach (array_keys($rows[0]) as $columnName) {
+            $cell = Coordinate::stringFromColumnIndex($colIndex) . '1';
+            $sheet->setCellValue($cell, $columnName);
+            $colIndex++;
+        }
 
-// Output directly to browser for download
+        // Add data rows starting from row 2
+        $rowIndex = 2;
+        foreach ($rows as $row) {
+            $colIndex = 1;
+            foreach ($row as $value) {
+                $cell = Coordinate::stringFromColumnIndex($colIndex) . $rowIndex;
+                $sheet->setCellValue($cell, $value);
+                $colIndex++;
+            }
+            $rowIndex++;
+        }
+    }
+
+    $sheetIndex++;
+}
+
+// Set active sheet back to first
+$spreadsheet->setActiveSheetIndex(0);
+
+// Output Excel
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="sample.xlsx"');
+header('Content-Disposition: attachment;filename="gaming_store_report.xlsx"');
 header('Cache-Control: max-age=0');
 
+$writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
 exit;
