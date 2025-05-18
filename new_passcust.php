@@ -7,8 +7,9 @@ if ($conn->connect_error) {
 }
 
 // Check if reset_email is set in session
-if (!isset($_SESSION['reset_email'])) {
-    die("⚠️ Session expired. Go back to <a href='forgotpass.php'>Forgot Password</a>.");
+if (!isset($_SESSION['reset_email']) || !isset($_SESSION['verified']) || $_SESSION['verified'] !== true) {
+    echo "<script>alert('⚠️ Unauthorized access. Please verify your code again.'); window.location.href = 'forgotpass.php';</script>";
+    exit();
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

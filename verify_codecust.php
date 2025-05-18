@@ -12,7 +12,7 @@ if (!isset($_SESSION['reset_email'])) {
 }
 
 if (isset($_POST['verify'])) {
-   $_SESSION['reset_email'] = $email ;
+    $email = $_SESSION['reset_email']; // ✅ get email from session
     $entered_code = $_POST['code'];
 
     // Check against database
@@ -27,6 +27,7 @@ if (isset($_POST['verify'])) {
 
         if ($entered_code == $reset_code) {
             if (strtotime($reset_expiry) > time()) {
+          $_SESSION['verified'] = true;
                 header("Location: new_passcust.php");
                 exit();
             } else {
@@ -40,6 +41,7 @@ if (isset($_POST['verify'])) {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

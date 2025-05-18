@@ -61,10 +61,34 @@
             font-family: 'Orbitron', sans-serif;
             font-weight: 400;
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .nav-links a:hover {
             color: var(--primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            bottom: -5px;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .nav-links a.active {
+            color: var(--primary);
+        }
+        
+        .nav-links a.active::after {
+            width: 100%;
         }
         
         .icons-left, .icons-right {
@@ -213,38 +237,46 @@
         }
         
         .deals-section {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            margin: 80px auto;
-            max-width: 1400px;
-            padding: 0 30px;
-        }
-        
-        .deal-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .deal-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.2);
-        }
-        
-        .deal-icon {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
-        
-        .deal-card h3 {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
-        }
-        
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin: 80px auto;
+    max-width: 1400px;
+    padding: 0 30px;
+    text-align: center;
+}
+
+
+/* Make anchor links behave like regular cards */
+.deals-section a.deal-card {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* Hover effect for entire clickable card */
+.deals-section a.deal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(255, 0, 0, 0.2);
+}
+
+.deal-icon {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 20px;
+}
+
+.deal-card h3 {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--primary);
+}
+
         .newsletter-section {
             background: var(--dark);
             padding: 80px 30px;
@@ -368,8 +400,13 @@
             position: absolute;
             top: 20px;
             right: 20px;
+            transition: transform 0.3s ease;
         }
         
+        #closeMenu:hover {
+            transform: rotate(90deg);
+        }
+
         #menuOverlay.active {
             display: block;
         }
@@ -395,6 +432,7 @@
         .menu-item a:hover {
             color: var(--primary);
         }
+        
         
         /* Responsive adjustments */
         @media (max-width: 1024px) {
@@ -439,6 +477,28 @@
                 max-width: 320px;
             }
         }
+        @media (max-width: 768px) {
+    .newsletter-form {
+        flex-direction: column;
+    }
+
+    .newsletter-input,
+    .newsletter-button {
+        border-radius: 50px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    #menuContainer {
+        width: 100%;
+        left: -100%;
+    }
+
+    #menuOverlay.active #menuContainer {
+        left: 0;
+    }
+}
+
     </style>
 </head>
 <body>
@@ -452,18 +512,18 @@
             <div class="logo">NEXUS</div>
             
             <div class="nav-links">
-                <a href="#nintendo">NINTENDO</a>
-                <a href="#playstation">PLAYSTATION</a>
-                <a href="#xbox">XBOX</a>
-                <a href="PRODUCTLIST.html">ACCESSORIES</a>
-                <a href="#vr">VR</a>
+                <a href="index.html">HOME</a>
+                <a href="NINTENDO.html">NINTENDO</a>
+                <a href="XBOX.html">CONSOLES</a>
+                <a href="ACCESSORIES.html">ACCESSORIES</a>
+                <a href="VR.html">VR</a>
             </div>
             
             <div class="icons-right">
                 <a href="custlogin.html">
                     <i class="fas fa-user"></i>
                 </a>
-                <i class="fas fa-shopping-cart"></i>
+                <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
             </div>
         </nav>
     </header>
@@ -485,13 +545,14 @@
         <div class="hero">
             <h1>LEVEL UP YOUR GAME</h1>
             <p>Discover the latest consoles, games, and accessories with exclusive deals for our members</p>
-            <button class="cta-button">SHOP NOW</button>
+            <button class="cta-button" onclick="window.location.href='ALLPRODUCT.html'">SHOP NOW</button>
+
         </div>
     </section>
 
     <!-- Featured Products -->
     <section class="featured-section">
-        <h2 class="section-title">FEATURED PRODUCTS</h2>
+        <h2 class="section-title">NEW PRODUCTS</h2>
         <div class="products-grid">
             <!-- Product 1 -->
             <div class="product-card">
@@ -531,31 +592,27 @@
     <section class="featured-section">
         <h2 class="section-title">HOT DEALS</h2>
         <div class="deals-section">
-            <div class="deal-card">
+        
+            <a href="FLASHSALE.html" class="deal-card">
                 <div class="deal-icon">
                     <i class="fas fa-tags"></i>
                 </div>
                 <h3>FLASH SALE</h3>
                 <p>Up to 50% off select items for the next 24 hours only</p>
-            </div>
-            
-            <div class="deal-card">
-                <div class="deal-icon">
-                    <i class="fas fa-gamepad"></i>
-                </div>
-                <h3>NEW RELEASES</h3>
-                <p>Pre-order the hottest upcoming games with exclusive bonuses</p>
-            </div>
-            
-            <div class="deal-card">
+            </a>
+    
+    
+            <a href="BUNDLE.html" class="deal-card">
                 <div class="deal-icon">
                     <i class="fas fa-headset"></i>
                 </div>
                 <h3>PREMIUM BUNDLES</h3>
                 <p>Save big with our specially curated console bundles</p>
-            </div>
+            </a>
+            
         </div>
     </section>
+    
 
     <!-- Newsletter Section -->
     <section class="newsletter-section">
@@ -573,19 +630,14 @@
     <!-- Footer -->
     <footer>
         <div class="footer-links">
-            <a href="#about">ABOUT US</a>
-            <a href="#contact">CONTACT</a>
-            <a href="#shipping">SHIPPING</a>
-            <a href="#returns">RETURNS</a>
-            <a href="#faq">FAQ</a>
+            <a href="ABOUTUS.html">ABOUT US</a>
+            <a href="CONTACT.html">CONTACT</a>
+            <a href="TOS.html">TERMS OF SERVICE</a>
         </div>
         
         <div class="social-icons">
             <a href="#facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#twitter"><i class="fab fa-twitter"></i></a>
-            <a href="#instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#youtube"><i class="fab fa-youtube"></i></a>
-            <a href="#twitch"><i class="fab fa-twitch"></i></a>
+            <a href="https://www.instagram.com/sojusprite"><i class="fab fa-instagram"></i></a>
         </div>
         
         <div class="copyright">
@@ -609,7 +661,8 @@
             });
 
             // Close menu when clicking "X"
-            closeMenu.addEventListener("click", function (e) {
+           // Close menu when clicking "X"
+           closeMenu.addEventListener("click", function (e) {
                 e.stopPropagation();
                 menuOverlay.classList.remove("active");
                 setTimeout(() => {
