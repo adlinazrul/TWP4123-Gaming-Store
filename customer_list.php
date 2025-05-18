@@ -19,7 +19,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT id, first_name, last_name, email, phone, birthdate, username, bio, address FROM customers";
+$sql = "SELECT id, first_name, last_name, email, phone, birthdate, username, bio, address, city, state, postcode, country FROM customers";
 $result = $conn->query($sql);
 
 // Fetch admin profile image
@@ -68,6 +68,7 @@ if ($admin_id) {
 
         table th {
             background-color: #d03b3b;
+            color: white;
         }
     </style>
 </head>
@@ -126,6 +127,10 @@ if ($admin_id) {
                         <th>Username</th>
                         <th>Bio</th>
                         <th>Address</th>
+                        <th>City</th>
+                        <th>State</th>
+                        <th>Postcode</th>
+                        <th>Country</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -140,10 +145,14 @@ if ($admin_id) {
                                 <td><?= htmlspecialchars($row['username']) ?></td>
                                 <td><?= htmlspecialchars($row['bio']) ?></td>
                                 <td><?= htmlspecialchars($row['address']) ?></td>
+                                <td><?= htmlspecialchars($row['city']) ?></td>
+                                <td><?= htmlspecialchars($row['state']) ?></td>
+                                <td><?= htmlspecialchars($row['postcode']) ?></td>
+                                <td><?= htmlspecialchars($row['country']) ?></td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <tr><td colspan="8">No customers found.</td></tr>
+                        <tr><td colspan="12">No customers found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
