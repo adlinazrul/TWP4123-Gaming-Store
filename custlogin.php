@@ -18,6 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $row["password"])) {
             // Start the session and set session variables
             session_start();
+            $_SESSION['user_id'] = $user['id'];
             $_SESSION['email'] = $email;
             $_SESSION['first_name'] = $row["first_name"];
             $_SESSION['last_name'] = $row["last_name"];

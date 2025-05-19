@@ -1,3 +1,33 @@
+<?php
+session_start();
+include "db_connect1.php";
+
+$cart_items = [];
+$total_price = 0;
+
+// Check if user is logged in
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+
+    $stmt = $conn->prepare("SELECT * FROM cart_items WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $cart_items[] = $row;
+        $total_price += $row['product_price'] * $row['quantity'];
+    }
+    $stmt->close();
+} else {
+    if (isset($_SESSION['cart'])) {
+        $cart_items = $_SESSION['cart'];
+        foreach ($cart_items as $item) {
+            $total_price += $item['product_price'] * $item['quantity'];
+        }
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -269,9 +299,37 @@
             transform: translateY(-2px);
         }
         
-        .cart-item-quantity span {
-            min-width: 30px;
+        .quantity-input {
+            width: 60px;
+            height: 40px;
             text-align: center;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+        
+        .quantity-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+        
+        .update-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Rubik', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .update-btn:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
         }
         
         .cart-summary {
@@ -306,6 +364,13 @@
             background: var(--accent);
             transform: translateY(-3px);
             box-shadow: 0 10px 20px rgba(255, 0, 0, 0.3);
+        }
+        
+        .checkout-button:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
         footer {
@@ -369,7 +434,6 @@
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             text-decoration: none;
-
         }
         
         .social-icons a:hover {
@@ -539,10 +603,10 @@
             
             <div class="nav-links">
                 <a href="index.html">HOME</a>
-                <a href="NINTENDO.html">NINTENDO</a>
-                <a href="XBOX.html">CONSOLES</a>
-                <a href="ACCESSORIES.html">ACCESSORIES</a>
-                <a href="VR.html">VR</a>
+                <a href="NINTENDO.php">NINTENDO</a>
+                <a href="XBOX.php">CONSOLES</a>
+                <a href="ACCESSORIES.php">ACCESSORIES</a>
+                <a href="VR.php">VR</a>
             </div>
             
             <div class="icons-right">
@@ -550,8 +614,10 @@
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="cart-icon-container">
-                    <i class="fas fa-shopping-cart" id="cartIcon"></i>
-                    
+                    <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
+                    <div class="cart-count" style="<?= count($cart_items) > 0 ? 'display: flex;' : 'display: none;' ?>">
+                        <?= array_reduce($cart_items, function($carry, $item) { return $carry + $item['quantity']; }, 0) ?>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -579,76 +645,45 @@
         </div>
         
         <div class="cart-items">
-            <!-- Cart Item 1 -->
-            <div class="cart-item">
-                <img src="https://images.unsplash.com/photo-1551103782-8ab07afd45c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Nintendo Switch OLED">
-                <div class="cart-item-details">
-                    <h3>Nintendo Switch OLED</h3>
-                    <p>7-inch OLED screen, 64GB internal storage, enhanced audio for immersive gaming</p>
-                </div>
-                <div class="cart-item-price">
-                    <div class="cart-item-controls">
-                        <input type="checkbox" class="cart-item-checkbox" checked>
-                        <i class="fas fa-trash-alt remove-item" onclick="removeItem(this)"></i>
+            <?php if (count($cart_items) > 0): ?>
+                <?php foreach ($cart_items as $item): ?>
+                    <div class="cart-item">
+                        <img src="uploads/<?= htmlspecialchars($item['product_image'] ?? 'default.jpg') ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
+                        <div class="cart-item-details">
+                            <h3><?= htmlspecialchars($item['product_name']) ?></h3>
+                            <p><?= htmlspecialchars($item['product_description'] ?? '') ?></p>
+                            <form method="POST" action="update_cart_quantity.php" class="cart-item-quantity">
+                                <input type="hidden" name="product_id" value="<?= $item['product_id'] ?>">
+                                <button type="button" class="quantity-btn minus" onclick="decreaseQuantity(this, <?= $item['product_id'] ?>)">-</button>
+                                <input type="number" name="quantity" value="<?= $item['quantity'] ?>" min="1" class="quantity-input" id="quantity-<?= $item['product_id'] ?>">
+                                <button type="button" class="quantity-btn plus" onclick="increaseQuantity(this, <?= $item['product_id'] ?>)">+</button>
+                                <button type="submit" class="update-btn" style="margin-left: 10px;">Update</button>
+                            </form>
+                        </div>
+                        <div class="cart-item-price">
+                            <span>RM<?= number_format($item['product_price'], 2) ?></span>
+                            <form method="POST" action="remove_cart_item.php" onsubmit="return confirm('Are you sure you want to remove this item?');">
+                                <input type="hidden" name="product_id" value="<?= $item['product_id'] ?>">
+                                <button type="submit" class="remove-item">
+                                    <i class="fas fa-trash-alt"></i> Remove
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                    <span>RM1,499.00</span>
-                    <div class="cart-item-quantity">
-                        <button onclick="decreaseQuantity(this)">-</button>
-                        <span>1</span>
-                        <button onclick="increaseQuantity(this)">+</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Cart Item 2 -->
-            <div class="cart-item">
-                <img src="https://images.unsplash.com/photo-1591488320449-011701bb6704?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Joy-Con Controllers">
-                <div class="cart-item-details">
-                    <h3>Joy-Con Controllers (Pair)</h3>
-                    <p>Two Joy-Con controllers with wrist straps in various colors</p>
-                </div>
-                <div class="cart-item-price">
-                    <div class="cart-item-controls">
-                        <input type="checkbox" class="cart-item-checkbox" checked>
-                        <i class="fas fa-trash-alt remove-item" onclick="removeItem(this)"></i>
-                    </div>
-                    <span>RM349.00</span>
-                    <div class="cart-item-quantity">
-                        <button onclick="decreaseQuantity(this)">-</button>
-                        <span>1</span>
-                        <button onclick="increaseQuantity(this)">+</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Cart Item 3 -->
-            <div class="cart-item">
-                <img src="https://images.unsplash.com/photo-1605901309574-8185f8a76d14?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Super Mario Odyssey">
-                <div class="cart-item-details">
-                    <h3>Super Mario Odyssey</h3>
-                    <p>Explore incredible places far from the Mushroom Kingdom in this 3D Mario adventure</p>
-                </div>
-                <div class="cart-item-price">
-                    <div class="cart-item-controls">
-                        <input type="checkbox" class="cart-item-checkbox" checked>
-                        <i class="fas fa-trash-alt remove-item" onclick="removeItem(this)"></i>
-                    </div>
-                    <span>RM229.00</span>
-                    <div class="cart-item-quantity">
-                        <button onclick="decreaseQuantity(this)">-</button>
-                        <span>1</span>
-                        <button onclick="increaseQuantity(this)">+</button>
-                    </div>
-                </div>
-            </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p style="text-align: center; padding: 40px; color: var(--gray);">Your cart is empty</p>
+            <?php endif; ?>
         </div>
         
+        <?php if (count($cart_items) > 0): ?>
         <div class="cart-summary">
             <div class="cart-total">
-                TOTAL: RM2,077.00
+                TOTAL: RM<?= number_format($total_price, 2) ?>
             </div>
-            <button class="checkout-button" onclick="window.location.href='checkout.html'">PROCEED TO CHECKOUT</button>
+            <button class="checkout-button" onclick="window.location.href='checkout.php'" <?= count($cart_items) == 0 ? 'disabled' : '' ?>>PROCEED TO CHECKOUT</button>
         </div>
+        <?php endif; ?>
     </section>
 
     <!-- Footer -->
@@ -716,37 +751,23 @@
             });
         });
 
-        function increaseQuantity(button) {
-            const quantitySpan = button.previousElementSibling;
-            let quantity = parseInt(quantitySpan.textContent);
-            quantity++;
-            quantitySpan.textContent = quantity;
-            updateTotal();
+        function increaseQuantity(button, productId) {
+            const input = document.getElementById('quantity-' + productId);
+            input.value = parseInt(input.value) + 1;
         }
 
-        function decreaseQuantity(button) {
-            const quantitySpan = button.nextElementSibling;
-            let quantity = parseInt(quantitySpan.textContent);
-            if (quantity > 1) {
-                quantity--;
-                quantitySpan.textContent = quantity;
-                updateTotal();
+        function decreaseQuantity(button, productId) {
+            const input = document.getElementById('quantity-' + productId);
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
             }
         }
 
-        function removeItem(icon) {
-            const cartItem = icon.closest('.cart-item');
-            cartItem.style.opacity = '0';
-            setTimeout(() => {
-                cartItem.remove();
-                updateTotal();
-            }, 300);
-        }
-
-        function updateTotal() {
-            // This would calculate the total based on quantities and prices
-            // For demo purposes, we'll keep the static total
+        function updateCartCount() {
+            // This would update the cart count in the header
+            // Implementation would depend on your cart system
         }
     </script>
 </body>
 </html>
+<?php $conn->close(); ?>
