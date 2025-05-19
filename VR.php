@@ -205,6 +205,7 @@ $result = $conn->query($sql);
             object-fit: contain;
             background-color: #000;
             transition: transform 0.5s ease;
+            flex-shrink: 0;
         }
         
         .product-card:hover .product-image {
@@ -268,10 +269,12 @@ $result = $conn->query($sql);
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: 'Orbitron', sans-serif;
-            width: 100%;
+            width: calc(100% - 40px); /* Account for padding */
             text-decoration: none;
             display: block;
             text-align: center;
+            margin: 0 auto; /* Center the button */
+            box-sizing: border-box; /* Include padding in width calculation */
         }
         
         .view-product:hover {
@@ -534,7 +537,7 @@ $result = $conn->query($sql);
                     if ((int)$row["product_quantity"] <= 0) {
                         echo '<div class="out-of-stock">Out of Stock</div>';
                     }
-                    echo '<button class="view-product">VIEW PRODUCT</button>';
+                    echo '<a href="VIEWPRODUCT.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
                     echo '</div></div>';
                 }
             } else {

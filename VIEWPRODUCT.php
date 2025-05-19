@@ -1,9 +1,36 @@
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "gaming_store";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$product = null;
+
+if (isset($_GET['id'])) {
+    $id = intval($_GET['id']);
+    $sql = "SELECT * FROM products WHERE id = $id";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        $product = $result->fetch_assoc();
+    } else {
+        die("Product not found.");
+    }
+} else {
+    die("No product ID specified.");
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Details - Online Gaming Store</title>
+    <title><?= htmlspecialchars($product['product_name']) ?> - Product Details</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
@@ -33,7 +60,6 @@
         .nav-links a {
             color: white;
             text-decoration: none;
-            font-family: 'Arial, sans-serif';
         }
         .nav-links a.active {
             font-weight: bold;
@@ -67,7 +93,6 @@
             flex: 2;
         }
         .product-info h2 {
-            font-family: 'Arial, sans-serif';
             margin-bottom: 20px;
         }
         .product-info .price {
@@ -75,18 +100,14 @@
             color: #d03b3b;
             margin-bottom: 20px;
         }
-        .product-info .color-options,
         .product-info .quantity {
             margin-bottom: 20px;
         }
         .product-info label {
-            font-family: 'Arial, sans-serif';
             margin-right: 10px;
         }
-        .product-info select,
         .product-info input[type="number"] {
             padding: 10px;
-            font-family: 'Arial, sans-serif';
         }
         .product-info .buttons {
             display: flex;
@@ -95,7 +116,6 @@
         }
         .product-info button {
             padding: 10px 20px;
-            font-family: 'Arial, sans-serif';
             cursor: pointer;
             border: none;
             color: white;
@@ -106,9 +126,7 @@
         .buy-now {
             background-color: #000;
         }
-        .product-info .description {
-            max-width: 100%;
-            font-family: 'Arial, sans-serif';
+        .description {
             margin-top: 20px;
         }
         footer {
@@ -120,58 +138,57 @@
     </style>
 </head>
 <body>
-    <header>
-        <nav class="nav-menu">
-            <div class="icons-left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-search"></i>
-            </div>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="nintendo.html" class="active">Nintendo</a>
-                <a href="#playstation">PlayStation</a>
-                <a href="#xbox">Xbox</a>
-                <a href="#accessories">Accessories</a>
-                <a href="#vr">VR</a>
-            </div>
-            <div class="icons-right">
-                <i class="fas fa-user"></i>
-                <i class="fas fa-shopping-cart"></i>
-            </div>
-        </nav>
-    </header>
 
-    <section class="product-details">
-        <div class="product-image">
-            <img src="image/gamingcontroller.jpg" >
+<header>
+    <nav class="nav-menu">
+        <div class="icons-left">
+            <i class="fas fa-bars"></i>
+            <i class="fas fa-search"></i>
         </div>
-        <div class="product-info">
-            <h2>Nintendo Switch OLED Console</h2>
-            <p class="price">$49.99</p>
-            <div class="color-options">
-                <label for="color">Color:</label>
-                <select id="color">
-                    <option value="red">Red</option>
-                    <option value="blue">Black</option>
-                    <option value="green">White</option>
-                </select>
-            </div>
-            <div class="quantity">
-                <label for="quantity">Quantity:</label>
-                <input type="number" id="quantity" name="quantity" value="1" min="1">
-            </div>
-            <div class="buttons">
-                <button class="add-to-cart">Add to Cart</button>
-                <button class="buy-now">Buy Now</button>
-            </div>
-            <div class="description">
-                <p>Features: 7 inch OLED Display, Enhanced Audio, Three Play Modes, 64GB Internal Storage, Built-in Wired LAN Port, Adjustable Stand</p>
-            </div>
+        <div class="nav-links">
+            <a href="index.php">Home</a>
+            <a href="nintendo.php">Nintendo</a>
+            <a href="consoles.php">Consoles</a>
+            <a href="xbox.php">Xbox</a>
+            <a href="accessories.php">Accessories</a>
+            <a href="vr.php">VR</a>
         </div>
-    </section>
+        <div class="icons-right">
+            <i class="fas fa-user"></i>
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+    </nav>
+</header>
 
-    <footer>
-        <p>&copy; 2025 Online Gaming Store. All rights reserved.</p>
-    </footer>
+<section class="product-details">
+    <div class="product-image">
+        <img src="uploads/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>">
+    </div>
+    <div class="product-info">
+        <h2><?= htmlspecialchars($product['product_name']) ?></h2>
+        <p class="price">RM <?= number_format($product['product_price'], 2) ?></p>
+
+        <div class="quantity">
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" value="1" min="1" max="<?= $product['product_quantity'] ?>">
+        </div>
+
+        <div class="buttons">
+            <button class="add-to-cart">Add to Cart</button>
+            <button class="buy-now">Buy Now</button>
+        </div>
+
+        <div class="description">
+            <p><?= nl2br(htmlspecialchars($product['product_description'])) ?></p>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>&copy; 2025 Online Gaming Store. All rights reserved.</p>
+</footer>
+
 </body>
 </html>
+
+<?php $conn->close(); ?>

@@ -237,6 +237,7 @@ $result = $conn->query($sql);
             background-size: cover;
             background-position: center;
             transition: transform 0.5s ease;
+            flex-shrink: 0; /* Prevent image from shrinking */
         }
         
         .product-card:hover .product-image {
@@ -245,6 +246,7 @@ $result = $conn->query($sql);
         
         .product-info {
             padding: 20px;
+        
         }
         
         .product-info h3 {
@@ -294,10 +296,12 @@ $result = $conn->query($sql);
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: 'Orbitron', sans-serif;
-            width: 100%;
+            width: calc(100% - 40px); /* Account for padding */
             text-decoration: none;
             display: block;
             text-align: center;
+             margin: 0 auto; /* Center the button */
+            box-sizing: border-box; /* Include padding in width calculation */
         }
         
         .view-product:hover {
@@ -563,7 +567,7 @@ $result = $conn->query($sql);
                         echo '<span class="discount-badge">' . $discount . '% OFF</span>';
                     }
                     echo '</div>';
-                    echo '<button class="view-product">VIEW PRODUCT</button>';
+                    echo '<a href="VIEWPRODUCT.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
                     echo '</div></div>';
                 }
             } else {
