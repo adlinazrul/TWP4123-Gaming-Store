@@ -1,27 +1,35 @@
 <?php
 session_start();
 
-// Redirect if admin is not logged in
+// Check if the session variable is set
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
 
+// Database connection
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "gaming_store";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
 $admin_id = $_SESSION['admin_id'];
 
-// Include database connection
-include 'database.php';
-
-// Fetch admin profile image
-$profile_image = 'image/default_profile.jpg'; // Default fallback
+// Fetch profile image
 $query = "SELECT image FROM admin_list WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $admin_id);
 $stmt->execute();
 $stmt->bind_result($image);
-if ($stmt->fetch() && !empty($image)) {
-    $profile_image = 'image/' . htmlspecialchars($image);
-}
+$profile_image = ($stmt->fetch() && !empty($image)) ? 'image/' . $image : 'image/default_profile.jpg';
 $stmt->close();
 
 // Fetch products
@@ -34,79 +42,31 @@ $result = mysqli_query($conn, $sql);
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Admin - Product Management</title>
 	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
 	<link rel="stylesheet" href="admindashboard.css">
-	<title>Admin - Product Management</title>
 	<style>
-		body {
-			font-family: Arial, sans-serif;
-			background-color: #f4f6f8;
-			margin: 0;
-		}
-		h1 {
-			margin: 30px 0 10px;
-			font-size: 32px;
-			color: #333;
-		}
-		h2 {
-			margin-bottom: 15px;
-		}
-		table {
-			width: 100%;
-			border-collapse: collapse;
-			background-color: #fff;
-			box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-		}
-		th, td {
-			padding: 12px 15px;
-			text-align: left;
-			border-bottom: 1px solid #ddd;
-		}
-		th {
-			background-color: #c0392b;
-			color: white;
-		}
-		img {
-			width: 50px;
-			height: auto;
-		}
-		.add-product {
-			background-color: #c0392b;
-			color: white;
-			padding: 10px 20px;
-			border: none;
-			border-radius: 5px;
-			cursor: pointer;
-			margin-bottom: 20px;
-		}
-		.add-product:hover {
-			background-color: #a93226;
-		}
-		.action-buttons {
-			display: flex;
-			gap: 10px;
-		}
-		.action-buttons a button {
-			padding: 6px 12px;
-			font-size: 14px;
-			border: none;
-			border-radius: 5px;
-			cursor: pointer;
-			color: white;
-			transition: background-color 0.3s ease;
-		}
-		.action-buttons a:first-child button {
-			background-color: #e74c3c;
-		}
-		.action-buttons a:first-child button:hover {
-			background-color: #c0392b;
-		}
-		.action-buttons a:last-child button {
-			background-color: #d63031;
-		}
-		.action-buttons a:last-child button:hover {
-			background-color: #b71c1c;
-		}
+		body { font-family: Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }
+		h1 { margin: 30px 0 10px; font-size: 32px; color: #333; }
+		h2 { margin-bottom: 15px; }
+		table { width: 100%; border-collapse: collapse; background-color: #fff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); }
+		th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+		th { background-color: #c0392b; color: white; }
+		img { width: 50px; height: auto; }
+		.add-product { background-color: #c0392b; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px; }
+		.add-product:hover { background-color: #a93226; }
+		.action-buttons { display: flex; gap: 10px; }
+		.action-buttons a button { padding: 6px 12px; font-size: 14px; border: none; border-radius: 5px; cursor: pointer; color: white; transition: background-color 0.3s ease; }
+		.action-buttons a:first-child button { background-color: #2980b9; }
+		.action-buttons a:first-child button:hover { background-color: #1f618d; }
+		.action-buttons a:last-child button { background-color: #e74c3c; }
+		.action-buttons a:last-child button:hover { background-color: #c0392b; }
+		#sidebar { width: 250px; position: fixed; height: 100%; background: #2c3e50; color: white; padding: 20px 0; }
+		#sidebar a { color: white; display: block; padding: 10px 20px; text-decoration: none; }
+		#sidebar a:hover, #sidebar a.active { background: #34495e; }
+		#content { margin-left: 250px; padding: 20px; }
+		nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #fff; border-bottom: 1px solid #ccc; }
+		nav .profile img { width: 40px; height: 40px; border-radius: 50%; }
 	</style>
 </head>
 <body>
@@ -140,9 +100,7 @@ $result = mysqli_query($conn, $sql);
 			</div>
 		</form>
 		<a href="#" class="notification"><i class='bx bxs-bell'></i></a>
-		<a href="profile_admin.php" class="profile">
-			<img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture">
-		</a>
+		<a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
 	</nav>
 	<!-- NAVBAR -->
 
@@ -167,6 +125,7 @@ $result = mysqli_query($conn, $sql);
 					<tr>
 						<th>Image</th>
 						<th>Product Name</th>
+						<th>Category</th>
 						<th>Description</th>
 						<th>Price (RM)</th>
 						<th>Stock</th>
@@ -176,15 +135,16 @@ $result = mysqli_query($conn, $sql);
 				<tbody>
 					<?php while ($row = mysqli_fetch_assoc($result)) { ?>
 					<tr>
-						<td><img src="<?= htmlspecialchars($row['product_image']); ?>" alt="Product Image"></td>
+						<td><img src="<?= $row['product_image']; ?>" alt="Product Image"></td>
 						<td><?= htmlspecialchars($row['product_name']); ?></td>
+						<td><?= htmlspecialchars($row['product_category']); ?></td>
 						<td><?= htmlspecialchars($row['product_description']); ?></td>
 						<td>RM <?= number_format($row['product_price'], 2); ?></td>
 						<td><?= $row['product_quantity']; ?></td>
 						<td>
 							<div class="action-buttons">
-								<a href="editproductquantity.php?id=<?= $row['id']; ?>"><button>Edit Quantity</button></a>
-								<a href="deleteproduct.php?id=<?= $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');"><button>Delete</button></a>
+								<a href="editproductquantity.php?id=<?= $row['id']; ?>"><button>Edit</button></a>
+								<a href="deleteproduct.php?id=<?= $row['id']; ?>"><button>Delete</button></a>
 							</div>
 						</td>
 					</tr>
@@ -193,9 +153,7 @@ $result = mysqli_query($conn, $sql);
 			</table>
 		</section>
 	</main>
-	<!-- MAIN -->
 </section>
-<!-- CONTENT -->
 
 </body>
 </html>
