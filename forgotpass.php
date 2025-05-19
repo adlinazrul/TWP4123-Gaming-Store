@@ -31,6 +31,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['send_code'])) {
         $update->bind_param("sss", $code, $expires_at, $email);
         $update->execute();
 
+
+      $_SESSION['verification_code'] = $code;
         $_SESSION['reset_email'] = $email;
 
         // Send the code via email

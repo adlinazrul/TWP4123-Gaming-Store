@@ -1,46 +1,15 @@
 <?php
-session_start();
-$conn = new mysqli("localhost", "root", "", "gaming_store");
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-if (!isset($_SESSION['reset_email'])) {
-    echo "<script>alert('⚠️ Session expired. Please request a new verification code.'); window.location.href = 'forgotpass.php';</script>";
-    exit();
-}
-
-if (isset($_POST['verify'])) {
-    $email = $_SESSION['reset_email']; // ✅ get email from session
+session_start(); if (isset($_POST['verify'])) {
     $entered_code = $_POST['code'];
-
-    // Check against database
-    $stmt = $conn->prepare("SELECT reset_code, reset_expiry FROM customers WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($row = $result->fetch_assoc()) {
-        $reset_code = $row['reset_code'];
-        $reset_expiry = $row['reset_expiry'];
-
-        if ($entered_code == $reset_code) {
-            if (strtotime($reset_expiry) > time()) {
-          $_SESSION['verified'] = true;
-                header("Location: new_passcust.php");
-                exit();
-            } else {
-                $error = "⏰ Code expired. Please request a new one.";
-            }
-        } else {
-            $error = "❌ Invalid code. Try again.";
-        }
+       if ($entered_code == $_SESSION['verification_code']) {
+        header("Location: new_passcust.php");
+        exit();
     } else {
-        $error = "❌ Email not found.";
+        $message = "<div class='error-message'><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-x-circle'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Invalid code. Please try again.</div>";
     }
 }
 ?>
+
 
 
 <!DOCTYPE html>
@@ -434,50 +403,6 @@ if (isset($_POST['verify'])) {
         </div>
     </footer>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let menuOverlay = document.getElementById("menuOverlay");
-            let menuContainer = document.getElementById("menuContainer");
-            let menuIcon = document.getElementById("menuIcon");
-            let closeMenu = document.getElementById("closeMenu");
-
-            // Open menu
-            menuIcon.addEventListener("click", function () {
-                menuOverlay.style.display = "block";
-                setTimeout(() => {
-                    menuOverlay.classList.add("active");
-                }, 10);
-            });
-
-            // Close menu when clicking "X"
-            closeMenu.addEventListener("click", function (e) {
-                e.stopPropagation();
-                menuOverlay.classList.remove("active");
-                setTimeout(() => {
-                    menuOverlay.style.display = "none";
-                }, 300);
-            });
-
-            // Close menu when clicking outside of menu container
-            menuOverlay.addEventListener("click", function (e) {
-                if (e.target === menuOverlay) {
-                    menuOverlay.classList.remove("active");
-                    setTimeout(() => {
-                        menuOverlay.style.display = "none";
-                    }, 300);
-                }
-            });
-
-            // Auto-advance between code input fields
-            const codeInput = document.getElementById('code');
-            if (codeInput) {
-                codeInput.addEventListener('input', function() {
-                    if (this.value.length === 6) {
-                        this.form.submit();
-                    }
-                });
-            }
-        });
-    </script>
+   
 </body>
 </html>
