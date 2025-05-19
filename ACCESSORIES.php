@@ -521,10 +521,14 @@
 
     <!-- Product Listing Section -->
     <section class="product-listing">
-        <h2 class="section-title">VR</h2>
+        <h2 class="section-title">ACCESSORIES</h2>
         
         
         <div class="products-grid">
+            <?php 
+        $_GET['category'] = 'Accessories'; 
+        include 'fetch_products.php'; 
+        ?>
             <!-- Product 1 -->
             <div class="product-card">
                 <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1551103782-8ab07afd45c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
@@ -567,7 +571,7 @@
     <footer>
         <div class="footer-links">
             <a href="ABOUTUS.html">ABOUT US</a>
-            <a href="CONTACT.html ">CONTACT</a>
+            <a href="CONTACT.html">CONTACT</a>
             <a href="TOS.html">TERMS OF SERVICE</a>
         </div>
         

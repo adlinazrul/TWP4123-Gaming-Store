@@ -68,7 +68,6 @@
         
         .nav-links a:hover {
             color: var(--primary);
-            text-decoration: none; 
         }
         
         .nav-links a::after {
@@ -80,12 +79,10 @@
             bottom: -5px;
             left: 0;
             transition: width 0.3s ease;
-            
         }
         
         .nav-links a:hover::after {
             width: 100%;
-            
         }
         
         .nav-links a.active {
@@ -523,10 +520,14 @@
 
     <!-- Product Listing Section -->
     <section class="product-listing">
-        <h2 class="section-title">ALL PRODUCTS</h2>
+        <h2 class="section-title">NINTENDO</h2>
         
         
         <div class="products-grid">
+             <?php 
+        $_GET['category'] = 'Nintendo'; 
+        include 'fetch_products.php'; 
+        ?>
             <!-- Product 1 -->
             <div class="product-card">
                 <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1551103782-8ab07afd45c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>

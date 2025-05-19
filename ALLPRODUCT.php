@@ -68,6 +68,7 @@
         
         .nav-links a:hover {
             color: var(--primary);
+            text-decoration: none; 
         }
         
         .nav-links a::after {
@@ -79,10 +80,12 @@
             bottom: -5px;
             left: 0;
             transition: width 0.3s ease;
+            
         }
         
         .nav-links a:hover::after {
             width: 100%;
+            
         }
         
         .nav-links a.active {
@@ -501,7 +504,6 @@
                 </a>
                 <div class="cart-icon-container">
                     <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
-                    <span class="cart-count">3</span>
                 </div>
             </div>
         </nav>
@@ -521,10 +523,36 @@
 
     <!-- Product Listing Section -->
     <section class="product-listing">
-        <h2 class="section-title">CONSOLES</h2>
+        <h2 class="section-title">ALL PRODUCTS</h2>
         
         
         <div class="products-grid">
+           <?php 
+        // Include and get products
+        $products = include 'fetch_products.php';
+        
+        if (!empty($products)) {
+            foreach ($products as $product) {
+                echo '<div class="product-card">';
+                echo '<div class="product-image" style="background-image: url(\'images/' . htmlspecialchars($product['product_image']) . '\');"></div>';
+                echo '<div class="product-info">';
+                echo '<h3>' . htmlspecialchars($product['product_name']) . '</h3>';
+                echo '<p class="product-description">' . htmlspecialchars($product['product_description']) . '</p>';
+                echo '<div class="product-price">RM' . number_format($product['product_price'], 2) . '</div>';
+                
+                // Add to cart form with product ID
+                echo '<form action="add_to_cart.php" method="post">';
+                echo '<input type="hidden" name="product_id" value="' . $product['id'] . '">';
+                echo '<button type="submit" class="view-product">ADD TO CART</button>';
+                echo '</form>';
+                
+                echo '</div></div>';
+            }
+        } else {
+            echo '<div class="empty-state">No products available yet. Please check back later.</div>'; }
+        ?>
+        </div>
+</section>
             <!-- Product 1 -->
             <div class="product-card">
                 <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1551103782-8ab07afd45c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>

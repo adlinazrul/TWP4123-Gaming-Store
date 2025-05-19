@@ -501,6 +501,7 @@
                 </a>
                 <div class="cart-icon-container">
                     <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
+                    <span class="cart-count">3</span>
                 </div>
             </div>
         </nav>
@@ -520,10 +521,14 @@
 
     <!-- Product Listing Section -->
     <section class="product-listing">
-        <h2 class="section-title">NINTENDO</h2>
+        <h2 class="section-title">CONSOLES</h2>
         
         
         <div class="products-grid">
+            <?php 
+        $_GET['category'] = 'Consoles'; 
+        include 'fetch_products.php'; 
+        ?>
             <!-- Product 1 -->
             <div class="product-card">
                 <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1551103782-8ab07afd45c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
