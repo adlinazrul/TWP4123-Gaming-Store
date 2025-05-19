@@ -20,7 +20,7 @@ try {
     // Check if form was submitted via POST
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Validate and sanitize input
-        $required_fields = ['firstname', 'lastname', 'email', 'address', 'city', 'zip', 'state', 
+        $required_fields = ['firstname', 'lastname', 'email', 'address', 'city', 'postcode', 'state', 
                           'cardname', 'cardnumber', 'expmonth', 'expyear', 'cvv'];
         
         foreach ($required_fields as $field) {
@@ -36,7 +36,7 @@ try {
         $phone        = $conn->real_escape_string($_POST['phone'] ?? '');
         $address      = $conn->real_escape_string($_POST['address']);
         $city         = $conn->real_escape_string($_POST['city']);
-        $zip          = $conn->real_escape_string($_POST['zip']);
+        $postcode          = $conn->real_escape_string($_POST['postcode']);
         $state        = $conn->real_escape_string($_POST['state']);
         $card_name    = $conn->real_escape_string($_POST['cardname']);
         $card_number  = $conn->real_escape_string($_POST['cardnumber']);
@@ -47,7 +47,7 @@ try {
 
         // Prepare and execute query
         $sql = "INSERT INTO buynow 
-                (first_name, last_name, email, phone, address, city, zip_code, state, 
+                (first_name, last_name, email, phone, address, city, postcode, state, 
                  card_name, card_number, exp_month, exp_year, cvv, order_total) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -56,7 +56,7 @@ try {
             throw new Exception("Preparation error: " . $conn->error);
         }
 
-        $stmt->bind_param("sssssssssssssd", $first_name, $last_name, $email, $phone, $address, $city, $zip, $state,
+        $stmt->bind_param("sssssssssssssd", $first_name, $last_name, $email, $phone, $address, $city, $postcode, $state,
                           $card_name, $card_number, $exp_month, $exp_year, $cvv, $order_total);
 
         if (!$stmt->execute()) {

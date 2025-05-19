@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS | Flash Sale</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff0000;
+            --secondary: #d10000;
+            --dark: #0d0221;
+            --light: #ffffff;
+            --accent: #ff3333;
+            --gray: #7a7a7a;
+            --flash: #ff6b00;
+        }
+        
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        header {
+            background: var(--dark);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
+        }
+        
+        .nav-menu {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            cursor: pointer;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 400;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            bottom: -5px;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .nav-links a.active {
+            color: var(--primary);
+        }
+        
+        .nav-links a.active::after {
+            width: 100%;
+        }
+        
+        .icons-left, .icons-right {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+        
+        .icons-left i, .icons-right i {
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--light);
+        }
+        
+        .icons-left i:hover, .icons-right i:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+        
+        .cart-count {
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-family: 'Rubik', sans-serif;
+        }
+        
+        .cart-icon-container {
+            position: relative;
+        }
+        
+        .flash-listing {
+            max-width: 1400px;
+            margin: 50px auto;
+            padding: 0 30px;
+        }
+        
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 50px;
+            color: var(--flash);
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 3px;
+            background: var(--flash);
+            bottom: -10px;
+            left: 25%;
+            border-radius: 3px;
+        }
+        
+        .sale-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 107, 0, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 107, 0, 0.3);
+        }
+        
+        .countdown {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--flash);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .countdown i {
+            font-size: 1.8rem;
+        }
+        
+        .sale-intro {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 50px;
+            line-height: 1.6;
+        }
+        
+        .flash-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 40px;
+        }
+        
+        .flash-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 107, 0, 0.1);
+            position: relative;
+        }
+        
+        .flash-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(255, 107, 0, 0.2);
+            border-color: rgba(255, 107, 0, 0.3);
+        }
+        
+        .flash-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--flash);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            z-index: 2;
+        }
+        
+        .flash-image {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.5s ease;
+            position: relative;
+        }
+        
+        .flash-card:hover .flash-image {
+            transform: scale(1.05);
+        }
+        
+        .flash-info {
+            padding: 25px;
+        }
+        
+        .flash-info h3 {
+            margin: 0 0 15px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--flash);
+            font-size: 1.5rem;
+        }
+        
+        .flash-description {
+            color: var(--gray);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .flash-stock {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .stock-bar {
+            flex-grow: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .stock-progress {
+            height: 100%;
+            background: var(--flash);
+            width: 30%;
+        }
+        
+        .flash-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+        }
+        
+        .price-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .current-price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--flash);
+        }
+        
+        .original-price {
+            text-decoration: line-through;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .savings {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .buy-now {
+            background: var(--flash);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .buy-now:hover {
+            background: #ff8c00;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 107, 0, 0.3);
+        }
+        
+        footer {
+            background: #0a0118;
+            padding: 50px 30px 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        .footer-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            bottom: 0;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+        
+        .footer-links a:hover::after {
+            width: 100%;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .social-icons a {
+            color: var(--light);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+        }
+        
+        .social-icons a:hover {
+            color: var(--primary);
+            transform: translateY(-3px);
+            background: rgba(255, 0, 0, 0.2);
+        }
+        
+        .copyright {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 0, 0, 0.1);
+        }
+        
+        /* Mobile menu styles */
+        #menuOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            z-index: 2000;
+        }
+        
+        #menuContainer {
+            position: fixed;
+            top: 0;
+            left: -400px;
+            width: 400px;
+            height: 100%;
+            background: var(--dark);
+            padding: 40px;
+            transition: left 0.4s ease;
+            z-index: 2001;
+            border-right: 1px solid var(--primary);
+        }
+        
+        #closeMenu {
+            font-size: 2rem;
+            color: var(--primary);
+            cursor: pointer;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        #closeMenu:hover {
+            transform: rotate(90deg);
+        }
+        
+        #menuOverlay.active {
+            display: block;
+        }
+        
+        #menuOverlay.active #menuContainer {
+            left: 0;
+        }
+        
+        .menu-item {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 0, 0, 0.1);
+        }
+        
+        .menu-item a {
+            color: var(--light);
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        
+        .menu-item a:hover {
+            color: var(--primary);
+            padding-left: 10px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .nav-links {
+                gap: 15px;
+            }
+            
+            .flash-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .sale-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            #menuContainer {
+                width: 100%;
+                max-width: 320px;
+            }
+            
+            .flash-card {
+                max-width: 100%;
+            }
+            
+            .footer-links {
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .flash-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .flash-price {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .buy-now {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="nav-menu">
+            <div class="icons-left">
+                <i class="fas fa-search" id="searchIcon"></i>
+                <i class="fas fa-bars" id="menuIcon"></i>
+            </div>
+            
+            <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
+            
+            <div class="nav-links">
+                <a href="index.html">HOME</a>
+                <a href="NINTENDO.html">NINTENDO</a>
+                <a href="XBOX.html">CONSOLES</a>
+                <a href="ACCESSORIES.html">ACCESSORIES</a>
+                <a href="VR.html">VR</a>
+            </div>
+            
+            <div class="icons-right">
+                <a href="custlogin.html">
+                    <i class="fas fa-user"></i>
+                </a>
+                <div class="cart-icon-container">
+                    <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="menuOverlay">
+        <div id="menuContainer">
+            <span id="closeMenu">&times;</span>
+            <div id="menuContent">
+                <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
+                <div class="menu-item"><a href="custservice.html">HELP</a></div>
+                <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Sale Section -->
+    <section class="flash-listing">
+        <h2 class="section-title">FLASH SALE</h2>
+        
+        <div class="sale-header">
+            <div class="countdown">
+                <i class="fas fa-bolt"></i>
+                <span id="countdown-timer">24:59:59</span> LEFT!
+            </div>
+            <div class="sale-info">
+                <p>HURRY! These deals won't last. Limited quantities available at these prices.</p>
+            </div>
+        </div>
+        
+        <div class="sale-intro">
+            <p>Don't miss out on these incredible limited-time offers! Our flash sale features deep discounts on popular gaming gear and accessories. Act fast - these prices are only available for a short time and items are selling out quickly!</p>
+        </div>
+        
+        <div class="flash-grid">
+            <!-- Item 1 -->
+            <div class="flash-card">
+                <div class="flash-badge">HOT DEAL</div>
+                <div class="flash-image" style="background-image: url('https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                <div class="flash-info">
+                    <h3>DualSense Edge Wireless Controller</h3>
+                    <p class="flash-description">Premium customizable controller for PS5 with back buttons and swappable stick caps.</p>
+                    
+                    <div class="flash-stock">
+                        <span>Only 5 left!</span>
+                        <div class="stock-bar">
+                            <div class="stock-progress" style="width: 15%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flash-price">
+                        <div class="price-container">
+                            <span class="current-price">RM499.00</span>
+                            <span class="original-price">RM699.00</span>
+                            <span class="savings">Save RM200 (29%)</span>
+                        </div>
+                        <a href="#" class="buy-now">BUY NOW</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Item 2 -->
+            <div class="flash-card">
+                <div class="flash-badge">LIMITED STOCK</div>
+                <div class="flash-image" style="background-image: url('https://images.unsplash.com/photo-1598550476439-6847785fcea6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                <div class="flash-info">
+                    <h3>Xbox Series S 512GB</h3>
+                    <p class="flash-description">Next-gen performance in the smallest Xbox ever, now at an unbeatable price.</p>
+                    
+                    <div class="flash-stock">
+                        <span>Only 3 left!</span>
+                        <div class="stock-bar">
+                            <div class="stock-progress" style="width: 10%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flash-price">
+                        <div class="price-container">
+                            <span class="current-price">RM999.00</span>
+                            <span class="original-price">RM1,299.00</span>
+                            <span class="savings">Save RM300 (23%)</span>
+                        </div>
+                        <a href="#" class="buy-now">BUY NOW</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Item 3 -->
+            <div class="flash-card">
+                <div class="flash-badge">FLASH SALE</div>
+                <div class="flash-image" style="background-image: url('https://images.unsplash.com/photo-1591488320449-011701bb6704?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                <div class="flash-info">
+                    <h3>Nintendo Switch Pro Controller</h3>
+                    <p class="flash-description">Take your Switch gaming to the next level with this premium controller.</p>
+                    
+                    <div class="flash-stock">
+                        <span>Only 8 left!</span>
+                        <div class="stock-bar">
+                            <div class="stock-progress" style="width: 25%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flash-price">
+                        <div class="price-container">
+                            <span class="current-price">RM199.00</span>
+                            <span class="original-price">RM299.00</span>
+                            <span class="savings">Save RM100 (33%)</span>
+                        </div>
+                        <a href="#" class="buy-now">BUY NOW</a>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="ABOUTUS.html">ABOUT US</a>
+            <a href="CONTACT.html">CONTACT</a>
+            <a href="TOS.html">TERMS OF SERVICE</a>
+        </div>
+        
+        <div class="social-icons">
+            <a href="#facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2025 NEXUS GAMING STORE. ALL RIGHTS RESERVED.<br>
+            NEXUS is not affiliated with any game publishers or console manufacturers.
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Mobile menu functionality
+            let menuOverlay = document.getElementById("menuOverlay");
+            let menuContainer = document.getElementById("menuContainer");
+            let menuIcon = document.getElementById("menuIcon");
+            let closeMenu = document.getElementById("closeMenu");
+
+            // Open menu
+            menuIcon.addEventListener("click", function () {
+                menuOverlay.style.display = "block";
+                setTimeout(() => {
+                    menuOverlay.classList.add("active");
+                }, 10);
+            });
+
+            // Close menu when clicking "X"
+            closeMenu.addEventListener("click", function (e) {
+                e.stopPropagation();
+                menuOverlay.classList.remove("active");
+                setTimeout(() => {
+                    menuOverlay.style.display = "none";
+                }, 300);
+            });
+
+            // Close menu when clicking outside of menu container
+            menuOverlay.addEventListener("click", function (e) {
+                if (e.target === menuOverlay) {
+                    menuOverlay.classList.remove("active");
+                    setTimeout(() => {
+                        menuOverlay.style.display = "none";
+                    }, 300);
+                }
+            });
+
+
+            // Search icon click
+            document.getElementById("searchIcon").addEventListener("click", function() {
+                alert("Search functionality would appear here. This is a demo.");
+            });
+
+            // Buy Now buttons
+            document.querySelectorAll(".buy-now").forEach(button => {
+                button.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    const itemName = this.closest(".flash-card").querySelector("h3").textContent;
+                    alert(`You're purchasing ${itemName}.  This would add to cart in a real implementation.`);
+                });
+            });
+
+            // Countdown timer 
+            function updateCountdown() {
+                let hours = 24;
+                let minutes = 59;
+                let seconds = 59;
+                
+                const countdown = setInterval(() => {
+                    document.getElementById("countdown-timer").textContent = 
+                        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    if (seconds > 0) {
+                        seconds--;
+                    } else {
+                        if (minutes > 0) {
+                            minutes--;
+                            seconds = 59;
+                        } else {
+                            if (hours > 0) {
+                                hours--;
+                                minutes = 59;
+                                seconds = 59;
+                            } else {
+                                clearInterval(countdown);
+                                document.querySelector(".sale-header").innerHTML = 
+                                    "<h3 style='color:#ff6b00;font-family:Orbitron;'>FLASH SALE ENDED!</h3>";
+                            }
+                        }
+                    }
+                }, 1000);
+            }
+            
+            updateCountdown();
+
+            // Add animation to flash cards on scroll
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = "1";
+                        entry.target.style.transform = "translateY(0)";
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.flash-card').forEach(card => {
+                card.style.opacity = "0";
+                card.style.transform = "translateY(20px)";
+                card.style.transition = "all 0.5s ease";
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>
