@@ -1,9 +1,29 @@
+<?php
+// Database configuration
+$host = 'localhost';
+$username = 'root'; // change if different
+$password = '';     // change if your MySQL has a password
+$database = 'gaming_store'; // your DB name
+
+// Create connection
+$conn = new mysqli($host, $username, $password, $database);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch all products
+$sql = "SELECT * FROM products";
+$result = $conn->query($sql);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Nintendo Products</title>
+    <title>NEXUS | All Products</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -492,10 +512,10 @@
             
             <div class="nav-links">
                 <a href="index.html">HOME</a>
-                <a href="NINTENDO.html">NINTENDO</a>
-                <a href="XBOX.html">CONSOLES</a>
-                <a href="ACCESSORIES.html">ACCESSORIES</a>
-                <a href="VR.html">VR</a>
+                <a href="NINTENDO.php">NINTENDO</a>
+                <a href="XBOX.php">CONSOLES</a>
+                <a href="ACCESSORIES.php">ACCESSORIES</a>
+                <a href="VR.php">VR</a>
             </div>
             
             <div class="icons-right">
@@ -525,70 +545,33 @@
     <section class="product-listing">
         <h2 class="section-title">ALL PRODUCTS</h2>
         
-        
         <div class="products-grid">
-           <?php 
-        // Include and get products
-        $products = include 'fetch_products.php';
-        
-        if (!empty($products)) {
-            foreach ($products as $product) {
-                echo '<div class="product-card">';
-                echo '<div class="product-image" style="background-image: url(\'images/' . htmlspecialchars($product['product_image']) . '\');"></div>';
-                echo '<div class="product-info">';
-                echo '<h3>' . htmlspecialchars($product['product_name']) . '</h3>';
-                echo '<p class="product-description">' . htmlspecialchars($product['product_description']) . '</p>';
-                echo '<div class="product-price">RM' . number_format($product['product_price'], 2) . '</div>';
-                
-                // Add to cart form with product ID
-                echo '<form action="add_to_cart.php" method="post">';
-                echo '<input type="hidden" name="product_id" value="' . $product['id'] . '">';
-                echo '<button type="submit" class="view-product">ADD TO CART</button>';
-                echo '</form>';
-                
-                echo '</div></div>';
+            <?php
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    echo '<div class="product-card">';
+                    echo '<div class="product-image" style="background-image: url(\'uploads/' . htmlspecialchars($row["product_image"]) . '\');"></div>';
+                    echo '<div class="product-info">';
+                    echo '<h3>' . htmlspecialchars($row["product_name"]) . '</h3>';
+                    echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
+                    echo '<div class="product-price">';
+                    echo 'RM ' . number_format($row["product_price"], 2);
+                    // Add discount display if applicable
+                    if (isset($row["original_price"]) && $row["original_price"] > $row["product_price"]) {
+                        echo '<span class="original-price">RM ' . number_format($row["original_price"], 2) . '</span>';
+                        $discount = round(($row["original_price"] - $row["product_price"]) / $row["original_price"] * 100);
+                        echo '<span class="discount-badge">' . $discount . '% OFF</span>';
+                    }
+                    echo '</div>';
+                    echo '<button class="view-product">VIEW PRODUCT</button>';
+                    echo '</div></div>';
+                }
+            } else {
+                echo "<p>No products found.</p>";
             }
-        } else {
-            echo '<div class="empty-state">No products available yet. Please check back later.</div>'; }
-        ?>
+            $conn->close();
+            ?>
         </div>
-</section>
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1551103782-8ab07afd45c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>Nintendo Switch OLED</h3>
-                    <p class="product-description">7-inch OLED screen, 64GB internal storage, enhanced audio for immersive gaming</p>
-                    <div class="product-price">
-                        RM1,499.00
-                        <span class="original-price">RM1,599.00</span>
-                        <span class="discount-badge">6% OFF</span>
-                    </div>
-                    <button class="view-product">VIEW PRODUCT</button>
-                </div>
-            </div>
-            
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1587854692152-cbe660dbde88?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>Nintendo Switch Lite</h3>
-                    <p class="product-description">Compact, lightweight design with integrated controls for handheld play</p>
-                    <div class="product-price">RM899.00</div>
-                    <button class="view-product">VIEW PRODUCT</button>
-                </div>
-            </div>
-            
-            <!-- Product 3 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1591488320449-011701bb6704?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>Joy-Con Controllers (Pair)</h3>
-                    <p class="product-description">Two Joy-Con controllers with wrist straps in various colors</p>
-                    <div class="product-price">RM349.00</div>
-                    <button class="view-product">VIEW PRODUCT</button>
-                </div>
-            </div>
     </section>
 
     <!-- Footer -->

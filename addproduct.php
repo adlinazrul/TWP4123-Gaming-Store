@@ -58,11 +58,10 @@ $result = $conn->query("SELECT * FROM products");
          <!-- New dropdown for category -->
          <select name="product_category" class="box" required>
             <option value="" disabled selected>Select category</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Clothing">Clothing</option>
-            <option value="Books">Books</option>
-            <option value="Home & Garden">Home & Garden</option>
-            <option value="Other">Other</option>
+            <option value="Nintendo">Nintendo</option>
+            <option value="Consoles">Consoles</option>
+            <option value="Accessories">Accessories</option>
+            <option value="VR">VR</option>
          </select>
 
          <input type="file" accept="image/png, image/jpeg, image/jpg" name="product_image" class="box" required />

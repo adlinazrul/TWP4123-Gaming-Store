@@ -1,9 +1,27 @@
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "gaming_store";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$sql = "SELECT * FROM products WHERE product_category = 'VR'";
+$result = $conn->query($sql);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Nintendo Products</title>
+    <title>NEXUS | Virtual Reality</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -68,6 +86,7 @@
         
         .nav-links a:hover {
             color: var(--primary);
+            text-decoration: none; 
         }
         
         .nav-links a::after {
@@ -160,35 +179,6 @@
             border-radius: 3px;
         }
         
-        .filter-section {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 30px;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .filter-section label {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--light);
-        }
-        
-        .filter-section select {
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--light);
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            border-radius: 5px;
-            font-family: 'Rubik', sans-serif;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        
-        .filter-section select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
-        }
-        
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -211,8 +201,9 @@
         
         .product-image {
             height: 200px;
-            background-size: cover;
-            background-position: center;
+            width: 100%;
+            object-fit: contain;
+            background-color: #000;
             transition: transform 0.5s ease;
         }
         
@@ -260,6 +251,12 @@
             border-radius: 5px;
             font-size: 0.8rem;
             font-family: 'Rubik', sans-serif;
+        }
+        
+        .out-of-stock {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 15px;
         }
         
         .view-product {
@@ -343,7 +340,6 @@
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             text-decoration: none;
-
         }
         
         .social-icons a:hover {
@@ -446,11 +442,6 @@
                 font-size: 2rem;
             }
             
-            .filter-section {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
             #menuContainer {
                 width: 100%;
                 max-width: 320px;
@@ -489,10 +480,10 @@
             
             <div class="nav-links">
                 <a href="index.html">HOME</a>
-                <a href="NINTENDO.html">NINTENDO</a>
-                <a href="XBOX.html">CONSOLES</a>
-                <a href="ACCESSORIES.html">ACCESSORIES</a>
-                <a href="VR.html">VR</a>
+                <a href="NINTENDO.php">NINTENDO</a>
+                <a href="XBOX.php">CONSOLES</a>
+                <a href="ACCESSORIES.php">ACCESSORIES</a>
+                <a href="VR.php" class="active">VR</a>
             </div>
             
             <div class="icons-right">
@@ -501,7 +492,6 @@
                 </a>
                 <div class="cart-icon-container">
                     <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
-                    <span class="cart-count">3</span>
                 </div>
             </div>
         </nav>
@@ -521,57 +511,45 @@
 
     <!-- Product Listing Section -->
     <section class="product-listing">
-        <h2 class="section-title">VR</h2>
-        
+        <h2 class="section-title">VIRTUAL REALITY</h2>
         
         <div class="products-grid">
-             <?php 
-        $_GET['category'] = 'VR'; 
-        include 'fetch_products.php'; 
-        ?>
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1551103782-8ab07afd45c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>Nintendo Switch OLED</h3>
-                    <p class="product-description">7-inch OLED screen, 64GB internal storage, enhanced audio for immersive gaming</p>
-                    <div class="product-price">
-                        RM1,499.00
-                        <span class="original-price">RM1,599.00</span>
-                        <span class="discount-badge">6% OFF</span>
-                    </div>
-                    <button class="view-product">VIEW PRODUCT</button>
-                </div>
-            </div>
-            
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1587854692152-cbe660dbde88?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>Nintendo Switch Lite</h3>
-                    <p class="product-description">Compact, lightweight design with integrated controls for handheld play</p>
-                    <div class="product-price">RM899.00</div>
-                    <button class="view-product">VIEW PRODUCT</button>
-                </div>
-            </div>
-            
-            <!-- Product 3 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1591488320449-011701bb6704?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>Joy-Con Controllers (Pair)</h3>
-                    <p class="product-description">Two Joy-Con controllers with wrist straps in various colors</p>
-                    <div class="product-price">RM349.00</div>
-                    <button class="view-product">VIEW PRODUCT</button>
-                </div>
-            </div>
+            <?php
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    echo '<div class="product-card">';
+                    echo '<img class="product-image" src="uploads/' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
+                    echo '<div class="product-info">';
+                    echo '<h3>' . htmlspecialchars($row["product_name"]) . '</h3>';
+                    echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
+                    echo '<div class="product-price">';
+                    echo 'RM ' . number_format($row["product_price"], 2);
+                    // Add discount display if applicable
+                    if (isset($row["original_price"]) && $row["original_price"] > $row["product_price"]) {
+                        echo '<span class="original-price">RM ' . number_format($row["original_price"], 2) . '</span>';
+                        $discount = round(($row["original_price"] - $row["product_price"]) / $row["original_price"] * 100);
+                        echo '<span class="discount-badge">' . $discount . '% OFF</span>';
+                    }
+                    echo '</div>';
+                    if ((int)$row["product_quantity"] <= 0) {
+                        echo '<div class="out-of-stock">Out of Stock</div>';
+                    }
+                    echo '<button class="view-product">VIEW PRODUCT</button>';
+                    echo '</div></div>';
+                }
+            } else {
+                echo "<p>No VR products available at the moment.</p>";
+            }
+            $conn->close();
+            ?>
+        </div>
     </section>
 
     <!-- Footer -->
     <footer>
         <div class="footer-links">
             <a href="ABOUTUS.html">ABOUT US</a>
-            <a href="CONTACT.html ">CONTACT</a>
+            <a href="CONTACT.html">CONTACT</a>
             <a href="TOS.html">TERMS OF SERVICE</a>
         </div>
         
@@ -629,11 +607,6 @@
             // Search icon click
             document.getElementById("searchIcon").addEventListener("click", function() {
                 alert("Search functionality would appear here. This is a demo.");
-            });
-
-            // Sort functionality
-            document.getElementById("sort").addEventListener("change", function() {
-                alert("Products would be sorted by " + this.value + ". This is a demo.");
             });
 
             // Add hover effect to all buttons
