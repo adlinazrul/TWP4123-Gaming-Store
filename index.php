@@ -551,7 +551,7 @@ if (!$user) {
             </div>
             
             <div class="icons-right">
-                <a href="custlogin.html">
+                <a href="custeditprofile.php">
                     <i class="fas fa-user"></i>
                 </a>
                 <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
