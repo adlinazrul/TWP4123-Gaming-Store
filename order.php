@@ -1,113 +1,154 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$database = "gaming_store";
+session_start();
+require_once "db_connect1.php";
 
-// Connect to database
-$conn = new mysqli($servername, $username, $password, $database);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Database connection failed: " . $conn->connect_error);
+if (!isset($_GET['order_id']) || !is_numeric($_GET['order_id'])) {
+    die("Invalid order ID.");
 }
 
-// Get order ID from URL
-$order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+$order_id = (int)$_GET['order_id'];
 
-// Validate order ID
-if ($order_id <= 0) {
-    echo "Invalid order ID.";
-    exit;
-}
-
-// Fetch order details from orders table
-$stmt = $conn->prepare("SELECT * FROM orders WHERE id = ?");
+// Fetch the order details
+$order_sql = "SELECT * FROM orders WHERE id = ?";
+$stmt = $conn->prepare($order_sql);
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
-$result = $stmt->get_result();
+$order_result = $stmt->get_result();
 
-// Check if order exists
-if ($result->num_rows == 0) {
-    echo "Order not found with ID: $order_id";
-    exit;
+if ($order_result->num_rows === 0) {
+    die("Order not found.");
 }
 
-$order = $result->fetch_assoc();
+$order = $order_result->fetch_assoc();
 
-// Fetch items related to the order
-$stmt_items = $conn->prepare("SELECT * FROM items_ordered WHERE order_id = ?");
+// Fetch the items for this order
+$items_sql = "SELECT * FROM items_ordered WHERE order_id = ?";
+$stmt_items = $conn->prepare($items_sql);
 $stmt_items->bind_param("i", $order_id);
 $stmt_items->execute();
-$result_items = $stmt_items->get_result();
+$items_result = $stmt_items->get_result();
 
 ?>
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Order Details</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f4f4f4;
-        }
-        h2 {
-            color: #333;
-        }
-        table {
-            width: 90%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: #fff;
-        }
-        table, th, td {
-            border: 1px solid #ccc;
-        }
-        th, td {
-            padding: 14px;
-            text-align: center;
-        }
-        th {
-            background-color: #555;
-            color: #fff;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Order Details - NEXUS</title>
+  <style>
+    :root {
+      --primary: #ff0000;
+      --dark: #0d0221;
+      --light: #ffffff;
+    }
+    body {
+      font-family: sans-serif;
+      background: var(--dark);
+      color: var(--light);
+      margin: 0;
+      padding: 20px;
+    }
+    header {
+      background: #0a0118;
+      padding: 15px;
+      max-width: 900px;
+      margin: 0 auto 20px;
+      border-radius: 6px;
+    }
+    h1, h2 {
+      color: var(--primary);
+    }
+    .order-info, .items {
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .item {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      align-items: center;
+      border-bottom: 1px solid #333;
+      padding-bottom: 10px;
+    }
+    .item:last-child {
+      border-bottom: none;
+    }
+    .item img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 5px;
+      border: 1px solid #444;
+    }
+    .item-details {
+      flex-grow: 1;
+    }
+    .item-details div {
+      margin-bottom: 5px;
+    }
+    .total, .tax, .grand-total {
+      text-align: right;
+      font-weight: bold;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    a.back-link {
+      display: inline-block;
+      margin: 10px auto 30px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: bold;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    a.back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-    <h2>Order Details for Order #<?= htmlspecialchars($order_id) ?></h2>
 
-    <p><strong>Name:</strong> <?= htmlspecialchars($order['name_cust']) ?></p>
-    <p><strong>Phone:</strong> <?= htmlspecialchars($order['num_tel_cust']) ?></p>
-    <p><strong>Address:</strong> <?= htmlspecialchars($order['address_cust']) ?></p>
-    <p><strong>Order Date:</strong> <?= htmlspecialchars($order['date']) ?></p>
+<header>
+  <h1>Order Details</h1>
+  <a href="orderhistory.php" class="back-link">&larr; Back to Order History</a>
+</header>
 
-    <h3>Items Ordered:</h3>
-    <table>
-        <tr>
-            <th>Product Image</th>
-            <th>Name</th>
-            <th>Quantity</th>
-            <th>Price (RM)</th>
-            <th>Status</th>
-        </tr>
-        <?php while ($item = $result_items->fetch_assoc()) { ?>
-        <tr>
-            <td><img src="<?= htmlspecialchars($item['image_items']) ?>" width="100" alt=""></td>
-            <td><?= htmlspecialchars($item['product_name']) ?></td>
-            <td><?= intval($item['quantity_items']) ?></td>
-            <td>RM <?= number_format($item['price_items'], 2) ?></td>
-            <td><?= htmlspecialchars($item['status_order']) ?></td>
-        </tr>
-        <?php } ?>
-    </table>
+<section class="order-info">
+  <h2>Order #<?= htmlspecialchars($order['id']) ?></h2>
+  <p><strong>Customer Name:</strong> <?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></p>
+  <p><strong>Contact Number:</strong> <?= htmlspecialchars($order['phone']) ?></p>
+  <p><strong>Shipping Address:</strong> <?= nl2br(htmlspecialchars($order['address'])) ?></p>
+  <p><strong>Order Date:</strong> <?= date('d M Y, h:i A', strtotime($order['date'])) ?></p>
+</section>
+
+<section class="items">
+  <h2>Items Ordered</h2>
+  <?php if ($items_result->num_rows > 0): ?>
+    <?php while ($item = $items_result->fetch_assoc()): ?>
+      <div class="item">
+        <img src="<?= htmlspecialchars($item['image_items']) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>" />
+        <div class="item-details">
+          <div><strong>Product:</strong> <?= htmlspecialchars($item['product_name']) ?></div>
+          <div><strong>Quantity:</strong> <?= $item['quantity_items'] ?></div>
+          <div><strong>Price per item:</strong> RM<?= number_format($item['price_items'], 2) ?></div>
+          <div><strong>Subtotal:</strong> RM<?= number_format($item['price_items'] * $item['quantity_items'], 2) ?></div>
+        </div>
+      </div>
+    <?php endwhile; ?>
+  <?php else: ?>
+    <p>No items found for this order.</p>
+  <?php endif; ?>
+</section>
+
+<div class="total">Total Price: RM<?= number_format($order['total_price'], 2) ?></div>
+<div class="tax">Tax Fee: RM<?= number_format($order['tax_fee'], 2) ?></div>
+<div class="grand-total">Grand Total: RM<?= number_format($order['total_price'] + $order['tax_fee'], 2) ?></div>
+
 </body>
 </html>
-
-<?php
-// Close connections
-$stmt->close();
-$stmt_items->close();
-$conn->close();
-?>
