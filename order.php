@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Redirect if not logged in as admin
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
@@ -12,43 +11,41 @@ $username = "root";
 $password = "";
 $dbname = "gaming_store";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Validate and get order_id from GET
-$order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
-if ($order_id <= 0) {
+// Validate order_id from GET parameters
+if (!isset($_GET['order_id']) || !is_numeric($_GET['order_id']) || intval($_GET['order_id']) <= 0) {
     echo "Invalid order ID.";
     exit;
 }
 
-// Prepare and execute query to fetch ordered items by order_id
+$order_id = intval($_GET['order_id']);
+
 $stmt = $conn->prepare("SELECT * FROM items_ordered WHERE order_id = ?");
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-if ($result->num_rows === 0) {
+if ($result->num_rows == 0) {
     echo "Order not found.";
     exit;
 }
 
-// Fetch all items
 $items = [];
 while ($row = $result->fetch_assoc()) {
     $items[] = $row;
 }
 
-// Fetch admin profile image
 $admin_id = $_SESSION['admin_id'];
-$img_stmt = $conn->prepare("SELECT image FROM admin_list WHERE id = ?");
+$query = "SELECT image FROM admin_list WHERE id = ?";
+$img_stmt = $conn->prepare($query);
 $img_stmt->bind_param("i", $admin_id);
 $img_stmt->execute();
 $img_stmt->bind_result($image);
-$profile_image = ($img_stmt->fetch() && !empty($image)) ? 'image/' . htmlspecialchars($image) : 'image/default_profile.jpg';
+$profile_image = ($img_stmt->fetch() && !empty($image)) ? 'image/' . $image : 'image/default_profile.jpg';
 $img_stmt->close();
 ?>
 
@@ -70,7 +67,6 @@ $img_stmt->close();
         padding: 12px;
         text-align: center;
         border-bottom: 1px solid #ddd;
-        vertical-align: middle;
     }
     table img {
         border-radius: 5px;
@@ -102,7 +98,6 @@ $img_stmt->close();
         color: #333;
         cursor: pointer;
         transition: background-color 0.3s ease, border-color 0.3s ease;
-        min-width: 120px;
     }
     select.status-select:hover {
         background-color: #e0e0e0;
@@ -143,14 +138,14 @@ $img_stmt->close();
 
 <section id="content">
     <nav>
-        <form action="#" method="GET">
+        <form action="#">
             <div class="form-input">
-                <input type="search" name="q" placeholder="Search..." />
+                <input type="search" placeholder="Search..." />
                 <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
             </div>
         </form>
         <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
-        <a href="profile_admin.php" class="profile"><img src="<?= $profile_image ?>" alt="Profile Picture" /></a>
+        <a href="profile_admin.php" class="profile"><img src="<?= htmlspecialchars($profile_image) ?>" alt="Profile Picture" /></a>
     </nav>
 
     <main>
@@ -158,7 +153,7 @@ $img_stmt->close();
             <div class="left">
                 <h1>Order Details</h1>
                 <ul class="breadcrumb">
-                    <li><a href="admindashboard.php">Dashboard</a></li>
+                    <li><a href="#">Dashboard</a></li>
                     <li><i class='bx bx-chevron-right'></i></li>
                     <li><a class="active" href="#">Order Details</a></li>
                 </ul>
@@ -166,7 +161,7 @@ $img_stmt->close();
         </div>
 
         <div class="details-container">
-            <form action="update_status.php" method="POST" onsubmit="return confirm('Are you sure you want to update the status?');">
+            <form action="update_status.php" method="POST">
                 <input type="hidden" name="order_id" value="<?= $order_id ?>">
                 <table>
                     <thead>
@@ -186,44 +181,34 @@ $img_stmt->close();
                     <tbody>
                         <?php
                         $total_price = 0;
-                        foreach ($items as $index => $row):
+                        foreach ($items as $index => $row) {
                             $item_total = $row['price_items'] * $row['quantity_items'];
                             $total_price += $item_total;
-                            // Sanitize variables for output
-                            $image_path = htmlspecialchars($row['image_items']);
-                            $product_name = htmlspecialchars($row['product_name']);
-                            $price_items = number_format($row['price_items'], 2);
-                            $quantity_items = (int)$row['quantity_items'];
-                            $status_order = htmlspecialchars($row['status_order']);
-                            $name_cust = htmlspecialchars($row['name_cust']);
-                            $num_tel_cust = htmlspecialchars($row['num_tel_cust']);
-                            $address_cust = nl2br(htmlspecialchars($row['address_cust']));
-                            $date = htmlspecialchars($row['date']);
                         ?>
                         <tr>
-                            <td><img src="/TWP4123-Gaming-Store/<?= $image_path ?>" alt="Product Image" /></td>
-                            <td><?= $product_name ?></td>
-                            <td><?= $price_items ?></td>
-                            <td><?= $quantity_items ?></td>
+                            <td><img src="/TWP4123-Gaming-Store/<?= htmlspecialchars($row['image_items']) ?>" alt="Product Image" /></td>
+                            <td><?= htmlspecialchars($row['product_name']) ?></td>
+                            <td><?= number_format($row['price_items'], 2) ?></td>
+                            <td><?= htmlspecialchars($row['quantity_items']) ?></td>
                             <td><?= number_format($item_total, 2) ?></td>
                             <td>
                                 <select name="status_order[<?= $index ?>]" class="status-select" required>
                                     <?php
                                     $statuses = ['Pending', 'Processing', 'Completed', 'Cancelled'];
                                     foreach ($statuses as $status) {
-                                        $selected = ($status === $status_order) ? 'selected' : '';
+                                        $selected = ($status == $row['status_order']) ? 'selected' : '';
                                         echo "<option value=\"$status\" $selected>$status</option>";
                                     }
                                     ?>
                                 </select>
                             </td>
-                            <td><?= $name_cust ?></td>
-                            <td><?= $num_tel_cust ?></td>
-                            <td><?= $address_cust ?></td>
-                            <td><?= $date ?></td>
+                            <td><?= htmlspecialchars($row['name_cust']) ?></td>
+                            <td><?= htmlspecialchars($row['num_tel_cust']) ?></td>
+                            <td><?= nl2br(htmlspecialchars($row['address_cust'])) ?></td>
+                            <td><?= htmlspecialchars($row['date']) ?></td>
                         </tr>
-                        <input type="hidden" name="item_id[<?= $index ?>]" value="<?= (int)$row['id'] ?>">
-                        <?php endforeach; ?>
+                        <input type="hidden" name="item_id[<?= $index ?>]" value="<?= $row['id'] ?>">
+                        <?php } ?>
                     </tbody>
                 </table>
 
