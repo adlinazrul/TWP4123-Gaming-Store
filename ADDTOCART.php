@@ -619,9 +619,9 @@ $_SESSION['cart_products'] = $normalized_items;
             <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
             
             <div class="nav-links">
-                <a href="index.html">HOME</a>
+                <a href="index">HOME</a>
                 <a href="NINTENDO.php">NINTENDO</a>
-                <a href="XBOX.php">CONSOLES</a>
+                <a href="XBOX.php" class="active">CONSOLES</a>
                 <a href="ACCESSORIES.php">ACCESSORIES</a>
                 <a href="VR.php">VR</a>
             </div>
