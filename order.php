@@ -116,7 +116,7 @@ $items_result = $stmt_items->get_result();
 
 <header>
   <h1>Order Details</h1>
-  <a href="orderhistory.php" class="back-link">&larr; Back to Order History</a>
+
 </header>
 
 <section class="order-info">
