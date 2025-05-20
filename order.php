@@ -18,7 +18,7 @@ if ($conn->connect_error) {
 
 $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
 
-$stmt = $conn->prepare("SELECT * FROM items_ordered WHERE order_id = ?");
+$stmt = $conn->prepare("SELECT * FROM orders WHERE id = ?");
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -28,11 +28,9 @@ if ($result->num_rows == 0) {
     exit;
 }
 
-$items = [];
-while ($row = $result->fetch_assoc()) {
-    $items[] = $row;
-}
+$order = $result->fetch_assoc();
 
+// Admin profile image
 $admin_id = $_SESSION['admin_id'];
 $query = "SELECT image FROM admin_list WHERE id = ?";
 $img_stmt = $conn->prepare($query);
@@ -59,20 +57,14 @@ $img_stmt->close();
     }
     table th, table td {
         padding: 12px;
-        text-align: center;
+        text-align: left;
         border-bottom: 1px solid #ddd;
-    }
-    table img {
-        border-radius: 5px;
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
     }
     .details-container {
         padding: 20px;
     }
     .total-table {
-        max-width: 300px;
+        max-width: 400px;
         margin-left: auto;
         margin-right: 0;
         border: 1px solid #ddd;
@@ -156,61 +148,36 @@ $img_stmt->close();
 
         <div class="details-container">
             <form action="update_status.php" method="POST">
-                <input type="hidden" name="order_id" value="<?= $order_id ?>">
+                <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Product Name</th>
-                            <th>Price (RM)</th>
-                            <th>Quantity</th>
-                            <th>Total (RM)</th>
-                            <th>Status</th>
-                            <th>Customer Name</th>
-                            <th>Contact</th>
-                            <th>Address</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $total_price = 0;
-                        foreach ($items as $index => $row) {
-                            $item_total = $row['price_items'] * $row['quantity_items'];
-                            $total_price += $item_total;
-                        ?>
-                        <tr>
-                            <td><img src="/TWP4123-Gaming-Store/<?= htmlspecialchars($row['image_items']) ?>" alt="Product Image" /></td>
-                            <td><?= htmlspecialchars($row['product_name']) ?></td>
-                            <td><?= number_format($row['price_items'], 2) ?></td>
-                            <td><?= htmlspecialchars($row['quantity_items']) ?></td>
-                            <td><?= number_format($item_total, 2) ?></td>
-                            <td>
-                                <select name="status_order[<?= $index ?>]" class="status-select" required>
-                                    <?php
-                                    $statuses = ['Pending', 'Processing', 'Completed', 'Cancelled'];
-                                    foreach ($statuses as $status) {
-                                        $selected = ($status == $row['status_order']) ? 'selected' : '';
-                                        echo "<option value=\"$status\" $selected>$status</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </td>
-                            <td><?= htmlspecialchars($row['name_cust']) ?></td>
-                            <td><?= htmlspecialchars($row['num_tel_cust']) ?></td>
-                            <td><?= nl2br(htmlspecialchars($row['address_cust'])) ?></td>
-                            <td><?= htmlspecialchars($row['date']) ?></td>
-                        </tr>
-                        <input type="hidden" name="item_id[<?= $index ?>]" value="<?= $row['id'] ?>">
-                        <?php } ?>
-                    </tbody>
+                    <tr><th>Customer Name</th><td><?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></td></tr>
+                    <tr><th>Email</th><td><?= htmlspecialchars($order['email']) ?></td></tr>
+                    <tr><th>Phone</th><td><?= htmlspecialchars($order['phone_number']) ?></td></tr>
+                    <tr><th>Address</th><td><?= htmlspecialchars($order['street_address'] . ', ' . $order['city'] . ', ' . $order['state'] . ', ' . $order['postcode'] . ', ' . $order['country']) ?></td></tr>
+                    <tr><th>Card Number</th><td><?= htmlspecialchars($order['card_number']) ?></td></tr>
+                    <tr><th>Cardholder Name</th><td><?= htmlspecialchars($order['cardholder_name']) ?></td></tr>
+                    <tr><th>Expiry Date</th><td><?= htmlspecialchars($order['expiry_date']) ?></td></tr>
+                    <tr><th>CVV</th><td><?= htmlspecialchars($order['cvv']) ?></td></tr>
+                    <tr><th>Date</th><td><?= htmlspecialchars($order['date']) ?></td></tr>
+                    <tr>
+                        <th>Status</th>
+                        <td>
+                            <select name="status_order" class="status-select" required>
+                                <?php
+                                $statuses = ['Pending', 'Processing', 'Completed', 'Cancelled'];
+                                foreach ($statuses as $status) {
+                                    $selected = ($status == $order['status_order']) ? 'selected' : '';
+                                    echo "<option value=\"$status\" $selected>$status</option>";
+                                }
+                                ?>
+                            </select>
+                        </td>
+                    </tr>
                 </table>
 
                 <table class="total-table">
-                    <tr>
-                        <th>Total Price:</th>
-                        <td>RM <?= number_format($total_price, 2) ?></td>
-                    </tr>
+                    <tr><th>Total Price:</th><td>RM <?= number_format($order['total_price'], 2) ?></td></tr>
+                    <tr><th>Tax Fee:</th><td>RM <?= number_format($order['tax_fee'], 2) ?></td></tr>
                 </table>
 
                 <div style="text-align: right; margin-top: 10px;">
