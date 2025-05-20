@@ -28,6 +28,15 @@ $stmt_items->bind_param("i", $order_id);
 $stmt_items->execute();
 $items_result = $stmt_items->get_result();
 
+function formatAddress($order) {
+    $parts = [];
+    if (!empty($order['street_address'])) $parts[] = $order['street_address'];
+    if (!empty($order['city'])) $parts[] = $order['city'];
+    if (!empty($order['state'])) $parts[] = $order['state'];
+    if (!empty($order['postcode'])) $parts[] = $order['postcode'];
+    if (!empty($order['country'])) $parts[] = $order['country'];
+    return implode(", ", $parts);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -116,15 +125,17 @@ $items_result = $stmt_items->get_result();
 
 <header>
   <h1>Order Details</h1>
-
+  <a href="orderhistory.php" class="back-link">&larr; Back to Order History</a>
 </header>
 
 <section class="order-info">
   <h2>Order #<?= htmlspecialchars($order['id']) ?></h2>
   <p><strong>Customer Name:</strong> <?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></p>
-  <p><strong>Contact Number:</strong> <?= htmlspecialchars($order['phone']) ?></p>
-  <p><strong>Shipping Address:</strong> <?= nl2br(htmlspecialchars($order['address'])) ?></p>
+  <p><strong>Email:</strong> <?= htmlspecialchars($order['email']) ?></p>
+  <p><strong>Contact Number:</strong> <?= htmlspecialchars($order['phone_number']) ?></p>
+  <p><strong>Shipping Address:</strong> <?= nl2br(htmlspecialchars(formatAddress($order))) ?></p>
   <p><strong>Order Date:</strong> <?= date('d M Y, h:i A', strtotime($order['date'])) ?></p>
+  <p><strong>Status:</strong> <?= htmlspecialchars($order['status_order']) ?></p>
 </section>
 
 <section class="items">
