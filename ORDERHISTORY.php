@@ -1,125 +1,146 @@
 <?php
 session_start();
+require_once "db_connect1.php";
 
-// Check if the user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: custlogin.html");
-    exit();
-}
-
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "gaming_store";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-$user_id = $_SESSION['user_id'];
-
-// Fetch orders
-$sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY date DESC";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$orders_result = $stmt->get_result();
-
-$orders = [];
-while ($order = $orders_result->fetch_assoc()) {
-    // Fetch items for each order
-    $order_id = $order['id'];
-    $items_sql = "SELECT * FROM items_ordered WHERE order_id = ?";
-    $items_stmt = $conn->prepare($items_sql);
-    $items_stmt->bind_param("i", $order_id);
-    $items_stmt->execute();
-    $items_result = $items_stmt->get_result();
-
-    $order['items'] = [];
-    while ($item = $items_result->fetch_assoc()) {
-        $order['items'][] = $item;
-    }
-
-    $orders[] = $order;
-}
+// Fetch all orders
+$orders_sql = "SELECT * FROM orders ORDER BY date DESC";
+$orders_result = $conn->query($orders_sql);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Order History</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        <?php include 'ORDERHISTORY_styles.css'; // Optional: move the CSS here ?>
-    </style>
+  <meta charset="UTF-8">
+  <title>NEXUS | Order History</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --primary: #ff0000;
+      --dark: #0d0221;
+      --light: #ffffff;
+    }
+
+    body {
+      font-family: sans-serif;
+      background: var(--dark);
+      color: var(--light);
+      margin: 0;
+    }
+
+    header, footer {
+      background: #0a0118;
+      padding: 15px;
+    }
+
+    .nav-menu, .footer-links {
+      display: flex;
+      justify-content: space-between;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+
+    .order-history {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .order {
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      margin-bottom: 30px;
+      border-left: 3px solid var(--primary);
+      border-radius: 8px;
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .product {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .product img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 5px;
+      border: 1px solid #444;
+    }
+
+    .product-info {
+      flex-grow: 1;
+    }
+
+    .total {
+      font-weight: bold;
+      text-align: right;
+      margin-top: 10px;
+    }
+
+    .no-orders {
+      text-align: center;
+      font-size: 18px;
+      padding: 40px;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <nav class="nav-menu">
-            <div class="icons"><i class="fas fa-bars"></i></div>
-            <div class="logo">NEXUS</div>
-            <div class="nav-links">
-                <a href="index.html">HOME</a>
-                <a href="NINTENDO.html">NINTENDO</a>
-                <a href="XBOX.html">CONSOLES</a>
-            </div>
-            <div class="icons">
-                <a href="custlogin.html"><i class="fas fa-user"></i></a>
-                <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
-            </div>
-        </nav>
-    </header>
 
-    <div class="order-history-container">
-        <h1 class="section-title">ORDER HISTORY</h1>
-        <a href="index.html" class="back-button"><i class="fas fa-arrow-left"></i> BACK</a>
+<header>
+  <div class="nav-menu">
+    <div class="logo">NEXUS</div>
+  </div>
+</header>
 
-        <?php if (empty($orders)): ?>
-            <p>No orders found.</p>
-        <?php else: ?>
-            <?php foreach ($orders as $order): ?>
-                <div class="order-item">
-                    <div class="order-header">
-                        <div>
-                            <span class="order-id">ORDER #NEX-<?= $order['id'] ?></span>
-                        </div>
-                        <span class="order-status"><?= htmlspecialchars($order['status']) ?></span>
-                    </div>
-
-                    <?php foreach ($order['items'] as $item): ?>
-                        <div class="product-details" style="margin-top: 10px;">
-                            <img src="<?= htmlspecialchars($item['image_items']) ?>" class="product-image">
-                            <div>
-                                <h3><?= htmlspecialchars($item['product_name']) ?></h3>
-                                <p>RM<?= number_format($item['price_items'], 2) ?></p>
-                                <p>Quantity: <?= $item['quantity_items'] ?></p>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-
-                    <div class="order-actions">
-                        <button class="buy-again" onclick="location.href='VIEWPRODUCT.php?id=<?= $order['items'][0]['id'] ?>'">BUY AGAIN</button>
-                    </div>
-
-                    <div class="order-total">
-                        TOTAL: RM<?= number_format($order['total_amount'], 2) ?>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-
-    <footer>
-        <div class="footer-links">
-            <a href="#about">ABOUT</a>
-            <a href="#contact">CONTACT</a>
-            <a href="TOS.html">TERMS</a>
+<main class="order-history">
+  <h2>Your Order History</h2>
+  <?php if ($orders_result->num_rows > 0): ?>
+    <?php while ($order = $orders_result->fetch_assoc()): ?>
+      <div class="order">
+        <div class="order-header">
+          <div>Order ID: <?= $order['id'] ?> | <?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></div>
+          <div><?= date('d M Y, h:i A', strtotime($order['date'])) ?></div>
         </div>
-        <div class="copyright">
-            &copy; 2025 NEXUS GAMING STORE
-        </div>
-    </footer>
+        <?php
+          $order_id = $order['id'];
+          $items_sql = "SELECT * FROM items_ordered WHERE order_id = $order_id";
+          $items_result = $conn->query($items_sql);
+        ?>
+        <?php while ($item = $items_result->fetch_assoc()): ?>
+          <div class="product">
+            <img src="<?= htmlspecialchars($item['image_items']) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
+            <div class="product-info">
+              <div><?= htmlspecialchars($item['product_name']) ?></div>
+              <div>Quantity: <?= $item['quantity_items'] ?> | RM<?= number_format($item['price_items'], 2) ?></div>
+            </div>
+          </div>
+        <?php endwhile; ?>
+        <div class="total">Total: RM<?= number_format($order['total_price'], 2) ?> (Incl. RM<?= number_format($order['tax_fee'], 2) ?> Tax)</div>
+      </div>
+    <?php endwhile; ?>
+  <?php else: ?>
+    <div class="no-orders">No orders found.</div>
+  <?php endif; ?>
+</main>
+
+<footer>
+  <div class="footer-links">
+    <div>&copy; 2025 NEXUS GAMING STORE</div>
+  </div>
+</footer>
+
 </body>
 </html>

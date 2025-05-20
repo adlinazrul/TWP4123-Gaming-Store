@@ -49,7 +49,8 @@ $grand_total = round($total + $tax, 2);
     <title>Checkout | NEXUS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; }
+        /* your styles unchanged */
+         body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; }
         header { background: #000; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 24px; font-weight: bold; }
         .cancel-btn { background: red; color: white; border: none; padding: 10px 15px; cursor: pointer; font-size: 14px; }
@@ -144,23 +145,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
     $cvv = $_POST['cvv'];
     $date = date("Y-m-d H:i:s");
 
-    $stmt = $conn->prepare("INSERT INTO orders (first_name, last_name, address, city, state, postcode, country, phone, email, card_number, card_name, expiry_date, cvv, total, tax, date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-    $stmt->bind_param("ssssssssssssssds", $first_name, $last_name, $address, $city, $state, $postcode, $country, $phone, $email, $card_number, $card_name, $expiry_date, $cvv, $grand_total, $tax, $date);
-    $stmt->execute();
-    $order_id = $stmt->insert_id;
+    // Insert into orders table
+    $stmt = $conn->prepare("INSERT INTO orders 
+        (first_name, last_name, email, phone_number, street_address, city, state, postcode, country, card_number, cardholder_name, expiry_date, cvv, total_price, tax_fee, date) 
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
-    foreach ($products as $item) {
-        $stmt2 = $conn->prepare("INSERT INTO items_ordered (order_id, product_name, price_items, quantity_items, image_items, name_cust, num_tel_cust, address_cust, date) VALUES (?,?,?,?,?,?,?,?,?)");
-        $full_name = $first_name . " " . $last_name;
-        $stmt2->bind_param("isdisssss", $order_id, $item['name'], $item['price'], $item['quantity'], $item['image'], $full_name, $phone, $address, $date);
-        $stmt2->execute();
+    $stmt->bind_param(
+        "ssssssssssssddss",
+        $first_name,
+        $last_name,
+        $email,
+        $phone,
+        $address,
+        $city,
+        $state,
+        $postcode,
+        $country,
+        $card_number,
+        $card_name,
+        $expiry_date,
+        $cvv,
+        $grand_total,
+        $tax,
+        $date
+    );
+
+    if ($stmt->execute()) {
+        $order_id = $stmt->insert_id;
+
+        // Insert each ordered item into items_ordered table
+        $stmt2 = $conn->prepare("INSERT INTO items_ordered (order_id, product_name, price_items, quantity_items, image_items) VALUES (?, ?, ?, ?, ?)");
+
+        foreach ($products as $item) {
+            $stmt2->bind_param(
+                "isdis",
+                $order_id,
+                $item['name'],
+                $item['price'],
+                $item['quantity'],
+                $item['image']
+            );
+            $stmt2->execute();
+        }
+        $stmt2->close();
+
+        // Clear session data
+        unset($_SESSION['checkout_source']);
+        unset($_SESSION['single_product']);
+        unset($_SESSION['cart_products']);
+
+        echo "<script>alert('Order placed successfully!'); window.location.href='ORDERHISTORY.php';</script>";
+    } else {
+        echo "<script>alert('Error placing order. Please try again.');</script>";
     }
 
-    // Clear session
-    unset($_SESSION['checkout_source']);
-    unset($_SESSION['single_product']);
-    unset($_SESSION['cart_products']);
-
-    echo "<script>alert('Order placed successfully!'); window.location.href='ORDERHISTORY.html';</script>";
+    $stmt->close();
 }
 ?>
