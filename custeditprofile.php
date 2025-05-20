@@ -406,11 +406,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="logo">NEXUS</div>
             
             <div class="nav-links">
-                <a href="#nintendo">NINTENDO</a>
-                <a href="#playstation">PLAYSTATION</a>
-                <a href="#xbox">XBOX</a>
-                <a href="PRODUCTLIST.html">ACCESSORIES</a>
-                <a href="#vr">VR</a>
+                <a href="index.php">HOME</a>
+                <a href="NINTENDO.php">NINTENDO</a>
+                <a href="XBOX.php" class="active">CONSOLES</a>
+                <a href="ACCESSORIES.php">ACCESSORIES</a>
+                <a href="VR.php">VR</a>
             </div>
             
             <div class="icons-right">
