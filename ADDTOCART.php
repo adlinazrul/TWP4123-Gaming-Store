@@ -26,7 +26,24 @@ if (isset($_SESSION['user_id'])) {
         }
     }
 }
+
+// ✅ Set session for cart-based checkout
+$_SESSION['checkout_source'] = 'cart';
+
+// Normalize keys for checkout
+$normalized_items = [];
+foreach ($cart_items as $item) {
+    $normalized_items[] = [
+        'name' => $item['product_name'],
+        'price' => $item['product_price'],
+        'quantity' => $item['quantity'],
+        'image' => $item['product_image'] // adjust key name if different
+    ];
+}
+$_SESSION['cart_products'] = $normalized_items;
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -681,7 +698,7 @@ if (isset($_SESSION['user_id'])) {
             <div class="cart-total">
                 TOTAL: RM<?= number_format($total_price, 2) ?>
             </div>
-            <button class="checkout-button" onclick="window.location.href='checkout.php'" <?= count($cart_items) == 0 ? 'disabled' : '' ?>>PROCEED TO CHECKOUT</button>
+            <button class="checkout-button" onclick="window.location.href='NEW_BuyNow.php'" <?= count($cart_items) == 0 ? 'disabled' : '' ?>>PROCEED TO CHECKOUT</button>
         </div>
         <?php endif; ?>
     </section>

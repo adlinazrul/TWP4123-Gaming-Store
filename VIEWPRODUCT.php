@@ -1,4 +1,6 @@
 <?php
+session_start(); // <-- Required for using $_SESSION
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -18,6 +20,15 @@ if (isset($_GET['id'])) {
 
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
+
+        // ✅ Store single product info in session for checkout
+        $_SESSION['checkout_source'] = 'single';
+        $_SESSION['single_product'] = [
+            'name' => $product['product_name'],
+            'price' => $product['product_price'],
+            'quantity' => 1, // default quantity, can be modified later
+            'image' => $product['product_image']
+        ];
     } else {
         die("Product not found.");
     }
@@ -716,9 +727,9 @@ if (isset($_GET['id'])) {
             </p>
 
             <div class="quantity-selector">
-                <button type="button" class="quantity-btn minus">-</button>
-                <input type="number" value="1" min="1" max="<?= $product['product_quantity'] ?>" class="quantity-input" id="quantityInput">
-                <button type="button" class="quantity-btn plus">+</button>
+                <button type="button" class="quantity-btn minus" onclick="updateQuantity(-1)">-</button>
+                <input type="number" value="1" min="1" max="<?= $product['product_quantity'] ?>" class="quantity-input" id="quantityInput" onchange="validateQuantity()">
+                <button type="button" class="quantity-btn plus" onclick="updateQuantity(1)">+</button>
             </div>
 
             <div class="action-buttons">
@@ -730,7 +741,14 @@ if (isset($_GET['id'])) {
                     <input type="hidden" name="quantity" id="formQuantity" value="1">
                     <button type="submit" class="add-to-cart-lg" <?= $product['product_quantity'] <= 0 ? 'disabled' : '' ?>>ADD TO CART</button>
                 </form>
-                <a href="NEW_BuyNow.php?id=<?= $product['id'] ?>" class="buy-now" <?= $product['product_quantity'] <= 0 ? 'disabled' : '' ?>>BUY NOW</a>
+                <form action="NEW_BuyNow.php" method="post" style="display: contents;">
+                    <input type="hidden" name="checkout_source" value="single">
+                    <input type="hidden" name="product_name" value="<?= htmlspecialchars($product['product_name']) ?>">
+                    <input type="hidden" name="price" value="<?= $product['product_price'] ?>">
+                    <input type="hidden" name="image" value="<?= $product['product_image'] ?>">
+                    <input type="hidden" name="quantity" id="buyNowQuantity" value="1">
+                    <button type="submit" name="buy_now" class="buy-now" <?= $product['product_quantity'] <= 0 ? 'disabled' : '' ?>>BUY NOW</button>
+                </form>
             </div>
         </div>
 
@@ -799,72 +817,45 @@ if (isset($_GET['id'])) {
                     }, 300);
                 }
             });
+        });
 
-            // Quantity selector functionality
-            const minusBtn = document.querySelector('.quantity-btn.minus');
-            const plusBtn = document.querySelector('.quantity-btn.plus');
+        // Quantity functions
+        function updateQuantity(change) {
             const quantityInput = document.getElementById('quantityInput');
             const formQuantity = document.getElementById('formQuantity');
-            const addToCartBtn = document.querySelector('.add-to-cart-lg');
-            const buyNowBtn = document.querySelector('.buy-now');
-            const stockStatus = document.querySelector('.stock-status');
+            const buyNowQuantity = document.getElementById('buyNowQuantity');
+            let newValue = parseInt(quantityInput.value) + change;
             
-            // Current stock count from PHP
-            let currentStock = <?= $product['product_quantity'] ?>;
-            
-            // Update stock display
-            function updateStockDisplay() {
-                if (currentStock > 10) {
-                    stockStatus.className = "stock-status in-stock";
-                    stockStatus.innerHTML = `<i class="fas fa-check-circle"></i><span>In Stock (${currentStock} available)</span>`;
-                } else if (currentStock > 0) {
-                    stockStatus.className = "stock-status low-stock";
-                    stockStatus.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>Low Stock (Only ${currentStock} left!)</span>`;
-                } else {
-                    stockStatus.className = "stock-status out-of-stock";
-                    stockStatus.innerHTML = `<i class="fas fa-times-circle"></i><span>Out of Stock</span>`;
-                    addToCartBtn.disabled = true;
-                    buyNowBtn.disabled = true;
-                    buyNowBtn.style.pointerEvents = "none";
-                }
+            // Validate the new value
+            if (newValue < 1) newValue = 1;
+            if (newValue > <?= $product['product_quantity'] ?>) {
+                newValue = <?= $product['product_quantity'] ?>;
+                alert(`Only <?= $product['product_quantity'] ?> items available in stock!`);
             }
+            
+            // Update all quantity fields
+            quantityInput.value = newValue;
+            formQuantity.value = newValue;
+            buyNowQuantity.value = newValue;
+        }
 
-            minusBtn.addEventListener('click', () => {
-                let currentValue = parseInt(quantityInput.value);
-                if (currentValue > 1) {
-                    quantityInput.value = currentValue - 1;
-                    formQuantity.value = quantityInput.value;
-                }
-            });
-
-            plusBtn.addEventListener('click', () => {
-                let currentValue = parseInt(quantityInput.value);
-                if (currentValue < currentStock) {
-                    quantityInput.value = currentValue + 1;
-                    formQuantity.value = quantityInput.value;
-                } else {
-                    alert(`Only ${currentStock} items available in stock!`);
-                }
-            });
-
-            // Prevent manual input of numbers less than 1 or more than stock
-            quantityInput.addEventListener('change', () => {
-                let value = parseInt(quantityInput.value);
-                if (isNaN(value)) {
-                    quantityInput.value = 1;
-                    formQuantity.value = 1;
-                } else if (value < 1) {
-                    quantityInput.value = 1;
-                    formQuantity.value = 1;
-                } else if (value > currentStock) {
-                    quantityInput.value = currentStock;
-                    formQuantity.value = currentStock;
-                    alert(`Only ${currentStock} items available in stock!`);
-                } else {
-                    formQuantity.value = value;
-                }
-            });
-        });
+        function validateQuantity() {
+            const quantityInput = document.getElementById('quantityInput');
+            const formQuantity = document.getElementById('formQuantity');
+            const buyNowQuantity = document.getElementById('buyNowQuantity');
+            let value = parseInt(quantityInput.value);
+            
+            if (isNaN(value) || value < 1) {
+                value = 1;
+            } else if (value > <?= $product['product_quantity'] ?>) {
+                value = <?= $product['product_quantity'] ?>;
+                alert(`Only <?= $product['product_quantity'] ?> items available in stock!`);
+            }
+            
+            quantityInput.value = value;
+            formQuantity.value = value;
+            buyNowQuantity.value = value;
+        }
 
         // Image gallery functionality
         function changeImage(thumbnail) {
@@ -877,7 +868,6 @@ if (isset($_GET['id'])) {
             });
             thumbnail.classList.add('active');
         }
-        
     </script>
 </body>
 </html>

@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bind_param("iisdsi", $user_id, $product_id, $product_name, $product_price, $product_image, $quantity);
         }
 
-        $stmt->execute();
+        $stmt->execute(); 
     } else {
         // Guest: Save to session
         $item = [
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 break;
             }
         }
-        if (!$found) {
+        if (!$found) 
             $_SESSION['cart'][] = $item;
         }
     }
@@ -61,5 +61,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Redirect back to cart
     header("Location: ADDTOCART.php");
     exit();
-}
+
 ?>
