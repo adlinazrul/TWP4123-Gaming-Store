@@ -90,25 +90,6 @@ $orders_result = $conn->query($orders_sql);
       margin-top: 10px;
     }
 
-    .details-link {
-      text-align: right;
-      margin-top: 10px;
-    }
-
-    .details-link a {
-      color: var(--light);
-      background-color: var(--primary);
-      padding: 6px 12px;
-      text-decoration: none;
-      border-radius: 5px;
-      font-size: 14px;
-      transition: background-color 0.3s ease;
-    }
-
-    .details-link a:hover {
-      background-color: #cc0000;
-    }
-
     .no-orders {
       text-align: center;
       font-size: 18px;
@@ -148,9 +129,6 @@ $orders_result = $conn->query($orders_sql);
           </div>
         <?php endwhile; ?>
         <div class="total">Total: RM<?= number_format($order['total_price'], 2) ?> (Incl. RM<?= number_format($order['tax_fee'], 2) ?> Tax)</div>
-        <div class="details-link">
-          <a href="order_details.php?order_id=<?= $order['id'] ?>">View Details</a>
-        </div>
       </div>
     <?php endwhile; ?>
   <?php else: ?>
