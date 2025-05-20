@@ -20,11 +20,40 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Handle delete action
+if (isset($_GET['delete_id'])) {
+    $delete_id = $_GET['delete_id'];
+    $delete_sql = "DELETE FROM admin_list WHERE id = ?";
+    $stmt = $conn->prepare($delete_sql);
+    $stmt->bind_param("i", $delete_id);
+    if ($stmt->execute()) {
+        echo "<script>alert('Admin deleted successfully!'); window.location.href='admindashboard.php';</script>";
+    } else {
+        echo "<script>alert('Error deleting admin: " . $stmt->error . "');</script>";
+    }
+    $stmt->close();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $password = $_POST['password'];
+    $confirm_password = $_POST['confirm_password'];
     $user_type = $_POST['user_type'];
+
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo "<script>alert('Error: Invalid email format!'); window.location.href='admindashboard.php';</script>";
+        exit;
+    }
+
+    // Validate password match
+    if ($password !== $confirm_password) {
+        echo "<script>alert('Error: Passwords do not match!'); window.location.href='admindashboard.php';</script>";
+        exit;
+    }
+
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
     $target_dir = "uploads/";
     $image_name = basename($_FILES["image"]["name"]);
@@ -43,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql = "INSERT INTO admin_list (username, email, password, image, user_type) 
                 VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssss", $username, $email, $password, $image_name, $user_type);
+        $stmt->bind_param("sssss", $username, $email, $hashed_password, $image_name, $user_type);
 
         if ($stmt->execute()) {
             echo "<script>alert('Admin added successfully!'); window.location.href='admindashboard.php';</script>";
@@ -183,18 +212,51 @@ if ($admin_id) {
         border-radius: 5px;
     }
 
-    table button {
-        padding: 5px 10px;
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .edit-btn {
+        padding: 8px 16px;
+        background-color: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .edit-btn:hover {
+        background-color: #2563eb;
+    }
+
+    .delete-btn {
+        padding: 8px 16px;
         background-color: #ef4444;
         color: white;
         border: none;
         border-radius: 5px;
         cursor: pointer;
-        margin: 0 5px;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
     }
 
-    table button:hover {
+    .delete-btn:hover {
         background-color: #dc2626;
+    }
+
+    .password-error {
+        color: #ef4444;
+        font-size: 0.9em;
+        grid-column: 2;
+        display: none;
     }
 </style>
 </head>
@@ -243,7 +305,7 @@ if ($admin_id) {
         <div class="container">
             <section id="add-employee">
                 <h2>Add Admin</h2>
-                <form method="POST" enctype="multipart/form-data">
+                <form method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
                     <label>Username:</label>
                     <input type="text" name="username" required>
 
@@ -251,10 +313,11 @@ if ($admin_id) {
                     <input type="email" name="email" required>
 
                     <label>Password:</label>
-                    <input type="password" name="password" required>
+                    <input type="password" name="password" id="password" required>
 
                     <label>Confirm Password:</label>
-                    <input type="password" name="confirm_password" required>
+                    <input type="password" name="confirm_password" id="confirm_password" required>
+                    <div class="password-error" id="password-error">Passwords do not match!</div>
 
                     <label>Profile Image:</label>
                     <input type="file" name="image" accept="image/*" required>
@@ -285,15 +348,23 @@ if ($admin_id) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = $result->fetch_assoc()) : ?>
+                        <?php 
+                        $result = $conn->query($sql);
+                        while ($row = $result->fetch_assoc()) : ?>
                             <tr>
                                 <td><img src="uploads/<?php echo htmlspecialchars($row['image']); ?>" width="60" height="60"></td>
                                 <td><?php echo htmlspecialchars($row['username']); ?></td>
                                 <td><?php echo htmlspecialchars($row['email']); ?></td>
                                 <td><?php echo htmlspecialchars($row['user_type']); ?></td>
                                 <td>
-                                    <button>Edit</button>
-                                    <button>Delete</button>
+                                    <div class="action-buttons">
+                                        <button class="edit-btn">
+                                            <i class='bx bx-edit'></i> Edit
+                                        </button>
+                                        <button class="delete-btn" onclick="confirmDelete(<?php echo $row['id']; ?>)">
+                                            <i class='bx bx-trash'></i> Delete
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
@@ -303,5 +374,40 @@ if ($admin_id) {
         </div>
     </main>
 </section>
+
+<script>
+    function validateForm() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const errorElement = document.getElementById('password-error');
+        
+        if (password !== confirmPassword) {
+            errorElement.style.display = 'block';
+            return false;
+        } else {
+            errorElement.style.display = 'none';
+            return true;
+        }
+    }
+
+    // Add real-time password matching validation
+    document.getElementById('confirm_password').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        const errorElement = document.getElementById('password-error');
+        
+        if (password !== confirmPassword && confirmPassword.length > 0) {
+            errorElement.style.display = 'block';
+        } else {
+            errorElement.style.display = 'none';
+        }
+    });
+
+    function confirmDelete(id) {
+        if (confirm('Are you sure you want to delete this admin?')) {
+            window.location.href = 'admindashboard.php?delete_id=' + id;
+        }
+    }
+</script>
 </body>
 </html>
