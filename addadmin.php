@@ -1,12 +1,9 @@
 <?php
-
 session_start();
 
-// Check if the session variable is set
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 } else {
-    // Handle the case when the admin is not logged in (e.g., redirect to login page)
     header("Location: login_admin.php");
     exit;
 }
@@ -24,10 +21,16 @@ if ($conn->connect_error) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $position = $_POST['position'];
-    $salary = $_POST['salary'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
-    $user_type = $_POST['user_type'];  // New input
+    $password_input = $_POST['password'];
+    $confirm_password = $_POST['confirm_password'];
+    $user_type = $_POST['user_type'];
+
+    if ($password_input !== $confirm_password) {
+        echo "<script>alert('Passwords do not match!'); window.location.href='admindashboard.php';</script>";
+        exit;
+    }
+
+    $password = password_hash($password_input, PASSWORD_BCRYPT);
 
     $target_dir = "uploads/";
     $image_name = basename($_FILES["image"]["name"]);
@@ -43,10 +46,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         echo "<script>alert('Error: Email already exists!'); window.location.href='admindashboard.php';</script>";
     } else {
-        $sql = "INSERT INTO admin_list (username, email, position, salary, password, image, user_type) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO admin_list (username, email, password, image, user_type) 
+                VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssssss", $username, $email, $position, $salary, $password, $image_name, $user_type);
+        $stmt->bind_param("sssss", $username, $email, $password, $image_name, $user_type);
 
         if ($stmt->execute()) {
             echo "<script>alert('Admin added successfully!'); window.location.href='admindashboard.php';</script>";
@@ -80,127 +83,11 @@ if ($admin_id) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Admin</title>
-<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-<link rel="stylesheet" href="manageadmin.css" />
-<style>
-    .container {
-        display: flex;
-        flex-direction: column;
-        gap: 40px;
-        padding: 20px;
-    }
-
-    #add-employee, #view-employees {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    form {
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-        gap: 15px;
-        align-items: center;
-    }
-
-    form label {
-        text-align: right;
-        font-weight: bold;
-    }
-
-    form input[type="search"] {
-        width: 300px;
-        padding: 8px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-    }
-
-    form input[type="text"],
-    form input[type="email"],
-    form input[type="number"],
-    form input[type="password"],
-    form input[type="file"] {
-        width: 100%;
-        padding: 8px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-    }
-
-    /* New role selection buttons styling */
-    .role-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: start;
-    }
-
-    .role-buttons input[type="radio"] {
-        display: none;
-    }
-
-    .role-buttons label {
-        cursor: pointer;
-        padding: 10px 20px;
-        background-color: #ef4444;
-        color: white;
-        border-radius: 5px;
-        font-weight: bold;
-        user-select: none;
-        transition: background-color 0.3s;
-    }
-
-    .role-buttons input[type="radio"]:checked + label {
-        background-color: #dc2626;
-        box-shadow: 0 0 10px #dc2626;
-    }
-
-    form button[type="submit"] {
-        grid-column: 2;
-        padding: 10px 20px;
-        background-color: #ef4444;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-
-    form button[type="submit"]:hover {
-        background-color: #dc2626;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    table th, table td {
-        padding: 12px;
-        text-align: center;
-        border-bottom: 1px solid #ddd;
-    }
-
-    table img {
-        border-radius: 5px;
-    }
-
-    table button {
-        padding: 5px 10px;
-        background-color: #ef4444;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin: 0 5px;
-    }
-
-    table button:hover {
-        background-color: #dc2626;
-    }
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin</title>
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="manageadmin.css" />
 </head>
 <body>
 
@@ -254,14 +141,11 @@ if ($admin_id) {
                     <label>Email:</label>
                     <input type="email" name="email" required>
 
-                    <label>Position:</label>
-                    <input type="text" name="position" required>
-
-                    <label>Salary (RM):</label>
-                    <input type="number" name="salary" min="0" step="0.01" required>
-
                     <label>Password:</label>
                     <input type="password" name="password" required>
+
+                    <label>Confirm Password:</label>
+                    <input type="password" name="confirm_password" required>
 
                     <label>Profile Image:</label>
                     <input type="file" name="image" accept="image/*" required>
@@ -280,54 +164,32 @@ if ($admin_id) {
             </section>
 
             <section id="view-employees">
-                <h2>Admin List</h2>
+                <h2>View Admins</h2>
                 <table>
                     <thead>
                         <tr>
+                            <th>ID</th>
                             <th>Username</th>
                             <th>Email</th>
-                            <th>Position</th>
-                            <th>Salary (RM)</th>
-                            <th>Roles</th>
                             <th>Image</th>
-                            <th>Action</th>
+                            <th>User Type</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if ($result && $result->num_rows > 0): ?>
-                            <?php while ($row = $result->fetch_assoc()): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($row['username']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['position']); ?></td>
-                                    <td><?php echo htmlspecialchars(number_format($row['salary'], 2)); ?></td>
-                                    <td>
-                                        <?php
-                                        $role = strtolower(trim($row['user_type']));
-                                        if ($role === 'superadmin' || $role === 'super admin') {
-                                            echo "Super Admin";
-                                        } elseif ($role === 'admin') {
-                                            echo "Admin";
-                                        } else {
-                                            echo htmlspecialchars($row['user_type']);
-                                        }
-                                        ?>
-                                    </td>
-                                    <td>
-                                        <?php
-                                        $imgPath = !empty($row['image']) ? "uploads/" . htmlspecialchars($row['image']) : "image/default_profile.jpg";
-                                        ?>
-                                        <img src="<?php echo $imgPath; ?>" alt="Admin Image" width="100" height="100">
-                                    </td>
-                                    <td>
-                                        <button><a href="edit_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;">Edit</a></button>
-                                        <button><a href="delete_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</a></button>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <tr><td colspan="7">No admins found.</td></tr>
-                        <?php endif; ?>
+                        <?php while ($row = $result->fetch_assoc()) { ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($row['id']); ?></td>
+                                <td><?php echo htmlspecialchars($row['username']); ?></td>
+                                <td><?php echo htmlspecialchars($row['email']); ?></td>
+                                <td><img src="uploads/<?php echo htmlspecialchars($row['image']); ?>" width="50" height="50"></td>
+                                <td><?php echo htmlspecialchars($row['user_type']); ?></td>
+                                <td>
+                                    <button>Edit</button>
+                                    <button>Delete</button>
+                                </td>
+                            </tr>
+                        <?php } ?>
                     </tbody>
                 </table>
             </section>
@@ -335,19 +197,5 @@ if ($admin_id) {
     </main>
 </section>
 
-<script>
-    // Sidebar toggle
-    const sidebar = document.getElementById('sidebar');
-    const menuBtn = document.querySelector('nav .bx-menu');
-
-    menuBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('close');
-    });
-</script>
-
 </body>
 </html>
-
-<?php
-$conn->close();
-?>
