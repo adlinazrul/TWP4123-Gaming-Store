@@ -2,13 +2,16 @@
 session_start();
 require_once "db_connect1.php";
 
-if (!isset($_GET['order_id']) || !is_numeric($_GET['order_id'])) {
-    die("Invalid order ID.");
+// Check if order_id is passed and is a valid integer
+if (!isset($_GET['order_id']) || !ctype_digit($_GET['order_id'])) {
+    // Redirect to order history or show a message
+    header("Location: orderhistory.php");
+    exit();
 }
 
 $order_id = (int)$_GET['order_id'];
 
-// Fetch the order details
+// Prepare and fetch order details
 $order_sql = "SELECT * FROM orders WHERE id = ?";
 $stmt = $conn->prepare($order_sql);
 $stmt->bind_param("i", $order_id);
@@ -16,27 +19,20 @@ $stmt->execute();
 $order_result = $stmt->get_result();
 
 if ($order_result->num_rows === 0) {
-    die("Order not found.");
+    // Order not found, redirect or show error message
+    header("Location: orderhistory.php?error=notfound");
+    exit();
 }
 
 $order = $order_result->fetch_assoc();
 
-// Fetch the items for this order
+// Prepare and fetch items for this order
 $items_sql = "SELECT * FROM items_ordered WHERE order_id = ?";
 $stmt_items = $conn->prepare($items_sql);
 $stmt_items->bind_param("i", $order_id);
 $stmt_items->execute();
 $items_result = $stmt_items->get_result();
 
-function formatAddress($order) {
-    $parts = [];
-    if (!empty($order['street_address'])) $parts[] = $order['street_address'];
-    if (!empty($order['city'])) $parts[] = $order['city'];
-    if (!empty($order['state'])) $parts[] = $order['state'];
-    if (!empty($order['postcode'])) $parts[] = $order['postcode'];
-    if (!empty($order['country'])) $parts[] = $order['country'];
-    return implode(", ", $parts);
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -132,8 +128,16 @@ function formatAddress($order) {
   <h2>Order #<?= htmlspecialchars($order['id']) ?></h2>
   <p><strong>Customer Name:</strong> <?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></p>
   <p><strong>Email:</strong> <?= htmlspecialchars($order['email']) ?></p>
-  <p><strong>Contact Number:</strong> <?= htmlspecialchars($order['phone_number']) ?></p>
-  <p><strong>Shipping Address:</strong> <?= nl2br(htmlspecialchars(formatAddress($order))) ?></p>
+  <p><strong>Phone Number:</strong> <?= htmlspecialchars($order['phone_number']) ?></p>
+  <p><strong>Shipping Address:</strong> 
+    <?= 
+      htmlspecialchars($order['street_address']) . ", " .
+      htmlspecialchars($order['city']) . ", " .
+      htmlspecialchars($order['state']) . " " .
+      htmlspecialchars($order['postcode']) . ", " .
+      htmlspecialchars($order['country']);
+    ?>
+  </p>
   <p><strong>Order Date:</strong> <?= date('d M Y, h:i A', strtotime($order['date'])) ?></p>
   <p><strong>Status:</strong> <?= htmlspecialchars($order['status_order']) ?></p>
 </section>
@@ -146,7 +150,7 @@ function formatAddress($order) {
         <img src="<?= htmlspecialchars($item['image_items']) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>" />
         <div class="item-details">
           <div><strong>Product:</strong> <?= htmlspecialchars($item['product_name']) ?></div>
-          <div><strong>Quantity:</strong> <?= $item['quantity_items'] ?></div>
+          <div><strong>Quantity:</strong> <?= (int)$item['quantity_items'] ?></div>
           <div><strong>Price per item:</strong> RM<?= number_format($item['price_items'], 2) ?></div>
           <div><strong>Subtotal:</strong> RM<?= number_format($item['price_items'] * $item['quantity_items'], 2) ?></div>
         </div>
