@@ -6,7 +6,6 @@ session_start();
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 } else {
-    // Handle the case when the admin is not logged in (e.g., redirect to login page)
     header("Location: login_admin.php");
     exit;
 }
@@ -24,10 +23,8 @@ if ($conn->connect_error) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $position = $_POST['position'];
-    $salary = $_POST['salary'];
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
-    $user_type = $_POST['user_type'];  // New input
+    $user_type = $_POST['user_type'];
 
     $target_dir = "uploads/";
     $image_name = basename($_FILES["image"]["name"]);
@@ -43,10 +40,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         echo "<script>alert('Error: Email already exists!'); window.location.href='admindashboard.php';</script>";
     } else {
-        $sql = "INSERT INTO admin_list (username, email, position, salary, password, image, user_type) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO admin_list (username, email, password, image, user_type) 
+                VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssssss", $username, $email, $position, $salary, $password, $image_name, $user_type);
+        $stmt->bind_param("sssss", $username, $email, $password, $image_name, $user_type);
 
         if ($stmt->execute()) {
             echo "<script>alert('Admin added successfully!'); window.location.href='admindashboard.php';</script>";
@@ -130,7 +127,6 @@ if ($admin_id) {
         border: 1px solid #ccc;
     }
 
-    /* New role selection buttons styling */
     .role-buttons {
         display: flex;
         gap: 15px;
@@ -254,14 +250,11 @@ if ($admin_id) {
                     <label>Email:</label>
                     <input type="email" name="email" required>
 
-                    <label>Position:</label>
-                    <input type="text" name="position" required>
-
-                    <label>Salary (RM):</label>
-                    <input type="number" name="salary" min="0" step="0.01" required>
-
                     <label>Password:</label>
                     <input type="password" name="password" required>
+
+                    <label>Confirm Password:</label>
+                    <input type="password" name="confirm_password" required>
 
                     <label>Profile Image:</label>
                     <input type="file" name="image" accept="image/*" required>
@@ -284,70 +277,31 @@ if ($admin_id) {
                 <table>
                     <thead>
                         <tr>
+                            <th>Profile</th>
                             <th>Username</th>
                             <th>Email</th>
-                            <th>Position</th>
-                            <th>Salary (RM)</th>
-                            <th>Roles</th>
-                            <th>Image</th>
-                            <th>Action</th>
+                            <th>User Type</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if ($result && $result->num_rows > 0): ?>
-                            <?php while ($row = $result->fetch_assoc()): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($row['username']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['position']); ?></td>
-                                    <td><?php echo htmlspecialchars(number_format($row['salary'], 2)); ?></td>
-                                    <td>
-                                        <?php
-                                        $role = strtolower(trim($row['user_type']));
-                                        if ($role === 'superadmin' || $role === 'super admin') {
-                                            echo "Super Admin";
-                                        } elseif ($role === 'admin') {
-                                            echo "Admin";
-                                        } else {
-                                            echo htmlspecialchars($row['user_type']);
-                                        }
-                                        ?>
-                                    </td>
-                                    <td>
-                                        <?php
-                                        $imgPath = !empty($row['image']) ? "uploads/" . htmlspecialchars($row['image']) : "image/default_profile.jpg";
-                                        ?>
-                                        <img src="<?php echo $imgPath; ?>" alt="Admin Image" width="100" height="100">
-                                    </td>
-                                    <td>
-                                        <button><a href="edit_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;">Edit</a></button>
-                                        <button><a href="delete_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</a></button>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <tr><td colspan="7">No admins found.</td></tr>
-                        <?php endif; ?>
+                        <?php while ($row = $result->fetch_assoc()) : ?>
+                            <tr>
+                                <td><img src="uploads/<?php echo htmlspecialchars($row['image']); ?>" width="60" height="60"></td>
+                                <td><?php echo htmlspecialchars($row['username']); ?></td>
+                                <td><?php echo htmlspecialchars($row['email']); ?></td>
+                                <td><?php echo htmlspecialchars($row['user_type']); ?></td>
+                                <td>
+                                    <button>Edit</button>
+                                    <button>Delete</button>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
                     </tbody>
                 </table>
             </section>
         </div>
     </main>
 </section>
-
-<script>
-    // Sidebar toggle
-    const sidebar = document.getElementById('sidebar');
-    const menuBtn = document.querySelector('nav .bx-menu');
-
-    menuBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('close');
-    });
-</script>
-
 </body>
 </html>
-
-<?php
-$conn->close();
-?>
