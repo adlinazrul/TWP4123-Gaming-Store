@@ -1,4 +1,4 @@
-<?php
+                                                                                                                       <?php
 include 'db_connect1.php';
 
 error_reporting(E_ALL);
