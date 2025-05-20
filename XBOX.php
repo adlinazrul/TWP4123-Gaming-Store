@@ -530,7 +530,7 @@ $result = $conn->query($sql);
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="cart-icon-container">
-                    <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
+                    <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
                 </div>
             </div>
         </nav>
@@ -541,7 +541,7 @@ $result = $conn->query($sql);
         <div id="menuContainer">
             <span id="closeMenu">&times;</span>
             <div id="menuContent">
-                <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
+                <div class="menu-item"><a href="ORDERHISTORY.php">ORDER</a></div>
                 <div class="menu-item"><a href="custservice.html">HELP</a></div>
                 <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
             </div>

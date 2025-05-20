@@ -43,11 +43,11 @@ if (!$user) {
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ff2a6d;
-            --secondary: #05d9e8;
+            --primary: #ff0000;
+            --secondary: #d10000;
             --dark: #0d0221;
-            --light: #d1f7ff;
-            --accent: #f6019d;
+            --light: #ffffff;
+            --accent: #ff3333;
         }
         
         body {
@@ -60,14 +60,12 @@ if (!$user) {
         }
         
         header {
-            background: linear-gradient(135deg, var(--dark) 0%, #1a0638 100%);
-            color: white;
+            background: var(--dark);
             padding: 15px 0;
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 4px 20px rgba(5, 217, 232, 0.2);
-            border-bottom: 1px solid var(--secondary);
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
         }
         
         .nav-menu {
@@ -83,11 +81,8 @@ if (!$user) {
             font-family: 'Orbitron', sans-serif;
             font-size: 2rem;
             font-weight: 700;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 10px rgba(255, 42, 109, 0.3);
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
         
         .nav-links {
@@ -100,28 +95,34 @@ if (!$user) {
             text-decoration: none;
             font-family: 'Orbitron', sans-serif;
             font-weight: 400;
-            letter-spacing: 1px;
-            position: relative;
-            padding: 5px 0;
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .nav-links a:hover {
-            color: var(--secondary);
+            color: var(--primary);
         }
-        
+
         .nav-links a::after {
             content: '';
             position: absolute;
             width: 0;
             height: 2px;
-            bottom: 0;
+            background: var(--primary);
+            bottom: -5px;
             left: 0;
-            background-color: var(--secondary);
             transition: width 0.3s ease;
         }
         
         .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .nav-links a.active {
+            color: var(--primary);
+        }
+        
+        .nav-links a.active::after {
             width: 100%;
         }
         
@@ -138,8 +139,7 @@ if (!$user) {
         }
         
         .icons-left i:hover, .icons-right i:hover {
-            color: var(--secondary);
-            transform: scale(1.1);
+            color: var(--primary);
         }
         
         .banner {
@@ -149,7 +149,6 @@ if (!$user) {
             position: relative;
             overflow: hidden;
             border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(5, 217, 232, 0.2);
         }
         
         .hero {
@@ -171,11 +170,8 @@ if (!$user) {
             font-family: 'Orbitron', sans-serif;
             font-size: 4rem;
             margin: 0;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(5, 217, 232, 0.5);
+            color: var(--primary);
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
         }
         
         .hero p {
@@ -185,7 +181,7 @@ if (!$user) {
         }
         
         .cta-button {
-            background: linear-gradient(45deg, var(--primary), var(--accent));
+            background: var(--primary);
             color: white;
             border: none;
             padding: 15px 40px;
@@ -194,12 +190,11 @@ if (!$user) {
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(255, 42, 109, 0.4);
         }
         
         .cta-button:hover {
+            background: var(--accent);
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(255, 42, 109, 0.6);
         }
         
         .featured-section {
@@ -213,18 +208,7 @@ if (!$user) {
             font-size: 2.5rem;
             text-align: center;
             margin-bottom: 50px;
-            position: relative;
-        }
-        
-        .section-title::after {
-            content: '';
-            position: absolute;
-            width: 100px;
-            height: 3px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
+            color: var(--primary);
         }
         
         .products-grid {
@@ -238,14 +222,11 @@ if (!$user) {
             border-radius: 10px;
             overflow: hidden;
             transition: all 0.3s ease;
-            border: 1px solid rgba(5, 217, 232, 0.1);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         .product-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(5, 217, 232, 0.2);
-            border: 1px solid rgba(5, 217, 232, 0.3);
+            box-shadow: 0 15px 30px rgba(255, 0, 0, 0.2);
         }
         
         .product-image {
@@ -261,12 +242,7 @@ if (!$user) {
         .product-info h3 {
             margin: 0 0 10px;
             font-family: 'Orbitron', sans-serif;
-            color: var(--secondary);
-        }
-        
-        .product-info p {
-            margin: 0 0 15px;
-            color: rgba(209, 247, 255, 0.7);
+            color: var(--primary);
         }
         
         .product-price {
@@ -276,86 +252,76 @@ if (!$user) {
             margin-bottom: 15px;
         }
         
-        .add-to-cart {
+        .view-product {
             background: transparent;
-            color: var(--secondary);
-            border: 1px solid var(--secondary);
+            color: var(--primary);
+            border: 1px solid var(--primary);
             padding: 8px 20px;
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: 'Orbitron', sans-serif;
             width: 100%;
+            text-decoration: none; 
         }
         
-        .add-to-cart:hover {
-            background: var(--secondary);
+        .view-product:hover {
+            background: var(--primary);
             color: var(--dark);
+            text-decoration: none; 
         }
         
         .deals-section {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
             gap: 30px;
             margin: 80px auto;
             max-width: 1400px;
             padding: 0 30px;
+            text-align: center;
         }
-        
-        .deal-card {
+
+        /* Make anchor links behave like regular cards */
+        .deals-section a.deal-card {
+            text-decoration: none;
+            color: inherit;
+            display: block;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
             padding: 30px;
             text-align: center;
             transition: all 0.3s ease;
-            border: 1px solid rgba(5, 217, 232, 0.1);
         }
-        
-        .deal-card:hover {
+
+        /* Hover effect for entire clickable card */
+        .deals-section a.deal-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(5, 217, 232, 0.2);
+            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.2);
         }
-        
+
         .deal-icon {
             font-size: 3rem;
             color: var(--primary);
             margin-bottom: 20px;
         }
-        
+
         .deal-card h3 {
             font-family: 'Orbitron', sans-serif;
-            color: var(--secondary);
+            color: var(--primary);
         }
-        
+
         .newsletter-section {
-            background: linear-gradient(135deg, #1a0638 0%, var(--dark) 100%);
+            background: var(--dark);
             padding: 80px 30px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .newsletter-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(5, 217, 232, 0.1) 0%, transparent 70%);
-            animation: pulse 15s infinite linear;
-        }
-        
-        @keyframes pulse {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            border-top: 1px solid var(--primary);
+            border-bottom: 1px solid var(--primary);
         }
         
         .newsletter-content {
             max-width: 600px;
             margin: 0 auto;
-            position: relative;
-            z-index: 1;
         }
         
         .newsletter-form {
@@ -373,12 +339,8 @@ if (!$user) {
             font-family: 'Rubik', sans-serif;
         }
         
-        .newsletter-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
         .newsletter-button {
-            background: linear-gradient(45deg, var(--primary), var(--accent));
+            background: var(--primary);
             color: white;
             border: none;
             padding: 0 30px;
@@ -389,7 +351,7 @@ if (!$user) {
         }
         
         .newsletter-button:hover {
-            background: linear-gradient(45deg, var(--accent), var(--primary));
+            background: var(--accent);
         }
         
         footer {
@@ -412,7 +374,7 @@ if (!$user) {
         }
         
         .footer-links a:hover {
-            color: var(--secondary);
+            color: var(--primary);
         }
         
         .social-icons {
@@ -429,30 +391,27 @@ if (!$user) {
         }
         
         .social-icons a:hover {
-            color: var(--secondary);
-            transform: translateY(-3px);
+            color: var(--primary);
         }
         
         .copyright {
-            color: rgba(209, 247, 255, 0.5);
+            color: rgba(255, 255, 255, 0.5);
             font-size: 0.9rem;
             margin-top: 30px;
             padding-top: 20px;
-            border-top: 1px solid rgba(5, 217, 232, 0.1);
+            border-top: 1px solid rgba(255, 0, 0, 0.1);
         }
         
-        /* Overlay menu styles */
+        /* Mobile menu styles */
         #menuOverlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.9);
             display: none;
             z-index: 2000;
-            transition: opacity 0.3s ease-in-out;
         }
         
         #menuContainer {
@@ -461,12 +420,11 @@ if (!$user) {
             left: -400px;
             width: 400px;
             height: 100%;
-            background: linear-gradient(135deg, #1a0638 0%, var(--dark) 100%);
-            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+            background: var(--dark);
             padding: 40px;
-            transition: left 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transition: left 0.4s ease;
             z-index: 2001;
-            border-right: 1px solid var(--secondary);
+            border-right: 1px solid var(--primary);
         }
         
         #closeMenu {
@@ -476,14 +434,13 @@ if (!$user) {
             position: absolute;
             top: 20px;
             right: 20px;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
         }
         
         #closeMenu:hover {
             transform: rotate(90deg);
-            color: var(--secondary);
         }
-        
+
         #menuOverlay.active {
             display: block;
         }
@@ -492,13 +449,9 @@ if (!$user) {
             left: 0;
         }
         
-        #menuContent {
-            margin-top: 50px;
-        }
-        
         .menu-item {
             padding: 15px 0;
-            border-bottom: 1px solid rgba(5, 217, 232, 0.1);
+            border-bottom: 1px solid rgba(255, 0, 0, 0.1);
         }
         
         .menu-item a {
@@ -511,8 +464,7 @@ if (!$user) {
         }
         
         .menu-item a:hover {
-            color: var(--secondary);
-            padding-left: 10px;
+            color: var(--primary);
         }
         
         /* Responsive adjustments */
@@ -558,6 +510,27 @@ if (!$user) {
                 max-width: 320px;
             }
         }
+        @media (max-width: 768px) {
+            .newsletter-form {
+                flex-direction: column;
+            }
+
+            .newsletter-input,
+            .newsletter-button {
+                border-radius: 50px;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            #menuContainer {
+                width: 100%;
+                left: -100%;
+            }
+
+            #menuOverlay.active #menuContainer {
+                left: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -571,18 +544,17 @@ if (!$user) {
             <div class="logo">NEXUS</div>
             
             <div class="nav-links">
-                <a href="#nintendo">NINTENDO</a>
-                <a href="#playstation">PLAYSTATION</a>
-                <a href="#xbox">XBOX</a>
-                <a href="PRODUCTLIST.html">ACCESSORIES</a>
-                <a href="#vr">VR</a>
+                <a href="NINTENDO.php">NINTENDO</a>
+                <a href="XBOX.php">CONSOLES</a>
+                <a href="ACCESSORIES.php">ACCESSORIES</a>
+                <a href="VR.php">VR</a>
             </div>
             
             <div class="icons-right">
-                <a href="custeditprofile.php">
+                <a href="custlogin.html">
                     <i class="fas fa-user"></i>
                 </a>
-                <i class="fas fa-shopping-cart"></i>
+                <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
             </div>
         </nav>
     </header>
@@ -592,7 +564,7 @@ if (!$user) {
         <div id="menuContainer">
             <span id="closeMenu">&times;</span>
             <div id="menuContent">
-                <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
+                <div class="menu-item"><a href="ORDERHISTORY.php">ORDER</a></div>
                 <div class="menu-item"><a href="custservice.html">HELP</a></div>
                 <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
             </div>
@@ -604,41 +576,41 @@ if (!$user) {
         <div class="hero">
             <h1>LEVEL UP YOUR GAME</h1>
             <p>Discover the latest consoles, games, and accessories with exclusive deals for our members</p>
-            <button class="cta-button">SHOP NOW</button>
+            <button class="cta-button" onclick="window.location.href='ALLPRODUCT.php'">SHOP NOW</button>
         </div>
     </section>
 
     <!-- Featured Products -->
     <section class="featured-section">
-        <h2 class="section-title">FEATURED PRODUCTS</h2>
+        <h2 class="section-title">NEW PRODUCTS</h2>
         <div class="products-grid">
+            <!-- Product 1 -->
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1592155931584-901ac15763e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
+                <div class="product-info">
+                    <h3>DualSense Controller</h3>
+                    <div class="product-price">RM269.00</div>
+                    <a href="VIEWPRODUCT.php" class="view-product">View Product</a>
+                </div>
+            </div>
+    
+            <!-- Product 2 -->
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://wallpapercave.com/wp/wp9957698.jpg');"></div>
+                <div class="product-info">
+                    <h3>Nintendo Switch</h3>
+                    <div class="product-price">RM1,499.00</div>
+                    <a href="VIEWPRODUCT.php" class="view-product">View Product</a>
+                </div>
+            </div>
+    
+            <!-- Product 3 -->
             <div class="product-card">
                 <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1607853202273-797f1c22a38e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
                 <div class="product-info">
                     <h3>PS5 PRO CONTROLLER</h3>
-                    <p>Enhanced precision with adaptive triggers and haptic feedback</p>
-                    <div class="product-price">$89.99</div>
-                    <button class="add-to-cart">ADD TO CART</button>
-                </div>
-            </div>
-            
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1591488320449-011701bb6704?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>XBOX SERIES X</h3>
-                    <p>Next-gen performance with 12 teraflops of power</p>
-                    <div class="product-price">$499.99</div>
-                    <button class="add-to-cart">ADD TO CART</button>
-                </div>
-            </div>
-            
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1592155931584-901ac15763e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>NINTENDO SWITCH OLED</h3>
-                    <p>Vivid 7-inch OLED screen with enhanced audio</p>
-                    <div class="product-price">$349.99</div>
-                    <button class="add-to-cart">ADD TO CART</button>
+                    <div class="product-price">RM2,399.00</div>
+                    <a href="VIEWPRODUCT.php" class="view-product">View Product</a>
                 </div>
             </div>
         </div>
@@ -648,29 +620,21 @@ if (!$user) {
     <section class="featured-section">
         <h2 class="section-title">HOT DEALS</h2>
         <div class="deals-section">
-            <div class="deal-card">
+            <a href="FLASHSALE.html" class="deal-card">
                 <div class="deal-icon">
                     <i class="fas fa-tags"></i>
                 </div>
                 <h3>FLASH SALE</h3>
                 <p>Up to 50% off select items for the next 24 hours only</p>
-            </div>
-            
-            <div class="deal-card">
-                <div class="deal-icon">
-                    <i class="fas fa-gamepad"></i>
-                </div>
-                <h3>NEW RELEASES</h3>
-                <p>Pre-order the hottest upcoming games with exclusive bonuses</p>
-            </div>
-            
-            <div class="deal-card">
+            </a>
+    
+            <a href="BUNDLE.html" class="deal-card">
                 <div class="deal-icon">
                     <i class="fas fa-headset"></i>
                 </div>
                 <h3>PREMIUM BUNDLES</h3>
                 <p>Save big with our specially curated console bundles</p>
-            </div>
+            </a>
         </div>
     </section>
 
@@ -689,19 +653,14 @@ if (!$user) {
     <!-- Footer -->
     <footer>
         <div class="footer-links">
-            <a href="#about">ABOUT US</a>
-            <a href="#contact">CONTACT</a>
-            <a href="#shipping">SHIPPING</a>
-            <a href="#returns">RETURNS</a>
-            <a href="#faq">FAQ</a>
+            <a href="ABOUTUS.html">ABOUT US</a>
+            <a href="CONTACT.html">CONTACT</a>
+            <a href="TOS.html">TERMS OF SERVICE</a>
         </div>
         
         <div class="social-icons">
             <a href="#facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#twitter"><i class="fab fa-twitter"></i></a>
-            <a href="#instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#youtube"><i class="fab fa-youtube"></i></a>
-            <a href="#twitch"><i class="fab fa-twitch"></i></a>
+            <a href="https://www.instagram.com/sojusprite"><i class="fab fa-instagram"></i></a>
         </div>
         
         <div class="copyright">
