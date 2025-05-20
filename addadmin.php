@@ -403,10 +403,20 @@ if ($admin_id) {
         }
     });
 
-    function confirmDelete(id) {
-        if (confirm('Are you sure you want to delete this admin?')) {
-            window.location.href = 'admindashboard.php?delete_id=' + id;
-        }
+    // Handle delete action
+    if (isset($_GET['delete_id'])) {
+    $delete_id = $_GET['delete_id'];
+    $delete_sql = "DELETE FROM admin_list WHERE id = ?";
+    $stmt = $conn->prepare($delete_sql);
+    $stmt->bind_param("i", $delete_id);
+    if ($stmt->execute()) {
+        $_SESSION['success_message'] = "🎉 Admin deleted successfully!";
+        header("Location: addadmin.php");
+        exit();
+    } else {
+        $_SESSION['error_message'] = "⚠️ Error deleting admin: " . $stmt->error;
+        header("Location: addadmin.php");
+        exit();
     }
 </script>
 </body>
