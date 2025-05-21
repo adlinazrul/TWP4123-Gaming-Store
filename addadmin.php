@@ -1,16 +1,13 @@
 <?php
-
 session_start();
 
-// Check if the session variable is set
-if (isset($_SESSION['admin_id'])) {
-    $admin_id = $_SESSION['admin_id'];
-} else {
-    // Handle the case when the admin is not logged in (e.g., redirect to login page)
+// Check if admin is logged in
+if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
 
+$admin_id = $_SESSION['admin_id'];
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -21,13 +18,41 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+// Delete functionality
+if (isset($_GET['delete'])) {
+    $delete_id = $_GET['delete'];
+
+    // Fetch image to delete from folder
+    $stmt = $conn->prepare("SELECT image FROM admin_list WHERE id = ?");
+    $stmt->bind_param("i", $delete_id);
+    $stmt->execute();
+    $stmt->bind_result($image_name);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Delete from database
+    $stmt = $conn->prepare("DELETE FROM admin_list WHERE id = ?");
+    $stmt->bind_param("i", $delete_id);
+    $stmt->execute();
+    $stmt->close();
+
+    // Remove image from folder
+    if (!empty($image_name) && file_exists("uploads/" . $image_name)) {
+        unlink("uploads/" . $image_name);
+    }
+
+    echo "<script>alert('Admin deleted successfully!'); window.location.href='addadmin.php';</script>";
+    exit;
+}
+
+// Add admin functionality
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
     $username = $_POST['username'];
     $email = $_POST['email'];
     $position = $_POST['position'];
     $salary = $_POST['salary'];
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
-    $user_type = $_POST['user_type'];  // New input
+    $user_type = $_POST['user_type'];
 
     $target_dir = "uploads/";
     $image_name = basename($_FILES["image"]["name"]);
@@ -41,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        echo "<script>alert('Error: Email already exists!'); window.location.href='admindashboard.php';</script>";
+        echo "<script>alert('Error: Email already exists!'); window.location.href='addadmin.php';</script>";
     } else {
         $sql = "INSERT INTO admin_list (username, email, position, salary, password, image, user_type) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -49,7 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("sssssss", $username, $email, $position, $salary, $password, $image_name, $user_type);
 
         if ($stmt->execute()) {
-            echo "<script>alert('Admin added successfully!'); window.location.href='admindashboard.php';</script>";
+            echo "<script>alert('Admin added successfully!'); window.location.href='addadmin.php';</script>";
         } else {
             echo "<script>alert('Error: " . $stmt->error . "');</script>";
         }
@@ -57,297 +82,118 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->close();
 }
 
+// Fetch admin list
 $sql = "SELECT * FROM admin_list";
 $result = $conn->query($sql);
 
-if ($admin_id) {
-    $query = "SELECT image FROM admin_list WHERE id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $admin_id);
-    $stmt->execute();
-    $stmt->bind_result($image);
-    if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'image/' . $image;
-    } else {
-        $profile_image = 'image/default_profile.jpg';
-    }
-    $stmt->close();
+// Profile picture of logged-in admin
+$query = "SELECT image FROM admin_list WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $admin_id);
+$stmt->execute();
+$stmt->bind_result($image);
+if ($stmt->fetch() && !empty($image)) {
+    $profile_image = 'uploads/' . $image;
 } else {
     $profile_image = 'image/default_profile.jpg';
 }
+$stmt->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Admin</title>
-<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-<link rel="stylesheet" href="manageadmin.css" />
-<style>
-    .container {
-        display: flex;
-        flex-direction: column;
-        gap: 40px;
-        padding: 20px;
-    }
-
-    #add-employee, #view-employees {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    form {
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-        gap: 15px;
-        align-items: center;
-    }
-
-    form label {
-        text-align: right;
-        font-weight: bold;
-    }
-
-    form input[type="search"] {
-        width: 300px;
-        padding: 8px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-    }
-
-    form input[type="text"],
-    form input[type="email"],
-    form input[type="number"],
-    form input[type="password"],
-    form input[type="file"] {
-        width: 100%;
-        padding: 8px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-    }
-
-    /* New role selection buttons styling */
-    .role-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: start;
-    }
-
-    .role-buttons input[type="radio"] {
-        display: none;
-    }
-
-    .role-buttons label {
-        cursor: pointer;
-        padding: 10px 20px;
-        background-color: #ef4444;
-        color: white;
-        border-radius: 5px;
-        font-weight: bold;
-        user-select: none;
-        transition: background-color 0.3s;
-    }
-
-    .role-buttons input[type="radio"]:checked + label {
-        background-color: #dc2626;
-        box-shadow: 0 0 10px #dc2626;
-    }
-
-    form button[type="submit"] {
-        grid-column: 2;
-        padding: 10px 20px;
-        background-color: #ef4444;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-
-    form button[type="submit"]:hover {
-        background-color: #dc2626;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    table th, table td {
-        padding: 12px;
-        text-align: center;
-        border-bottom: 1px solid #ddd;
-    }
-
-    table img {
-        border-radius: 5px;
-    }
-
-    table button {
-        padding: 5px 10px;
-        background-color: #ef4444;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin: 0 5px;
-    }
-
-    table button:hover {
-        background-color: #dc2626;
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>Admin Management</title>
+    <style>
+        body { font-family: Arial; }
+        .container { width: 80%; margin: auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #f44336; color: white; }
+        img { width: 60px; height: auto; border-radius: 5px; }
+        button, .delete-btn {
+            padding: 5px 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover, .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+        input, select {
+            padding: 8px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        label { font-weight: bold; }
+    </style>
+    <script>
+        function confirmDelete(id) {
+            if (confirm("Are you sure you want to delete this admin?")) {
+                window.location.href = 'addadmin.php?delete=' + id;
+            }
+        }
+    </script>
 </head>
 <body>
+    <div class="container">
+        <h2>Add Admin</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <label>Username:</label>
+            <input type="text" name="username" required>
 
-<section id="sidebar">
-    <a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
-    <ul class="side-menu top">
-        <li><a href="admindashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
-        <li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
-        <li><a href="manage_category.php"><i class='bx bxs-category'></i><span class="text">Category Management</span></a></li>
-        <li><a href="order.php"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
-        <li><a href="customer_list.php"><i class='bx bxs-user'></i><span class="text">Customer</span></a></li>
-        <li class="active"><a href="#"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
-    </ul>
-    <ul class="side-menu">
-        <li><a href="#"><i class='bx bxs-cog'></i><span class="text">Settings</span></a></li>
-        <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
-    </ul>
-</section>
+            <label>Email:</label>
+            <input type="email" name="email" required>
 
-<section id="content">
-    <nav>
-        <form action="#">
-            <div class="form-input">
-                <input type="search" placeholder="Search...">
-                <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
-            </div>
+            <label>Position:</label>
+            <input type="text" name="position" required>
+
+            <label>Salary:</label>
+            <input type="number" name="salary" step="0.01" required>
+
+            <label>Password:</label>
+            <input type="password" name="password" required>
+
+            <label>Profile Image:</label>
+            <input type="file" name="image" accept="image/*" required>
+
+            <label>Role:</label>
+            <select name="user_type" required>
+                <option value="Admin">Admin</option>
+                <option value="Super Admin">Super Admin</option>
+            </select>
+
+            <button type="submit" name="submit">Add Admin</button>
         </form>
-        <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
-        <a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
-    </nav>
 
-    <main>
-        <div class="head-title" style="margin-bottom: 30px;">
-            <div class="left">
-                <h1>Admin Management System</h1>
-                <ul class="breadcrumb">
-                    <li><a href="#">Dashboard</a></li>
-                    <li><i class='bx bx-chevron-right'></i></li>
-                    <li><a class="active" href="#">Admin Management</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="container">
-            <section id="add-employee">
-                <h2>Add Admin</h2>
-                <form method="POST" enctype="multipart/form-data">
-                    <label>Username:</label>
-                    <input type="text" name="username" required>
-
-                    <label>Email:</label>
-                    <input type="email" name="email" required>
-
-                    <label>Position:</label>
-                    <input type="text" name="position" required>
-
-                    <label>Salary (RM):</label>
-                    <input type="number" name="salary" min="0" step="0.01" required>
-
-                    <label>Password:</label>
-                    <input type="password" name="password" required>
-
-                    <label>Profile Image:</label>
-                    <input type="file" name="image" accept="image/*" required>
-
-                    <label>Roles:</label>
-                    <div class="role-buttons">
-                        <input type="radio" id="admin" name="user_type" value="Admin" required>
-                        <label for="admin">Admin</label>
-
-                        <input type="radio" id="superadmin" name="user_type" value="Super Admin" required>
-                        <label for="superadmin">Super Admin</label>
-                    </div>
-
-                    <button type="submit" name="submit">Add Admin</button>
-                </form>
-            </section>
-
-            <section id="view-employees">
-                <h2>Admin List</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Position</th>
-                            <th>Salary (RM)</th>
-                            <th>Roles</th>
-                            <th>Image</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($result && $result->num_rows > 0): ?>
-                            <?php while ($row = $result->fetch_assoc()): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($row['username']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['position']); ?></td>
-                                    <td><?php echo htmlspecialchars(number_format($row['salary'], 2)); ?></td>
-                                    <td>
-                                        <?php
-                                        $role = strtolower(trim($row['user_type']));
-                                        if ($role === 'superadmin' || $role === 'super admin') {
-                                            echo "Super Admin";
-                                        } elseif ($role === 'admin') {
-                                            echo "Admin";
-                                        } else {
-                                            echo htmlspecialchars($row['user_type']);
-                                        }
-                                        ?>
-                                    </td>
-                                    <td>
-                                        <?php
-                                        $imgPath = !empty($row['image']) ? "uploads/" . htmlspecialchars($row['image']) : "image/default_profile.jpg";
-                                        ?>
-                                        <img src="<?php echo $imgPath; ?>" alt="Admin Image" width="100" height="100">
-                                    </td>
-                                    <td>
-                                        <button><a href="edit_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;">Edit</a></button>
-                                        <button><a href="delete_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</a></button>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <tr><td colspan="7">No admins found.</td></tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </section>
-        </div>
-    </main>
-</section>
-
-<script>
-    // Sidebar toggle
-    const sidebar = document.getElementById('sidebar');
-    const menuBtn = document.querySelector('nav .bx-menu');
-
-    menuBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('close');
-    });
-</script>
-
+        <h2>Admin List</h2>
+        <table>
+            <tr>
+                <th>Image</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Position</th>
+                <th>Salary</th>
+                <th>User Type</th>
+                <th>Action</th>
+            </tr>
+            <?php while ($row = $result->fetch_assoc()) : ?>
+                <tr>
+                    <td><img src="uploads/<?php echo htmlspecialchars($row['image']); ?>" alt="Admin Image"></td>
+                    <td><?php echo htmlspecialchars($row['username']); ?></td>
+                    <td><?php echo htmlspecialchars($row['email']); ?></td>
+                    <td><?php echo htmlspecialchars($row['position']); ?></td>
+                    <td>RM <?php echo number_format($row['salary'], 2); ?></td>
+                    <td><?php echo htmlspecialchars($row['user_type']); ?></td>
+                    <td>
+                        <button class="delete-btn" onclick="confirmDelete(<?php echo $row['id']; ?>)">Delete</button>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+    </div>
 </body>
 </html>
-
-<?php
-$conn->close();
-?>
