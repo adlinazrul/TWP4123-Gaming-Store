@@ -23,87 +23,96 @@ if (!$user) {
     die("User not found.");
 }
 
+// Handle logout
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: index.html");
+    exit();
+}
+
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $firstName = $_POST["first_name"];
-    $lastName = $_POST["last_name"];
-    $phone = $_POST["phone"];
-    $username = $_POST["username"];
-    $birthdate = $_POST["birthdate"];
-    $bio = $_POST["bio"];
-    $profile_pic = $_FILES["profile_pic"]["name"];
-    $newPassword = $_POST["new_password"];
-    $confirmPassword = $_POST["confirm_password"];
-    $target_dir = "uploads/";
-
-    // Handle uploads
-    if (!is_dir($target_dir)) {
-        mkdir($target_dir, 0777, true);
-    }
-
-    if (!empty($profile_pic)) {
-        $target_file = $target_dir . basename($profile_pic);
-        move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $target_file);
-    } else {
-        $target_file = $user["profile_pic"] ?? "";
-    }
-
-    // 🔐 Handle password update if provided
-    $updatePassword = false;
-    if (!empty($newPassword)) {
-        if ($newPassword === $confirmPassword) {
-            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-            $updatePassword = true;
-        } else {
-            echo "<script>alert('New password and confirm password do not match.'); window.history.back();</script>";
-            exit();
-        }
-    }
-
-    // Build SQL and bind params accordingly
-    if ($updatePassword) {
-        $sql = "UPDATE customers SET first_name=?, last_name=?, phone=?, username=?, birthdate=?, bio=?, profile_pic=?, password=? WHERE email=?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssssssss", $firstName, $lastName, $phone, $username, $birthdate, $bio, $target_file, $hashedPassword, $email);
-    } else {
-        $sql = "UPDATE customers SET first_name=?, last_name=?, phone=?, username=?, birthdate=?, bio=?, profile_pic=? WHERE email=?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssssss", $firstName, $lastName, $phone, $username, $birthdate, $bio, $target_file, $email);
-    }
-
-    if ($stmt->execute()) {
-        // Log changes
-        $fields = [
-            'first_name' => $firstName,
-            'last_name' => $lastName,
-            'phone' => $phone,
-            'username' => $username,
-            'birthdate' => $birthdate,
-            'bio' => $bio,
-            'profile_pic' => $target_file
-        ];
-
-        if ($updatePassword) {
-            $fields['password'] = '[HIDDEN]';
-        }
-
-        foreach ($fields as $field => $new_value) {
-            if (!isset($user[$field]) || $user[$field] != $new_value) {
-                $old_value = ($field === 'password') ? '[HIDDEN]' : $user[$field];
-                $sql_log = "INSERT INTO profile_edits (customer_id, field_changed, old_value, new_value) VALUES (?, ?, ?, ?)";
-                $stmt_log = $conn->prepare($sql_log);
-                $stmt_log->bind_param("isss", $user['id'], $field, $old_value, $new_value);
-                $stmt_log->execute();
-                $stmt_log->close();
+    // Check if this is a password change request
+    if (isset($_POST['change_password'])) {
+        $oldPassword = $_POST['old_password'];
+        $newPassword = $_POST['new_password'];
+        $confirmPassword = $_POST['confirm_password'];
+        
+        // Verify old password
+        if (password_verify($oldPassword, $user['password'])) {
+            if ($newPassword === $confirmPassword) {
+                $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+                $sql = "UPDATE customers SET password=? WHERE email=?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("ss", $hashedPassword, $email);
+                
+                if ($stmt->execute()) {
+                    echo "<script>alert('Password changed successfully!');</script>";
+                } else {
+                    echo "<script>alert('Error updating password.');</script>";
+                }
+                $stmt->close();
+            } else {
+                echo "<script>alert('New password and confirm password do not match.');</script>";
             }
+        } else {
+            echo "<script>alert('Old password is incorrect.');</script>";
+        }
+    } else {
+        // Handle regular profile update
+        $firstName = $_POST["first_name"];
+        $lastName = $_POST["last_name"];
+        $phone = $_POST["phone"];
+        $username = $_POST["username"];
+        $bio = $_POST["bio"];
+        $profile_pic = $_FILES["profile_pic"]["name"];
+        $target_dir = "uploads/";
+
+        // Handle uploads
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir, 0777, true);
         }
 
-        echo "<script>alert('Profile updated successfully!'); window.location.href='custeditprofile.php';</script>";
-    } else {
-        echo "Error updating profile: " . $stmt->error;
-    }
+        if (!empty($profile_pic)) {
+            $target_file = $target_dir . basename($profile_pic);
+            move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $target_file);
+        } else {
+            $target_file = $user["profile_pic"] ?? "";
+        }
 
-    $stmt->close();
+        $sql = "UPDATE customers SET first_name=?, last_name=?, phone=?, username=?, bio=?, profile_pic=? WHERE email=?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sssssss", $firstName, $lastName, $phone, $username, $bio, $target_file, $email);
+
+        if ($stmt->execute()) {
+            // Log changes
+            $fields = [
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'phone' => $phone,
+                'username' => $username,
+                'bio' => $bio,
+                'profile_pic' => $target_file
+            ];
+
+            foreach ($fields as $field => $new_value) {
+                if (!isset($user[$field]) || $user[$field] != $new_value) {
+                    $old_value = $user[$field];
+                    $sql_log = "INSERT INTO profile_edits (customer_id, field_changed, old_value, new_value) VALUES (?, ?, ?, ?)";
+                    $stmt_log = $conn->prepare($sql_log);
+                    $stmt_log->bind_param("isss", $user['id'], $field, $old_value, $new_value);
+                    $stmt_log->execute();
+                    $stmt_log->close();
+                }
+            }
+
+            echo "<script>alert('Profile updated successfully!'); window.location.href='custeditprofile.php';</script>";
+        } else {
+            echo "Error updating profile: " . $stmt->error;
+        }
+
+        $stmt->close();
+    }
     $conn->close();
 }
 ?>
@@ -277,7 +286,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .btn-container {
             grid-column: span 2;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 20px;
             margin-top: 20px;
         }
@@ -311,6 +320,102 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background: var(--accent);
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+         footer {
+            background: #0a0118;
+            padding: 50px 30px 20px;
+            text-align: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-links a {
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+         .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .social-icons a {
+            color: var(--light);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icons a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 0, 0, 0.1);
+        }
+        
+        /* Password Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .modal-content {
+            background-color: var(--dark);
+            margin: 10% auto;
+            padding: 30px;
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+        
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            color: var(--light);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close-modal:hover {
+            color: var(--primary);
+        }
+        
+        .modal-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 20px;
         }
         
         /* Mobile menu styles */
@@ -392,6 +497,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             .profile-title {
                 font-size: 2rem;
             }
+            
+            .modal-content {
+                margin: 20% auto;
+            }
         }
     </style>
 </head>
@@ -414,8 +523,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             
             <div class="icons-right">
-                <a href="custlogin.html">
-                    <i class="fas fa-user"></i>
+                
                 </a>
                 <i class="fas fa-shopping-cart"></i>
             </div>
@@ -430,6 +538,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
                 <div class="menu-item"><a href="custservice.html">HELP</a></div>
                 <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
+                <div class="menu-item"><a href="?logout=1">LOGOUT</a></div>
             </div>
         </div>
     </div>
@@ -452,32 +561,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             <div class="form-group">
                 <label for="first_name">FIRST NAME</label>
-                <input type="text" id="first_name" name="first_name" class="form-control" value="<?= htmlspecialchars($user['first_name']) ?>">
+                <input type="text" id="first_name" name="first_name" class="form-control" pattern="[A-Za-z\s]+" title="Only letters and spaces allowed" value="<?= htmlspecialchars($user['first_name']) ?>">
             </div>
             
             <div class="form-group">
                 <label for="last_name">LAST NAME</label>
-                <input type="text" id="last_name" name="last_name" class="form-control" value="<?= htmlspecialchars($user['last_name']) ?>">
+                <input type="text" id="last_name" name="last_name" class="form-control" pattern="[A-Za-z\s]+" title="Only letters and spaces allowed" value="<?= htmlspecialchars($user['last_name']) ?>">
             </div>
             
             <div class="form-group">
                 <label for="email">EMAIL</label>
                 <input type="email" id="email" name="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" readonly>
             </div>
+
+             <div class="form-group">
+                <label for="username">USERNAME</label>
+                <input type="text" id="username" name="username" class="form-control" pattern="[A-Za-z\s]+" title="Only letters and spaces allowed" value="<?= htmlspecialchars($user['username']) ?>">
+            </div>
             
             <div class="form-group">
                 <label for="phone">PHONE</label>
-                <input type="tel" id="phone" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone']) ?>">
-            </div>
-            
-            <div class="form-group">
-                <label for="username">USERNAME</label>
-                <input type="text" id="username" name="username" class="form-control" value="<?= htmlspecialchars($user['username']) ?>">
-            </div>
-            
-            <div class="form-group">
-                <label for="birthdate">DATE OF BIRTH</label>
-                <input type="date" id="birthdate" name="birthdate" class="form-control" value="<?= htmlspecialchars($user['birthdate']) ?>">
+                <input type="tel" id="phone" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone']) ?>" readonly>
             </div>
             
             <div class="form-group" style="grid-column: span 2;">
@@ -485,21 +589,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <textarea id="bio" name="bio" class="form-control"><?= htmlspecialchars($user['bio']) ?></textarea>
             </div>
             
-            <div class="form-group">
-                <label for="new_password">NEW PASSWORD</label>
-                <input type="password" id="new_password" name="new_password" class="form-control">
-            </div>
-            
-            <div class="form-group">
-                <label for="confirm_password">CONFIRM PASSWORD</label>
-                <input type="password" id="confirm_password" name="confirm_password" class="form-control">
-            </div>
-            
             <div class="btn-container">
-                <a href="index.php" class="btn btn-cancel">CANCEL</a>
-                <button type="submit" class="btn btn-save">SAVE CHANGES</button>
+                <div>
+                    <a href="index.php" class="btn btn-cancel">BACK</a>
+                    <a href="?logout=1" class="btn btn-cancel">LOGOUT</a>
+                </div>
+                <div>
+                    <button type="button" id="changePasswordBtn" class="btn btn-cancel">CHANGE PASSWORD</button>
+                    <button type="submit" class="btn btn-save">SAVE CHANGES</button>
+                </div>
             </div>
         </form>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="modal-title">CHANGE PASSWORD</h2>
+            <form method="POST" id="passwordForm">
+                <div class="form-group">
+                    <label for="old_password">OLD PASSWORD</label>
+                    <input type="password" id="old_password" name="old_password" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="new_password">NEW PASSWORD</label>
+                    <input type="password" id="new_password" name="new_password" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password">CONFIRM PASSWORD</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                </div>
+                
+                <div class="modal-btn-container">
+                    <button type="button" id="cancelPassword" class="btn btn-cancel">CANCEL</button>
+                    <button type="submit" name="change_password" class="btn btn-save">SAVE</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -507,17 +636,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="footer-links">
             <a href="#about">ABOUT US</a>
             <a href="#contact">CONTACT</a>
-            <a href="#shipping">SHIPPING</a>
-            <a href="#returns">RETURNS</a>
-            <a href="#faq">FAQ</a>
+            <a href="tos"> TERMS OF SERVICE</a>
         </div>
         
         <div class="social-icons">
             <a href="#facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#twitter"><i class="fab fa-twitter"></i></a>
             <a href="#instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#youtube"><i class="fab fa-youtube"></i></a>
-            <a href="#twitch"><i class="fab fa-twitch"></i></a>
         </div>
         
         <div class="copyright">
@@ -569,6 +693,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     el.style.opacity = "1";
                     el.style.transform = "translateY(0)";
                 }, 100);
+            });
+            
+            // Password modal functionality
+            const modal = document.getElementById("passwordModal");
+            const btn = document.getElementById("changePasswordBtn");
+            const span = document.getElementsByClassName("close-modal")[0];
+            const cancelBtn = document.getElementById("cancelPassword");
+            
+            btn.onclick = function() {
+                modal.style.display = "block";
+            }
+            
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+            
+            cancelBtn.onclick = function() {
+                modal.style.display = "none";
+            }
+            
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+            
+            // Clear password form when modal closes
+            modal.addEventListener('hidden', function() {
+                document.getElementById("passwordForm").reset();
             });
         });
     </script>
