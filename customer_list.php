@@ -129,7 +129,6 @@ if ($admin_id) {
                         <th>City</th>
                         <th>State</th>
                         <th>Postcode</th>
-                        <th>Country</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -146,7 +145,6 @@ if ($admin_id) {
                                 <td><?= htmlspecialchars($row['city']) ?></td>
                                 <td><?= htmlspecialchars($row['state']) ?></td>
                                 <td><?= htmlspecialchars($row['postcode']) ?></td>
-                                <td><?= htmlspecialchars($row['country']) ?></td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
