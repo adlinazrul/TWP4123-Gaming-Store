@@ -1,4 +1,4 @@
- <?php
+<?php
 include 'db_connect1.php';
 
 error_reporting(E_ALL);
@@ -19,8 +19,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $state = sanitize($_POST["state"] ?? '');
     $postcode = sanitize($_POST["postcode"] ?? '');
     $country = sanitize($_POST["country"] ?? '');
-    $password = password_hash($_POST["password"] ?? '', PASSWORD_BCRYPT);
 
+    $password = $_POST["password"] ?? '';
+    $confirm_password = $_POST["confirm-password"] ?? '';
+
+    // ✅ Check password match
+    if ($password !== $confirm_password) {
+        echo "<script>alert('Passwords do not match. Please try again.'); window.history.back();</script>";
+        exit();
+    }
+
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
     $sql = "INSERT INTO customers 
         (first_name, last_name, username, email, phone, address, city, state, postcode, country, password) 
@@ -34,11 +43,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param(
         "sssssssssss",
         $first_name, $last_name, $username, $email, $phone,
-        $address, $city, $state, $postcode, $country, $password
+        $address, $city, $state, $postcode, $country, $hashed_password
     );
 
     if ($stmt->execute()) {
-        echo "New customer registered successfully";
+        echo "<script>alert('Registration successful! Please log in.'); window.location.href='custlogin.html';</script>";
     } else {
         echo "Error: " . $stmt->error;
     }

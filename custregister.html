@@ -542,6 +542,17 @@
     </footer>
 
     <script>
+            document.getElementById("registrationForm").addEventListener("submit", function(e) {
+            const pw = document.getElementById("password").value;
+            const cpw = document.getElementById("confirm-password").value;
+
+            if (pw !== cpw) {
+                alert("Passwords do not match.");
+                e.preventDefault(); // Stop form from submitting
+            }
+        });
+
+
         document.addEventListener("DOMContentLoaded", function () {
             let menuOverlay = document.getElementById("menuOverlay");
             let menuContainer = document.getElementById("menuContainer");
