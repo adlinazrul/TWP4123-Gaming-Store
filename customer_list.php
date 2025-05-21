@@ -123,7 +123,6 @@ if ($admin_id) {
                         <th>Full Name</th>
                         <th>Email</th>
                         <th>Phone</th>
-                        <th>Birthdate</th>
                         <th>Username</th>
                         <th>Bio</th>
                         <th>Address</th>
@@ -141,7 +140,6 @@ if ($admin_id) {
                                 <td><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></td>
                                 <td><?= htmlspecialchars($row['email']) ?></td>
                                 <td><?= htmlspecialchars($row['phone']) ?></td>
-                                <td><?= htmlspecialchars($row['birthdate']) ?></td>
                                 <td><?= htmlspecialchars($row['username']) ?></td>
                                 <td><?= htmlspecialchars($row['bio']) ?></td>
                                 <td><?= htmlspecialchars($row['address']) ?></td>
