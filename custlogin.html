@@ -362,10 +362,13 @@
                     <label for="email">EMAIL</label>
                     <input type="email" id="email" name="email" required>
                 </div>
-                <div class="form-group">
-                    <label for="password">PASSWORD</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
+                <div class="form-group" style="position: relative;">
+    <label for="password">PASSWORD</label>
+    <input type="password" id="password" name="password" required>
+    <span onclick="togglePassword('password')" style="position:absolute; top:65%; right:10px; transform:translateY(-50%); cursor:pointer;">
+        👁️
+    </span>
+</div>
                 <button type="submit" class="login-button">LOGIN</button>
             </form>
             <div class="login-links">
@@ -386,10 +389,9 @@
         
         <div class="social-icons">
             <a href="#facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#twitter"><i class="fab fa-twitter"></i></a>
+           
             <a href="#instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#youtube"><i class="fab fa-youtube"></i></a>
-            <a href="#twitch"><i class="fab fa-twitch"></i></a>
+           
         </div>
         
         <div class="copyright">
@@ -403,6 +405,7 @@
             let menuContainer = document.getElementById("menuContainer");
             let menuIcon = document.getElementById("menuIcon");
             let closeMenu = document.getElementById("closeMenu");
+
 
             // Open menu
             menuIcon.addEventListener("click", function () {
@@ -436,12 +439,20 @@
             loginBox.style.opacity = "0";
             loginBox.style.transform = "translateY(20px)";
             loginBox.style.transition = "all 0.5s ease";
+
+            
+                
             
             setTimeout(() => {
                 loginBox.style.opacity = "1";
                 loginBox.style.transform = "translateY(0)";
             }, 100);
+         
         });
+          function togglePassword(id) {
+        const input = document.getElementById(id);
+        input.type = input.type === "password" ? "text" : "password";
+    }
     </script>
 </body>
 </html>

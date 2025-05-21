@@ -500,14 +500,23 @@
                   </div>
                   </div>
                 </div>
-                <div class="form-group">
-                    <label for="password">PASSWORD</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <div class="form-group">
-                    <label for="confirm-password">CONFIRM PASSWORD</label>
-                    <input type="password" id="confirm-password" name="confirm-password" required>
-                </div>
+               <div class="form-group" style="position: relative;">
+    <label for="password">PASSWORD</label>
+    <input type="password" id="password" name="password" required>
+    <span onclick="togglePassword('password')" style="position:absolute; top:65%; right:10px; transform:translateY(-50%); cursor:pointer;">
+        👁️
+    </span>
+</div>
+
+<div class="form-group" style="position: relative;">
+    <label for="confirm-password">CONFIRM PASSWORD</label>
+    <input type="password" id="confirm-password" name="confirm-password" required>
+    <span onclick="togglePassword('confirm-password')" style="position:absolute; top:65%; right:10px; transform:translateY(-50%); cursor:pointer;">
+        👁️
+    </span>
+</div>
+
+
                 <button type="submit" class="register-button">CREATE ACCOUNT</button>
             </form>
             <div class="register-links">
@@ -551,8 +560,10 @@
                 e.preventDefault(); // Stop form from submitting
             }
         });
-
-
+          function togglePassword(id) {
+          const input = document.getElementById(id);
+          input.type = input.type === "password" ? "text" : "password";
+          }
         document.addEventListener("DOMContentLoaded", function () {
             let menuOverlay = document.getElementById("menuOverlay");
             let menuContainer = document.getElementById("menuContainer");

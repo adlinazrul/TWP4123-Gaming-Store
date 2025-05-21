@@ -604,32 +604,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <!-- Password Change Modal -->
     <div id="passwordModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 class="modal-title">CHANGE PASSWORD</h2>
-            <form method="POST" id="passwordForm">
-                <div class="form-group">
-                    <label for="old_password">OLD PASSWORD</label>
-                    <input type="password" id="old_password" name="old_password" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="new_password">NEW PASSWORD</label>
-                    <input type="password" id="new_password" name="new_password" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="confirm_password">CONFIRM PASSWORD</label>
-                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
-                </div>
-                
-                <div class="modal-btn-container">
-                    <button type="button" id="cancelPassword" class="btn btn-cancel">CANCEL</button>
-                    <button type="submit" name="change_password" class="btn btn-save">SAVE</button>
-                </div>
-            </form>
-        </div>
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 class="modal-title">CHANGE PASSWORD</h2>
+
+        <form method="POST" id="passwordForm">
+            <div class="form-group" style="position: relative;">
+                <label for="old_password">OLD PASSWORD</label>
+                <input type="password" id="old_password" name="old_password" class="form-control" required>
+                <span onclick="togglePassword('old_password')" style="position:absolute; top:68%; right:10px; transform:translateY(-50%); cursor:pointer;">👁️</span>
+            </div>
+
+            <div class="form-group" style="position: relative;">
+                <label for="new_password">NEW PASSWORD</label>
+                <input type="password" id="new_password" name="new_password" class="form-control" required>
+                <span onclick="togglePassword('new_password')" style="position:absolute; top:68%; right:10px; transform:translateY(-50%); cursor:pointer;">👁️</span>
+            </div>
+
+            <div class="form-group" style="position: relative;">
+                <label for="confirm_password">CONFIRM PASSWORD</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                <span onclick="togglePassword('confirm_password')" style="position:absolute; top:68%; right:10px; transform:translateY(-50%); cursor:pointer;">👁️</span>
+            </div>
+
+            <div class="modal-btn-container">
+                <button type="button" id="cancelPassword" class="btn btn-cancel">CANCEL</button>
+                <button type="submit" name="change_password" class="btn btn-save">SAVE</button>
+            </div>
+        </form>
     </div>
+</div>
+
 
     <!-- Footer -->
     <footer>
@@ -655,7 +660,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             let menuContainer = document.getElementById("menuContainer");
             let menuIcon = document.getElementById("menuIcon");
             let closeMenu = document.getElementById("closeMenu");
-
+  // Toggle password visibility for any field by ID
+        window.togglePassword = function(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === "password" ? "text" : "password";
+        }
+    
             // Open menu
             menuIcon.addEventListener("click", function () {
                 menuOverlay.style.display = "block";
