@@ -1,4 +1,4 @@
-                                                                                                                       <?php
+ <?php
 include 'db_connect1.php';
 
 error_reporting(E_ALL);
@@ -11,6 +11,7 @@ function sanitize($data) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $first_name = sanitize($_POST["first_name"] ?? '');
     $last_name = sanitize($_POST["last_name"] ?? '');
+    $username = trim($_POST['username']);
     $email = sanitize($_POST["email"] ?? '');
     $phone = sanitize($_POST["phone"] ?? '');
     $address = sanitize($_POST["address"] ?? '');
@@ -22,8 +23,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
     $sql = "INSERT INTO customers 
-        (first_name, last_name, email, phone, address, city, state, postcode, country, password) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        (first_name, last_name, username, email, phone, address, city, state, postcode, country, password) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
@@ -31,8 +32,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     $stmt->bind_param(
-        "ssssssssss",
-        $first_name, $last_name, $email, $phone,
+        "sssssssssss",
+        $first_name, $last_name, $username, $email, $phone,
         $address, $city, $state, $postcode, $country, $password
     );
 
