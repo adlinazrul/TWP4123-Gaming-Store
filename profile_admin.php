@@ -23,8 +23,6 @@ if ($conn->connect_error) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $position = $_POST['position'];  // will not be changed because readonly in form
-    $salary = $_POST['salary'];
     $password = $_POST['password'];
 
     if (!empty($_FILES['image']['name'])) {
@@ -32,13 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $target = "image/" . basename($image);
         move_uploaded_file($_FILES['image']['tmp_name'], $target);
 
-        $sql = "UPDATE admin_list SET username=?, email=?, position=?, salary=?, password=?, image=? WHERE id=?";
+        $sql = "UPDATE admin_list SET username=?, email=?, password=?, image=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssssi", $username, $email, $position, $salary, $password, $image, $admin_id);
+        $stmt->bind_param("ssssi", $username, $email, $password, $image, $admin_id);
     } else {
-        $sql = "UPDATE admin_list SET username=?, email=?, position=?, salary=?, password=? WHERE id=?";
+        $sql = "UPDATE admin_list SET username=?, email=?, password=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssssi", $username, $email, $position, $salary, $password, $admin_id);
+        $stmt->bind_param("sssi", $username, $email, $password, $admin_id);
     }
 
     if ($stmt->execute()) {
@@ -90,7 +88,6 @@ $conn->close();
             margin-bottom: 20px;
         }
 
-        /* Profile Image Container */
         .profile-image-wrapper {
             position: relative;
             width: 140px;
@@ -120,14 +117,10 @@ $conn->close();
             transform: scale(1.05);
         }
 
-        /* Overlay text on hover */
         .overlay-text {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(239, 68, 68, 0.7); /* red with transparency */
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(239, 68, 68, 0.7);
             color: white;
             display: flex;
             align-items: center;
@@ -135,24 +128,17 @@ $conn->close();
             opacity: 0;
             font-weight: 600;
             font-size: 16px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            letter-spacing: 0.05em;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
             border-radius: 50%;
             transition: opacity 0.3s ease;
-            user-select: none;
-            text-align: center;
-            padding: 0 10px; /* some padding for longer text */
         }
 
         .profile-image-wrapper:hover .overlay-text {
             opacity: 1;
         }
 
-        /* Role Badge */
         .role-badge {
             text-align: center;
-            margin: 10px auto 30px auto;
+            margin: 10px auto 20px auto;
             max-width: 200px;
             font-weight: 700;
             font-size: 16px;
@@ -162,16 +148,24 @@ $conn->close();
             border-radius: 30px;
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
             letter-spacing: 0.1em;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-            transition: transform 0.3s ease;
-            cursor: default;
             text-transform: uppercase;
         }
 
-        .role-badge:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.8);
+        .edit-password-button {
+            display: block;
+            margin: 0 auto 30px;
+            background-color: #f59e0b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .edit-password-button:hover {
+            background-color: #d97706;
         }
 
         form label {
@@ -183,7 +177,6 @@ $conn->close();
 
         form input[type="text"],
         form input[type="email"],
-        form input[type="number"],
         form input[type="password"] {
             width: 100%;
             height: 40px;
@@ -192,12 +185,6 @@ $conn->close();
             border-radius: 5px;
             border: 1px solid #ccc;
             box-sizing: border-box;
-        }
-
-        /* Readonly style for position input */
-        input[readonly] {
-            background: #eee;
-            cursor: not-allowed;
         }
 
         .password-container {
@@ -223,14 +210,12 @@ $conn->close();
             border-radius: 20px;
             font-size: 12px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
         }
 
         .toggle-password:hover {
             background-color: #dc2626;
         }
 
-        /* Hide actual file input */
         input[type="file"] {
             display: none;
         }
@@ -245,7 +230,6 @@ $conn->close();
             cursor: pointer;
             width: 100%;
             font-size: 16px;
-            transition: background-color 0.3s ease;
         }
 
         form input[type="submit"]:hover {
@@ -258,21 +242,19 @@ $conn->close();
 <div class="container">
     <h2>My Profile</h2>
 
-    <form method="post" enctype="multipart/form-data" id="profileForm">
-        <!-- Profile Image with overlay -->
-        <div class="profile-image-wrapper" id="imageWrapper" tabindex="0" aria-label="Change Profile Image">
+    <form method="post" enctype="multipart/form-data">
+        <div class="profile-image-wrapper" tabindex="0">
             <?php
             $imgSrc = !empty($admin['image']) ? "image/" . htmlspecialchars($admin['image']) : "image/default_profile.jpg";
             ?>
-            <img src="<?= $imgSrc ?>" alt="Profile Image" id="profileImage">
+            <img src="<?= $imgSrc ?>" alt="Profile Image">
             <div class="overlay-text">Change Image Profile</div>
             <input type="file" name="image" id="imageInput" accept="image/*">
         </div>
 
-        <!-- Role Badge under profile image -->
-        <div class="role-badge" aria-label="User Role">
-            <?= htmlspecialchars($admin['user_type']) ?>
-        </div>
+        <div class="role-badge"><?= htmlspecialchars($admin['user_type']) ?></div>
+
+        <button type="button" class="edit-password-button" onclick="document.getElementById('password').focus();">Edit Password</button>
 
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required>
@@ -280,16 +262,10 @@ $conn->close();
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required>
 
-        <label for="position">Position:</label>
-        <input type="text" id="position" name="position" value="<?= htmlspecialchars($admin['position']) ?>" readonly>
-
-        <label for="salary">Salary:</label>
-        <input type="number" id="salary" name="salary" value="<?= htmlspecialchars($admin['salary']) ?>" min="0" required>
-
         <label for="password">Password:</label>
         <div class="password-container">
             <input type="password" id="password" name="password" value="<?= htmlspecialchars($admin['password']) ?>" required>
-            <button type="button" id="togglePassword" class="toggle-password" aria-label="Show or hide password">Show</button>
+            <button type="button" id="togglePassword" class="toggle-password">Show</button>
         </div>
 
         <input type="submit" value="Update Profile">
@@ -297,45 +273,22 @@ $conn->close();
 </div>
 
 <script>
-    // Toggle password visibility
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
 
     togglePassword.addEventListener('click', () => {
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            togglePassword.textContent = 'Hide';
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            togglePassword.textContent = "Hide";
         } else {
-            passwordInput.type = 'password';
-            togglePassword.textContent = 'Show';
+            passwordInput.type = "password";
+            togglePassword.textContent = "Show";
         }
     });
 
-    // Clicking on the profile image wrapper triggers file input
-    const imageWrapper = document.getElementById('imageWrapper');
-    const imageInput = document.getElementById('imageInput');
-
-    imageWrapper.addEventListener('click', () => {
-        imageInput.click();
-    });
-
-    // Preview new profile image when selected
-    imageInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('profileImage').src = e.target.result;
-            }
-            reader.readAsDataURL(this.files[0]);
-        }
-    });
-
-    // Allow keyboard access: press Enter or Space on image wrapper to open file dialog
-    imageWrapper.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            imageInput.click();
-        }
+    // Trigger file input when clicking profile image
+    document.getElementById('imageWrapper')?.addEventListener('click', () => {
+        document.getElementById('imageInput')?.click();
     });
 </script>
 
