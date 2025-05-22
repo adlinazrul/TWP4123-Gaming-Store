@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 // Check if the user is logged in
@@ -7,31 +8,21 @@ if (!isset($_SESSION['email'])) {
     exit();
 }
 
-// Database connection
-$host = "localhost";
-$user = "root";
+$servername = "localhost";
+$username = "root";
 $password = "";
 $dbname = "gaming_store";
 
-$conn = new mysqli($host, $user, $password, $dbname);
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch user information
-$email = $_SESSION['email'];
-$sql = "SELECT * FROM customers WHERE email = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $email);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-
-if (!$user) {
-    echo "User not found!";
-    exit();
-
-}
+$sql = "SELECT * FROM products WHERE product_category = 'Consoles'";
+$result = $conn->query($sql);
 ?>
 
 <!DOCTYPE html>
@@ -39,7 +30,7 @@ if (!$user) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Premium Gaming Store</title>
+    <title>NEXUS | Console Products</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -49,6 +40,7 @@ if (!$user) {
             --dark: #0d0221;
             --light: #ffffff;
             --accent: #ff3333;
+            --gray: #7a7a7a;
         }
         
         body {
@@ -84,6 +76,7 @@ if (!$user) {
             font-weight: 700;
             color: var(--primary);
             text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            cursor: pointer;
         }
         
         .nav-links {
@@ -102,8 +95,9 @@ if (!$user) {
         
         .nav-links a:hover {
             color: var(--primary);
+            text-decoration: none; 
         }
-
+        
         .nav-links a::after {
             content: '';
             position: absolute;
@@ -113,10 +107,12 @@ if (!$user) {
             bottom: -5px;
             left: 0;
             transition: width 0.3s ease;
+            
         }
         
         .nav-links a:hover::after {
             width: 100%;
+            
         }
         
         .nav-links a.active {
@@ -130,6 +126,7 @@ if (!$user) {
         .icons-left, .icons-right {
             display: flex;
             gap: 25px;
+            align-items: center;
         }
         
         .icons-left i, .icons-right i {
@@ -141,66 +138,32 @@ if (!$user) {
         
         .icons-left i:hover, .icons-right i:hover {
             color: var(--primary);
+            transform: scale(1.1);
         }
         
-        .banner {
-            max-width: 1400px;
-            margin: 50px auto;
-            padding: 0;
-            position: relative;
-            overflow: hidden;
-            border-radius: 10px;
-        }
-        
-        .hero {
-            position: relative;
-            height: 500px;
-            background: linear-gradient(rgba(13, 2, 33, 0.7), rgba(13, 2, 33, 0.7)), 
-                        url('https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 20px;
-        }
-        
-        .hero h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 4rem;
-            margin: 0;
-            color: var(--primary);
-            text-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
-        }
-        
-        .hero p {
-            font-size: 1.2rem;
-            max-width: 700px;
-            margin: 20px 0 30px;
-        }
-        
-        .cta-button {
+        .cart-count {
             background: var(--primary);
             color: white;
-            border: none;
-            padding: 15px 40px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.1rem;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-family: 'Rubik', sans-serif;
         }
         
-        .cta-button:hover {
-            background: var(--accent);
-            transform: translateY(-3px);
+        .cart-icon-container {
+            position: relative;
         }
         
-        .featured-section {
+        .product-listing {
             max-width: 1400px;
-            margin: 80px auto;
+            margin: 50px auto;
             padding: 0 30px;
         }
         
@@ -210,6 +173,50 @@ if (!$user) {
             text-align: center;
             margin-bottom: 50px;
             color: var(--primary);
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 3px;
+            background: var(--primary);
+            bottom: -10px;
+            left: 25%;
+            border-radius: 3px;
+        }
+        
+        .filter-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .filter-section label {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--light);
+        }
+        
+        .filter-section select {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 5px;
+            font-family: 'Rubik', sans-serif;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-section select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
         }
         
         .products-grid {
@@ -223,17 +230,26 @@ if (!$user) {
             border-radius: 10px;
             overflow: hidden;
             transition: all 0.3s ease;
+            border: 1px solid rgba(255, 0, 0, 0.1);
         }
         
         .product-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 15px 30px rgba(255, 0, 0, 0.2);
+            border-color: rgba(255, 0, 0, 0.3);
         }
         
         .product-image {
             height: 200px;
-            background-size: cover;
-            background-position: center;
+            width: 100%;
+            object-fit: contain;
+            background-color: #000;
+            transition: transform 0.5s ease;
+            flex-shrink: 0; /* Prevent image from shrinking */
+        }
+        
+        .product-card:hover .product-image {
+            transform: scale(1.05);
         }
         
         .product-info {
@@ -246,10 +262,41 @@ if (!$user) {
             color: var(--primary);
         }
         
+        .product-description {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
         .product-price {
             font-family: 'Orbitron', sans-serif;
             font-size: 1.3rem;
             color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .original-price {
+            text-decoration: line-through;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .discount-badge {
+            background: var(--primary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-family: 'Rubik', sans-serif;
+        }
+        
+        .out-of-stock {
+            color: var(--primary);
+            font-weight: bold;
             margin-bottom: 15px;
         }
         
@@ -262,103 +309,24 @@ if (!$user) {
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: 'Orbitron', sans-serif;
-            width: 100%;
-            text-decoration: none; 
+            width: calc(100% - 40px); /* Account for padding */
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            margin: 0 auto; /* Center the button */
+    box-sizing: border-box; /* Include padding in width calculation */
         }
         
         .view-product:hover {
             background: var(--primary);
             color: var(--dark);
-            text-decoration: none; 
-        }
-        
-        .deals-section {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin: 80px auto;
-            max-width: 1400px;
-            padding: 0 30px;
-            text-align: center;
-        }
-
-        /* Make anchor links behave like regular cards */
-        .deals-section a.deal-card {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        /* Hover effect for entire clickable card */
-        .deals-section a.deal-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.2);
-        }
-
-        .deal-icon {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
-
-        .deal-card h3 {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
-        }
-
-        .newsletter-section {
-            background: var(--dark);
-            padding: 80px 30px;
-            text-align: center;
-            border-top: 1px solid var(--primary);
-            border-bottom: 1px solid var(--primary);
-        }
-        
-        .newsletter-content {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .newsletter-form {
-            display: flex;
-            margin-top: 30px;
-        }
-        
-        .newsletter-input {
-            flex: 1;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 50px 0 0 50px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-family: 'Rubik', sans-serif;
-        }
-        
-        .newsletter-button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0 30px;
-            border-radius: 0 50px 50px 0;
-            font-family: 'Orbitron', sans-serif;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .newsletter-button:hover {
-            background: var(--accent);
         }
         
         footer {
             background: #0a0118;
             padding: 50px 30px 20px;
             text-align: center;
+            position: relative;
         }
         
         .footer-links {
@@ -366,12 +334,30 @@ if (!$user) {
             justify-content: center;
             gap: 30px;
             margin-bottom: 30px;
+            flex-wrap: wrap;
         }
         
         .footer-links a {
             color: var(--light);
             text-decoration: none;
             transition: all 0.3s ease;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        .footer-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            bottom: 0;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+        
+        .footer-links a:hover::after {
+            width: 100%;
         }
         
         .footer-links a:hover {
@@ -389,10 +375,20 @@ if (!$user) {
             color: var(--light);
             font-size: 1.5rem;
             transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
         }
         
         .social-icons a:hover {
             color: var(--primary);
+            transform: translateY(-3px);
+            background: rgba(255, 0, 0, 0.2);
         }
         
         .copyright {
@@ -441,7 +437,7 @@ if (!$user) {
         #closeMenu:hover {
             transform: rotate(90deg);
         }
-
+        
         #menuOverlay.active {
             display: block;
         }
@@ -466,16 +462,13 @@ if (!$user) {
         
         .menu-item a:hover {
             color: var(--primary);
+            padding-left: 10px;
         }
         
         /* Responsive adjustments */
         @media (max-width: 1024px) {
             .nav-links {
                 gap: 15px;
-            }
-            
-            .deals-section {
-                grid-template-columns: 1fr;
             }
         }
         
@@ -488,48 +481,37 @@ if (!$user) {
                 font-size: 1.5rem;
             }
             
-            .hero h1 {
-                font-size: 2.5rem;
+            .section-title {
+                font-size: 2rem;
             }
             
-            .newsletter-form {
+            .filter-section {
                 flex-direction: column;
-            }
-            
-            .newsletter-input {
-                border-radius: 50px;
-                margin-bottom: 10px;
-            }
-            
-            .newsletter-button {
-                border-radius: 50px;
-                padding: 15px;
+                align-items: flex-start;
             }
             
             #menuContainer {
                 width: 100%;
                 max-width: 320px;
             }
+            
+            .product-card {
+                max-width: 100%;
+            }
+            
+            .footer-links {
+                gap: 15px;
+            }
         }
-        @media (max-width: 768px) {
-            .newsletter-form {
+        
+        @media (max-width: 480px) {
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .footer-links {
                 flex-direction: column;
-            }
-
-            .newsletter-input,
-            .newsletter-button {
-                border-radius: 50px;
-                width: 100%;
-                margin-bottom: 10px;
-            }
-
-            #menuContainer {
-                width: 100%;
-                left: -100%;
-            }
-
-            #menuOverlay.active #menuContainer {
-                left: 0;
+                gap: 10px;
             }
         }
     </style>
@@ -538,16 +520,16 @@ if (!$user) {
     <header>
         <nav class="nav-menu">
             <div class="icons-left">
-                <i class="fas fa-search"></i>
+                <i class="fas fa-search" id="searchIcon"></i>
                 <i class="fas fa-bars" id="menuIcon"></i>
             </div>
             
-            <div class="logo">NEXUS</div>
+            <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
             
             <div class="nav-links">
-                <a href="index.php" class="active">HOME</a>
+                <a href="index.php">HOME</a>
                 <a href="nintendo_user.php">NINTENDO</a>
-                <a href="console_user.php">CONSOLES</a>
+                <a href="console_user.php" class="active">CONSOLES</a>
                 <a href="accessories_user.php">ACCESSORIES</a>
                 <a href="vr_user.php">VR</a>
             </div>
@@ -556,7 +538,9 @@ if (!$user) {
                 <a href="custeditprofile.php">
                     <i class="fas fa-user"></i>
                 </a>
-                <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
+                <div class="cart-icon-container">
+                    <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
+                </div>
             </div>
         </nav>
     </header>
@@ -573,82 +557,39 @@ if (!$user) {
         </div>
     </div>
 
-    <!-- Hero Banner -->
-    <section class="banner">
-        <div class="hero">
-            <h1>LEVEL UP YOUR GAME</h1>
-            <p>Discover the latest consoles, games, and accessories with exclusive deals for our members</p>
-            <button class="cta-button" onclick="window.location.href='all_product_user.php'">SHOP NOW</button>
-        </div>
-    </section>
-
-    <!-- Featured Products -->
-    <section class="featured-section">
-        <h2 class="section-title">NEW PRODUCTS</h2>
+    <!-- Product Listing Section -->
+    <section class="product-listing">
+        <h2 class="section-title">CONSOLE</h2>
+        
         <div class="products-grid">
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1592155931584-901ac15763e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>DualSense Controller</h3>
-                    <div class="product-price">RM269.00</div>
-                    <a href="view_product_user.php" class="view-product">View Product</a>
-                </div>
-            </div>
-    
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://wallpapercave.com/wp/wp9957698.jpg');"></div>
-                <div class="product-info">
-                    <h3>Nintendo Switch</h3>
-                    <div class="product-price">RM1,499.00</div>
-                    <a href="view_product_user.php" class="view-product">View Product</a>
-                </div>
-            </div>
-    
-            <!-- Product 3 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1607853202273-797f1c22a38e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>PS5 PRO CONTROLLER</h3>
-                    <div class="product-price">RM2,399.00</div>
-                    <a href="view_product_user.php" class="view-product">View Product</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Deals Section -->
-    <section class="featured-section">
-        <h2 class="section-title">HOT DEALS</h2>
-        <div class="deals-section">
-            <a href="FLASHSALE.html" class="deal-card">
-                <div class="deal-icon">
-                    <i class="fas fa-tags"></i>
-                </div>
-                <h3>FLASH SALE</h3>
-                <p>Up to 50% off select items for the next 24 hours only</p>
-            </a>
-    
-            <a href="BUNDLE.html" class="deal-card">
-                <div class="deal-icon">
-                    <i class="fas fa-headset"></i>
-                </div>
-                <h3>PREMIUM BUNDLES</h3>
-                <p>Save big with our specially curated console bundles</p>
-            </a>
-        </div>
-    </section>
-
-    <!-- Newsletter Section -->
-    <section class="newsletter-section">
-        <div class="newsletter-content">
-            <h2 class="section-title">JOIN THE NEXUS</h2>
-            <p>Subscribe to our newsletter for exclusive deals, early access to sales, and gaming news</p>
-            <form class="newsletter-form">
-                <input type="email" class="newsletter-input" placeholder="Your email address" required>
-                <button type="submit" class="newsletter-button">SUBSCRIBE</button>
-            </form>
+            <?php
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    echo '<div class="product-card">';
+                    echo '<img class="product-image" src="uploads/' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
+                    echo '<div class="product-info">';
+                    echo '<h3>' . htmlspecialchars($row["product_name"]) . '</h3>';
+                    echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
+                    echo '<div class="product-price">';
+                    echo 'RM ' . number_format($row["product_price"], 2);
+                    // Add discount display if applicable
+                    if (isset($row["original_price"]) && $row["original_price"] > $row["product_price"]) {
+                        echo '<span class="original-price">RM ' . number_format($row["original_price"], 2) . '</span>';
+                        $discount = round(($row["original_price"] - $row["product_price"]) / $row["original_price"] * 100);
+                        echo '<span class="discount-badge">' . $discount . '% OFF</span>';
+                    }
+                    echo '</div>';
+                    if ((int)$row["product_quantity"] <= 0) {
+                        echo '<div class="out-of-stock">Out of Stock</div>';
+                    }
+                    echo '<a href="VIEWPRODUCT.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
+                    echo '</div></div>';
+                }
+            } else {
+                echo "<p>No console products available.</p>";
+            }
+            $conn->close();
+            ?>
         </div>
     </section>
 
@@ -662,16 +603,18 @@ if (!$user) {
         
         <div class="social-icons">
             <a href="#facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://www.instagram.com/sojusprite"><i class="fab fa-instagram"></i></a>
+            <a href="#instagram"><i class="fab fa-instagram"></i></a>
         </div>
         
         <div class="copyright">
-            &copy; 2025 NEXUS GAMING STORE. ALL RIGHTS RESERVED.
+            &copy; 2025 NEXUS GAMING STORE. ALL RIGHTS RESERVED.<br>
+            NEXUS is not affiliated with Nintendo or any other game publishers.
         </div>
     </footer>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Mobile menu functionality
             let menuOverlay = document.getElementById("menuOverlay");
             let menuContainer = document.getElementById("menuContainer");
             let menuIcon = document.getElementById("menuIcon");
@@ -703,22 +646,34 @@ if (!$user) {
                     }, 300);
                 }
             });
-            
-            // Add animation to product cards on scroll
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = "1";
-                        entry.target.style.transform = "translateY(0)";
-                    }
-                });
-            }, { threshold: 0.1 });
 
-            document.querySelectorAll('.product-card, .deal-card').forEach(card => {
-                card.style.opacity = "0";
-                card.style.transform = "translateY(20px)";
-                card.style.transition = "all 0.5s ease";
-                observer.observe(card);
+            // Cart icon click
+            document.getElementById("cartIcon").addEventListener("click", function() {
+                alert("Your cart will be displayed here. This is a demo.");
+            });
+
+            // Search icon click
+            document.getElementById("searchIcon").addEventListener("click", function() {
+                alert("Search functionality would appear here. This is a demo.");
+            });
+
+            // Sort functionality
+            document.getElementById("sort").addEventListener("change", function() {
+                alert("Products would be sorted by " + this.value + ". This is a demo.");
+            });
+
+            // Add hover effect to all buttons
+            const buttons = document.querySelectorAll("button, .view-product");
+            buttons.forEach(button => {
+                button.addEventListener("mouseenter", function() {
+                    this.style.transform = "translateY(-3px)";
+                    this.style.boxShadow = "0 5px 15px rgba(255, 0, 0, 0.3)";
+                });
+                
+                button.addEventListener("mouseleave", function() {
+                    this.style.transform = "translateY(0)";
+                    this.style.boxShadow = "none";
+                });
             });
         });
     </script>
