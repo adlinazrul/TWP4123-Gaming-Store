@@ -25,6 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo "<script>alert('Invalid email format.'); window.history.back();</script>";
+        exit;
+    }
+
     if (!empty($_FILES['image']['name'])) {
         $image = $_FILES['image']['name'];
         $target = "image/" . basename($image);
@@ -47,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $stmt->close();
 }
+
 
 $query = "SELECT * FROM admin_list WHERE id = ?";
 $stmt = $conn->prepare($query);
