@@ -491,8 +491,8 @@ $result = $conn->query($sql);
             
             <div class="nav-links">
                <a href="index.php">HOME</a>
-                <a href="nintendo_user.php">NINTENDO</a>
-                <a href="console_user.php" class="active">CONSOLES</a>
+                <a href="nintendo_user.php" class="active">NINTENDO</a>
+                <a href="console_user.php">CONSOLES</a>
                 <a href="accessories_user.php">ACCESSORIES</a>
                 <a href="vr_user.php">VR</a>
             </div>
