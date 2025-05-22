@@ -1,10 +1,12 @@
 <?php
+
 session_start();
 
 // Check if the session variable is set
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 } else {
+    // Handle the case when the admin is not logged in (e.g., redirect to login page)
     header("Location: login_admin.php");
     exit;
 }
@@ -22,16 +24,16 @@ if ($conn->connect_error) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $password = $_POST['password'];
+    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
     $confirm_password = $_POST['confirm_password'];
-    $user_type = $_POST['user_type'];
+    $user_type = $_POST['user_type'];  // New input
 
-    if ($password !== $confirm_password) {
+    if ($password_raw !== $confirm_password) {
         echo "<script>alert('Passwords do not match!'); window.location.href='admindashboard.php';</script>";
         exit;
     }
+     $password = password_hash($password_raw, PASSWORD_BCRYPT);
 
-    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
     $target_dir = "uploads/";
     $image_name = basename($_FILES["image"]["name"]);
@@ -47,10 +49,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         echo "<script>alert('Error: Email already exists!'); window.location.href='admindashboard.php';</script>";
     } else {
-        $sql = "INSERT INTO admin_list (username, email, password, image, user_type) 
-                VALUES (?, ?, ?, ?, ?)";
+       $sql = "INSERT INTO admin_list (username, email, password, image, user_type) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssss", $username, $email, $hashed_password, $image_name, $user_type);
+        $stmt->bind_param("sssss", $username, $email, $password, $image_name, $user_type);
 
         if ($stmt->execute()) {
             echo "<script>alert('Admin added successfully!'); window.location.href='admindashboard.php';</script>";
@@ -61,7 +62,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->close();
 }
 
-$profile_image = 'image/default_profile.jpg';
+$sql = "SELECT * FROM admin_list";
+$result = $conn->query($sql);
+
 if ($admin_id) {
     $query = "SELECT image FROM admin_list WHERE id = ?";
     $stmt = $conn->prepare($query);
@@ -70,20 +73,24 @@ if ($admin_id) {
     $stmt->bind_result($image);
     if ($stmt->fetch() && !empty($image)) {
         $profile_image = 'image/' . $image;
+    } else {
+        $profile_image = 'image/default_profile.jpg';
     }
     $stmt->close();
+} else {
+    $profile_image = 'image/default_profile.jpg';
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Admin</title>
-    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="manageadmin.css" />
-    <style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin</title>
+<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+<link rel="stylesheet" href="manageadmin.css" />
+<style>
     .container {
         display: flex;
         flex-direction: column;
@@ -198,8 +205,7 @@ if ($admin_id) {
     table button:hover {
         background-color: #dc2626;
     }
-
-    </style>
+</style>
 </head>
 <body>
 
@@ -246,7 +252,7 @@ if ($admin_id) {
         <div class="container">
             <section id="add-employee">
                 <h2>Add Admin</h2>
-                <form method="POST" enctype="multipart/form-data" onsubmit="return validatePasswords();">
+                <form method="POST" enctype="multipart/form-data">
                     <label>Username:</label>
                     <input type="text" name="username" required>
 
@@ -254,10 +260,10 @@ if ($admin_id) {
                     <input type="email" name="email" required>
 
                     <label>Password:</label>
-                    <input type="password" name="password" id="password" required>
+                    <input type="password" name="password" required>
 
                     <label>Confirm Password:</label>
-                    <input type="password" name="confirm_password" id="confirm_password" required>
+                    <input type="password" name="confirm_password" required>
 
                     <label>Profile Image:</label>
                     <input type="file" name="image" accept="image/*" required>
@@ -274,6 +280,7 @@ if ($admin_id) {
                     <button type="submit" name="submit">Add Admin</button>
                 </form>
             </section>
+
             <section id="view-employees">
                 <h2>Admin List</h2>
                 <table>
@@ -281,8 +288,6 @@ if ($admin_id) {
                         <tr>
                             <th>Username</th>
                             <th>Email</th>
-                            <th>Position</th>
-                            <th>Salary (RM)</th>
                             <th>Roles</th>
                             <th>Image</th>
                             <th>Action</th>
@@ -294,8 +299,7 @@ if ($admin_id) {
                                 <tr>
                                     <td><?php echo htmlspecialchars($row['username']); ?></td>
                                     <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['position']); ?></td>
-                                    <td><?php echo htmlspecialchars(number_format($row['salary'], 2)); ?></td>
+            
                                     <td>
                                         <?php
                                         $role = strtolower(trim($row['user_type']));
@@ -331,10 +335,20 @@ if ($admin_id) {
 </section>
 
 <script>
-function validatePasswords() {
-    const pass = document.getElementById("password").value;
-    const confirmPass = document.getElementById("confirm_password").value;
-    if (pass !== confirmPass) {
+    // Sidebar toggle
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.querySelector('nav .bx-menu');
+
+    menuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('close');
+    });
+</script>
+
+<script>
+function validatePassword() {
+    var pass = document.getElementById("password").value;
+    var confirm = document.getElementById("confirm_password").value;
+    if (pass !== confirm) {
         alert("Passwords do not match!");
         return false;
     }
@@ -344,3 +358,7 @@ function validatePasswords() {
 
 </body>
 </html>
+
+<?php
+$conn->close();
+?>
