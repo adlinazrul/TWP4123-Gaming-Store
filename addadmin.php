@@ -319,6 +319,7 @@ if ($admin_id) {
                                         <img src="<?php echo $imgPath; ?>" alt="Admin Image" width="100" height="100">
                                     </td>
                                     <td>
+                                        <button><a href="edit_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;">Edit</a></button>
                                          <?php if ($row['id'] != $admin_id): ?>
                                             <form method="POST" action="deleteadmin.php" style="display:inline;">
                                             <input type="hidden" name="admin_id" value="<?php echo $row['id']; ?>">
@@ -328,10 +329,7 @@ if ($admin_id) {
                                              <button disabled title="You cannot delete your own account">Delete</button>
                                         <?php endif; ?>
                                      </td>
-                                    <td>
-                                        <button><a href="edit_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;">Edit</a></button>
-                                        <button><a href="deleteadmin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</a></button>
-                                    </td>
+                
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
