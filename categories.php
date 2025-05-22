@@ -1,20 +1,18 @@
 <?php
-// Database configuration
-$host = 'localhost';
-$username = 'root'; // change if different
-$password = '';     // change if your MySQL has a password
-$database = 'gaming_store'; // your DB name
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "gaming_store";
 
 // Create connection
-$conn = new mysqli($host, $username, $password, $database);
+$conn = new mysqli($servername, $username, $password, $dbname);
 
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch all products
-$sql = "SELECT * FROM products";
+$sql = "SELECT * FROM products WHERE product_category = 'Consoles'";
 $result = $conn->query($sql);
 ?>
 
@@ -23,7 +21,7 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | All Products</title>
+    <title>NEXUS | Console Products</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -234,8 +232,9 @@ $result = $conn->query($sql);
         
         .product-image {
             height: 200px;
-            background-size: cover;
-            background-position: center;
+            width: 100%;
+            object-fit: contain;
+            background-color: #000;
             transition: transform 0.5s ease;
             flex-shrink: 0; /* Prevent image from shrinking */
         }
@@ -246,7 +245,6 @@ $result = $conn->query($sql);
         
         .product-info {
             padding: 20px;
-        
         }
         
         .product-info h3 {
@@ -287,6 +285,12 @@ $result = $conn->query($sql);
             font-family: 'Rubik', sans-serif;
         }
         
+        .out-of-stock {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
         .view-product {
             background: transparent;
             color: var(--primary);
@@ -300,8 +304,8 @@ $result = $conn->query($sql);
             text-decoration: none;
             display: block;
             text-align: center;
-             margin: 0 auto; /* Center the button */
-            box-sizing: border-box; /* Include padding in width calculation */
+            margin: 0 auto; /* Center the button */
+    box-sizing: border-box; /* Include padding in width calculation */
         }
         
         .view-product:hover {
@@ -370,7 +374,6 @@ $result = $conn->query($sql);
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             text-decoration: none;
-
         }
         
         .social-icons a:hover {
@@ -515,9 +518,9 @@ $result = $conn->query($sql);
             <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
             
             <div class="nav-links">
-                <a href="index.html">HOME</a>
+                <a href="index">HOME</a>
                 <a href="NINTENDO.php">NINTENDO</a>
-                <a href="XBOX.php">CONSOLES</a>
+                <a href="XBOX.php" class="active">CONSOLES</a>
                 <a href="ACCESSORIES.php">ACCESSORIES</a>
                 <a href="VR.php">VR</a>
             </div>
@@ -527,7 +530,7 @@ $result = $conn->query($sql);
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="cart-icon-container">
-                    <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
+                    <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
                 </div>
             </div>
         </nav>
@@ -538,7 +541,7 @@ $result = $conn->query($sql);
         <div id="menuContainer">
             <span id="closeMenu">&times;</span>
             <div id="menuContent">
-                <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
+                <div class="menu-item"><a href="ORDERHISTORY.php">ORDER</a></div>
                 <div class="menu-item"><a href="custservice.html">HELP</a></div>
                 <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
             </div>
@@ -547,14 +550,14 @@ $result = $conn->query($sql);
 
     <!-- Product Listing Section -->
     <section class="product-listing">
-        <h2 class="section-title">ALL PRODUCTS</h2>
+        <h2 class="section-title">CONSOLE</h2>
         
         <div class="products-grid">
             <?php
             if ($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) {
                     echo '<div class="product-card">';
-                    echo '<div class="product-image" style="background-image: url(\'uploads/' . htmlspecialchars($row["product_image"]) . '\');"></div>';
+                    echo '<img class="product-image" src="uploads/' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
                     echo '<div class="product-info">';
                     echo '<h3>' . htmlspecialchars($row["product_name"]) . '</h3>';
                     echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
@@ -567,11 +570,14 @@ $result = $conn->query($sql);
                         echo '<span class="discount-badge">' . $discount . '% OFF</span>';
                     }
                     echo '</div>';
+                    if ((int)$row["product_quantity"] <= 0) {
+                        echo '<div class="out-of-stock">Out of Stock</div>';
+                    }
                     echo '<a href="VIEWPRODUCT.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
                     echo '</div></div>';
                 }
             } else {
-                echo "<p>No products found.</p>";
+                echo "<p>No console products available.</p>";
             }
             $conn->close();
             ?>
@@ -582,7 +588,7 @@ $result = $conn->query($sql);
     <footer>
         <div class="footer-links">
             <a href="ABOUTUS.html">ABOUT US</a>
-            <a href="custservice.html">CONTACT</a>
+            <a href="CONTACT.html">CONTACT</a>
             <a href="TOS.html">TERMS OF SERVICE</a>
         </div>
         

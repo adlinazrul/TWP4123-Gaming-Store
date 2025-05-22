@@ -518,7 +518,7 @@ $result = $conn->query($sql);
             <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
             
             <div class="nav-links">
-                <a href="index">HOME</a>
+                <a href="index.html">HOME</a>
                 <a href="NINTENDO.php">NINTENDO</a>
                 <a href="XBOX.php" class="active">CONSOLES</a>
                 <a href="ACCESSORIES.php">ACCESSORIES</a>
@@ -530,7 +530,7 @@ $result = $conn->query($sql);
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="cart-icon-container">
-                    <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
+                    <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
                 </div>
             </div>
         </nav>
@@ -588,7 +588,7 @@ $result = $conn->query($sql);
     <footer>
         <div class="footer-links">
             <a href="ABOUTUS.html">ABOUT US</a>
-            <a href="CONTACT.html">CONTACT</a>
+            <a href="custservice.html">CONTACT</a>
             <a href="TOS.html">TERMS OF SERVICE</a>
         </div>
         
