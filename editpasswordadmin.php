@@ -141,7 +141,7 @@ $conn->close();
         <?php endif; ?>
 
         <form method="POST">
-            <label for="old_password">Current Password:</label>
+            <label for="old_password">Old Password:</label>
             <input type="password" name="old_password" required>
 
             <label for="new_password">New Password:</label>
