@@ -23,6 +23,13 @@ if ($conn->connect_error) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $email = $_POST['email'];
+
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo "<script>alert('Invalid email format!'); window.location.href='addadmin.php';</script>";
+        exit;
+    }
+
     $password_raw = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     $user_type = $_POST['user_type'];
@@ -48,6 +55,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result_check->num_rows > 0) {
         echo "<script>alert('Error: Email already exists!'); window.location.href='addadmin.php';</script>";
     } else {
+
+        $domain = substr(strrchr($email, "@"), 1);
+
+        // List of accepted domains or rules
+        $valid_university_pattern = '/\.edu\.my$/i'; // allows all Malaysian university emails
+        $check_mx = checkdnsrr($domain, "MX"); // check MX records
+
+        // If it's not a .edu.my OR a domain with MX, reject
+        if (!preg_match($valid_university_pattern, $domain) && !$check_mx) {
+            echo "<script>alert('Invalid email domain! Only valid public or Malaysian university emails allowed.'); window.location.href='addadmin.php';</script>";
+            exit;
+        }
+
         $sql = "INSERT INTO admin_list (username, email, password, image, user_type) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sssss", $username, $email, $password, $image_name, $user_type);
