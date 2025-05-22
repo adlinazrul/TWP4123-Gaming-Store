@@ -16,24 +16,41 @@ if ($conn->connect_error) {
 
 $message = "";
 
+// Get current password from DB
+$current_password = "";
+$sql = "SELECT password FROM admin_list WHERE id=?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $admin_id);
+$stmt->execute();
+$stmt->bind_result($current_password);
+$stmt->fetch();
+$stmt->close();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $old_password = $_POST['old_password'];
     $new_password = $_POST['new_password'];
     $confirm_password = $_POST['confirm_password'];
 
-    if ($new_password === $confirm_password) {
-        $sql = "UPDATE admin_list SET password=? WHERE id=?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("si", $new_password, $admin_id);
-        
-        if ($stmt->execute()) {
-            $message = "Password updated successfully!";
-        } else {
-            $message = "Error updating password: " . $stmt->error;
-        }
+    // Compare old password with current password from DB
+    if ($old_password === $current_password) {
+        if ($new_password === $confirm_password) {
+            // Update to new password
+            $sql = "UPDATE admin_list SET password=? WHERE id=?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("si", $new_password, $admin_id);
 
-        $stmt->close();
+            if ($stmt->execute()) {
+                $message = "Password updated successfully!";
+            } else {
+                $message = "Error updating password: " . $stmt->error;
+            }
+
+            $stmt->close();
+        } else {
+            $message = "New password and confirm password do not match.";
+        }
     } else {
-        $message = "Passwords do not match.";
+        $message = "Old password is incorrect.";
     }
 }
 
@@ -94,11 +111,14 @@ $conn->close();
             margin-top: 20px;
             text-align: center;
             font-weight: bold;
-            color: #10b981;
         }
 
-        .error {
+        .message.error {
             color: #ef4444;
+        }
+
+        .message.success {
+            color: #10b981;
         }
 
         .back-link {
@@ -115,12 +135,15 @@ $conn->close();
         <h2>Edit Password</h2>
 
         <?php if (!empty($message)): ?>
-            <div class="message <?= strpos($message, 'successfully') !== false ? '' : 'error' ?>">
+            <div class="message <?= strpos($message, 'successfully') !== false ? 'success' : 'error' ?>">
                 <?= $message ?>
             </div>
         <?php endif; ?>
 
         <form method="POST">
+            <label for="old_password">Current Password:</label>
+            <input type="password" name="old_password" required>
+
             <label for="new_password">New Password:</label>
             <input type="password" name="new_password" required>
 
