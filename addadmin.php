@@ -24,15 +24,15 @@ if ($conn->connect_error) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $password_raw = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
-    $user_type = $_POST['user_type'];  // New input
 
-    if ($password_raw !== $confirm_password) {
-        echo "<script>alert('Passwords do not match!'); window.location.href='admindashboard.php';</script>";
-        exit;
-    }
-     $password = password_hash($password_raw, PASSWORD_BCRYPT);
+if ($password_raw !== $confirm_password) {
+    echo "<script>alert('Passwords do not match!'); window.location.href='admindashboard.php';</script>";
+    exit;
+}
+
+$password = password_hash($password_raw, PASSWORD_BCRYPT);
 
 
     $target_dir = "uploads/";
