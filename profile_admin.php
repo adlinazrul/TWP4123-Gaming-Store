@@ -251,7 +251,7 @@ $conn->close();
             right: 10px;
             height: 30px;
             padding: 0 14px;
-            background-color: #3b82f6;
+            background-color:rgb(246, 65, 59);
             color: white;
             border: none;
             border-radius: 20px;
@@ -261,7 +261,7 @@ $conn->close();
         }
 
         .toggle-password:hover {
-            background-color: #2563eb;
+            background-color:rgb(235, 60, 37);
         }
 
         input[type="file"] {
@@ -310,7 +310,7 @@ $conn->close();
         </div>
 
         <div class="role-badge"><?= htmlspecialchars($admin['user_type']) ?></div>
-
+        <center>
         <a href="editpasswordadmin.php" class="edit-password-button">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-key">
                 <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
@@ -318,6 +318,7 @@ $conn->close();
             <span>Edit Password</span>
             <div class="button-hover-effect"></div>
         </a>
+        </center>
 
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required>
@@ -325,11 +326,7 @@ $conn->close();
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required>
 
-        <label for="password">Password:</label>
-        <div class="password-container">
-            <input type="password" id="password" name="password" value="<?= htmlspecialchars($admin['password']) ?>" required>
-            <button type="button" id="togglePassword" class="toggle-password">Show</button>
-        </div>
+       
 
         <input type="submit" value="Update Profile">
     </form>
@@ -339,15 +336,7 @@ $conn->close();
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
 
-    togglePassword.addEventListener('click', () => {
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            togglePassword.textContent = "Hide";
-        } else {
-            passwordInput.type = "password";
-            togglePassword.textContent = "Show";
-        }
-    });
+    
 
     // Trigger file input when clicking profile image
     document.getElementById('imageWrapper').addEventListener('click', () => {
