@@ -157,7 +157,7 @@ $conn->close();
             position: relative;
             margin: 20px auto;
             padding: 12px 28px;
-            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            background: linear-gradient(135deg,rgb(246, 106, 59),rgb(241, 104, 99));
             color: white;
             border: none;
             border-radius: 50px;
@@ -165,7 +165,7 @@ $conn->close();
             font-size: 16px;
             cursor: pointer;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 15px rgba(246, 59, 59, 0.3);
             transition: all 0.3s ease;
             text-decoration: none;
             gap: 10px;
@@ -173,8 +173,8 @@ $conn->close();
 
         .edit-password-button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-            background: linear-gradient(135deg, #6366f1, #3b82f6);
+            box-shadow: 0 8px 20px rgba(246, 59, 59, 0.4);
+            background: linear-gradient(135deg,rgb(241, 118, 99),rgb(246, 93, 59));
         }
 
         .edit-password-button:active {
@@ -229,7 +229,7 @@ $conn->close();
         form input[type="text"]:focus,
         form input[type="email"]:focus,
         form input[type="password"]:focus {
-            border-color: #3b82f6;
+            border-color:rgb(246, 59, 59);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
             outline: none;
         }
