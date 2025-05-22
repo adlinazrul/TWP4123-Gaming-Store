@@ -320,7 +320,7 @@ if ($admin_id) {
                                     </td>
                                     <td>
                                          <?php if ($row['id'] != $admin_id): ?>
-                                            <form method="POST" action="delete_admin.php" style="display:inline;">
+                                            <form method="POST" action="deleteadmin.php" style="display:inline;">
                                             <input type="hidden" name="admin_id" value="<?php echo $row['id']; ?>">
                                             <button type="submit" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</button>
                                             </form>
