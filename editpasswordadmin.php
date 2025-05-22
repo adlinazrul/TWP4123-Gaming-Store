@@ -153,7 +153,7 @@ $conn->close();
             <input type="submit" value="Update Password">
         </form>
 
-        <a href="profileadmin.php" class="back-link">← Back to Profile</a>
+        <a href="profile_admin.php" class="back-link">← Back to Profile</a>
     </div>
 </body>
 </html>
