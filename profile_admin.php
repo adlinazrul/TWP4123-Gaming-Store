@@ -254,7 +254,7 @@ $conn->close();
 
         <div class="role-badge"><?= htmlspecialchars($admin['user_type']) ?></div>
 
-        <button type="button" class="edit-password-button" onclick="document.getElementById('password').focus();">Edit Password</button>
+        <a href="editpasswordadmin.php" class="edit-password-button">Edit Password</a>
 
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required>
