@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_type = $_POST['user_type'];  
 
 if ($password_raw !== $confirm_password) {
-    echo "<script>alert('Passwords do not match!'); window.location.href='admindashboard.php';</script>";
+    echo "<script>alert('Passwords do not match!'); window.location.href='addadmin.php';</script>";
     exit;
 }
 
@@ -48,14 +48,14 @@ $password = password_hash($password_raw, PASSWORD_BCRYPT);
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        echo "<script>alert('Error: Email already exists!'); window.location.href='admindashboard.php';</script>";
+        echo "<script>alert('Error: Email already exists!'); window.location.href='addadmin.php';</script>";
     } else {
        $sql = "INSERT INTO admin_list (username, email, password, image, user_type) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sssss", $username, $email, $password, $image_name, $user_type);
 
         if ($stmt->execute()) {
-            echo "<script>alert('Admin added successfully!'); window.location.href='admindashboard.php';</script>";
+            echo "<script>alert('Admin added successfully!'); window.location.href='addadmin.php';</script>";
         } else {
             echo "<script>alert('Error: " . $stmt->error . "');</script>";
         }
