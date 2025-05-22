@@ -545,10 +545,10 @@ if (!$user) {
             <div class="logo">NEXUS</div>
             
             <div class="nav-links">
-                <a href="index.php">HOME</a>
+                <a href="index.php" class="active">HOME</a>
                 <a href="nintendo_user.php">NINTENDO</a>
                 <a href="console_user.php">CONSOLES</a>
-                <a href="accessories_user.php" class="active">ACCESSORIES</a>
+                <a href="accessories_user.php">ACCESSORIES</a>
                 <a href="vr_user.php">VR</a>
             </div>
             
@@ -592,7 +592,7 @@ if (!$user) {
                 <div class="product-info">
                     <h3>DualSense Controller</h3>
                     <div class="product-price">RM269.00</div>
-                    <a href="VIEWPRODUCT.php" class="view-product">View Product</a>
+                    <a href="view_product_user.php" class="view-product">View Product</a>
                 </div>
             </div>
     
@@ -602,7 +602,7 @@ if (!$user) {
                 <div class="product-info">
                     <h3>Nintendo Switch</h3>
                     <div class="product-price">RM1,499.00</div>
-                    <a href="VIEWPRODUCT.php" class="view-product">View Product</a>
+                    <a href="view_product_user.php" class="view-product">View Product</a>
                 </div>
             </div>
     
@@ -612,7 +612,7 @@ if (!$user) {
                 <div class="product-info">
                     <h3>PS5 PRO CONTROLLER</h3>
                     <div class="product-price">RM2,399.00</div>
-                    <a href="VIEWPRODUCT.php" class="view-product">View Product</a>
+                    <a href="view_product_user.php" class="view-product">View Product</a>
                 </div>
             </div>
         </div>
