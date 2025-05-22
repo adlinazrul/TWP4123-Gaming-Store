@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 // Check if the user is logged in
@@ -20,7 +21,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM products WHERE product_category = 'Nintendo'";
+$sql = "SELECT * FROM products WHERE product_category = 'Consoles'";
 $result = $conn->query($sql);
 ?>
 
@@ -29,7 +30,7 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Nintendo Products</title>
+    <title>NEXUS | Console Products</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -106,10 +107,12 @@ $result = $conn->query($sql);
             bottom: -5px;
             left: 0;
             transition: width 0.3s ease;
+            
         }
         
         .nav-links a:hover::after {
             width: 100%;
+            
         }
         
         .nav-links a.active {
@@ -185,6 +188,35 @@ $result = $conn->query($sql);
             bottom: -10px;
             left: 25%;
             border-radius: 3px;
+        }
+        
+        .filter-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .filter-section label {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--light);
+        }
+        
+        .filter-section select {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 5px;
+            font-family: 'Rubik', sans-serif;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-section select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
         }
         
         .products-grid {
@@ -277,12 +309,12 @@ $result = $conn->query($sql);
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: 'Orbitron', sans-serif;
-            width: calc(100% - 40px);
+            width: calc(100% - 40px); /* Account for padding */
             text-decoration: none;
             display: block;
             text-align: center;
-            margin: 0 auto;
-            box-sizing: border-box;
+            margin: 0 auto; /* Center the button */
+    box-sizing: border-box; /* Include padding in width calculation */
         }
         
         .view-product:hover {
@@ -453,6 +485,11 @@ $result = $conn->query($sql);
                 font-size: 2rem;
             }
             
+            .filter-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
             #menuContainer {
                 width: 100%;
                 max-width: 320px;
@@ -490,7 +527,7 @@ $result = $conn->query($sql);
             <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
             
             <div class="nav-links">
-               <a href="index.php">HOME</a>
+                <a href="index.php">HOME</a>
                 <a href="nintendo_user.php">NINTENDO</a>
                 <a href="console_user.php" class="active">CONSOLES</a>
                 <a href="accessories_user.php">ACCESSORIES</a>
@@ -498,11 +535,11 @@ $result = $conn->query($sql);
             </div>
             
             <div class="icons-right">
-                <a href="custlogin.html">
+                <a href="custeditprofile.php">
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="cart-icon-container">
-                    <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
+                    <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
                 </div>
             </div>
         </nav>
@@ -513,7 +550,7 @@ $result = $conn->query($sql);
         <div id="menuContainer">
             <span id="closeMenu">&times;</span>
             <div id="menuContent">
-                <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
+                <div class="menu-item"><a href="ORDERHISTORY.php">ORDER</a></div>
                 <div class="menu-item"><a href="custservice.html">HELP</a></div>
                 <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
             </div>
@@ -522,7 +559,7 @@ $result = $conn->query($sql);
 
     <!-- Product Listing Section -->
     <section class="product-listing">
-        <h2 class="section-title">NINTENDO</h2>
+        <h2 class="section-title">CONSOLE</h2>
         
         <div class="products-grid">
             <?php
@@ -549,7 +586,7 @@ $result = $conn->query($sql);
                     echo '</div></div>';
                 }
             } else {
-                echo "<p>No Nintendo products available at the moment.</p>";
+                echo "<p>No console products available.</p>";
             }
             $conn->close();
             ?>
@@ -618,6 +655,11 @@ $result = $conn->query($sql);
             // Search icon click
             document.getElementById("searchIcon").addEventListener("click", function() {
                 alert("Search functionality would appear here. This is a demo.");
+            });
+
+            // Sort functionality
+            document.getElementById("sort").addEventListener("change", function() {
+                alert("Products would be sorted by " + this.value + ". This is a demo.");
             });
 
             // Add hover effect to all buttons
