@@ -27,11 +27,18 @@ if (isset($_GET['id'])) {
     // Delete from database
     $sql = "DELETE FROM admin_list WHERE id = $id";
     if ($conn->query($sql) === TRUE) {
-        header("Location: add_admin.php?deleted=1");
-        exit;
-    } else {
-        echo "<script>alert('Error deleting admin'); window.location.href='add_admin.php';</script>";
-    }
+    echo "<script>
+        alert('Admin deleted successfully!');
+        window.location.href = 'add_admin.php';
+    </script>";
+    exit;
+} else {
+    echo "<script>
+        alert('Error deleting admin');
+        window.location.href = 'add_admin.php';
+    </script>";
+}
+
 }
 
 $conn->close();
