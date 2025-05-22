@@ -327,7 +327,7 @@ if ($admin_id) {
                                             </form>
                                         <?php else: ?>
                                             <!-- Do not show the delete button for the current logged-in admin -->
-                                            <span style="color: gray; font-style: italic;">You</span>
+                                            <span style="color: green; font-style: italic;">You</span>
                                         <?php endif; ?>
                                      </td>
                 
