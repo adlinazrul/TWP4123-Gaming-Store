@@ -1,12 +1,11 @@
 <?php
-
 session_start();
 
 // Check if the session variable is set
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 } else {
-    // Handle the case when the admin is not logged in (e.g., redirect to login page)
+    // Redirect to login if not logged in
     header("Location: login_admin.php");
     exit;
 }
@@ -26,15 +25,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password_raw = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
-    $user_type = $_POST['user_type'];  
+    $user_type = $_POST['user_type'];
 
-if ($password_raw !== $confirm_password) {
-    echo "<script>alert('Passwords do not match!'); window.location.href='addadmin.php';</script>";
-    exit;
-}
+    if ($password_raw !== $confirm_password) {
+        echo "<script>alert('Passwords do not match!'); window.location.href='addadmin.php';</script>";
+        exit;
+    }
 
-$password = password_hash($password_raw, PASSWORD_BCRYPT);
-
+    $password = password_hash($password_raw, PASSWORD_BCRYPT);
 
     $target_dir = "uploads/";
     $image_name = basename($_FILES["image"]["name"]);
@@ -45,12 +43,12 @@ $password = password_hash($password_raw, PASSWORD_BCRYPT);
     $stmt = $conn->prepare($check_email);
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $result = $stmt->get_result();
+    $result_check = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
+    if ($result_check->num_rows > 0) {
         echo "<script>alert('Error: Email already exists!'); window.location.href='addadmin.php';</script>";
     } else {
-       $sql = "INSERT INTO admin_list (username, email, password, image, user_type) VALUES (?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO admin_list (username, email, password, image, user_type) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sssss", $username, $email, $password, $image_name, $user_type);
 
@@ -73,7 +71,7 @@ if ($admin_id) {
     $stmt->execute();
     $stmt->bind_result($image);
     if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'image/' . $image;
+        $profile_image = 'uploads/' . $image;
     } else {
         $profile_image = 'image/default_profile.jpg';
     }
@@ -88,7 +86,7 @@ if ($admin_id) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Admin</title>
+<title>Admin Management</title>
 <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
 <link rel="stylesheet" href="manageadmin.css" />
 <style>
@@ -261,10 +259,10 @@ if ($admin_id) {
                     <input type="email" name="email" required>
 
                     <label>Password:</label>
-                    <input type="password" name="password" required>
+                    <input type="password" name="password" required id="password">
 
                     <label>Confirm Password:</label>
-                    <input type="password" name="confirm_password" required>
+                    <input type="password" name="confirm_password" required id="confirm_password">
 
                     <label>Profile Image:</label>
                     <input type="file" name="image" accept="image/*" required>
@@ -278,7 +276,7 @@ if ($admin_id) {
                         <label for="superadmin">Super Admin</label>
                     </div>
 
-                    <button type="submit" name="submit">Add Admin</button>
+                    <button type="submit" name="submit" onclick="return validatePassword()">Add Admin</button>
                 </form>
             </section>
 
@@ -300,9 +298,9 @@ if ($admin_id) {
                                 <tr>
                                     <td><?php echo htmlspecialchars($row['username']); ?></td>
                                     <td><?php echo htmlspecialchars($row['email']); ?></td>
-            
                                     <td>
                                         <?php
+                                        // Make sure to normalize the role string for correct display
                                         $role = strtolower(trim($row['user_type']));
                                         if ($role === 'superadmin' || $role === 'super admin') {
                                             echo "Super Admin";
@@ -326,7 +324,7 @@ if ($admin_id) {
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
-                            <tr><td colspan="7">No admins found.</td></tr>
+                            <tr><td colspan="5">No admins found.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -336,21 +334,11 @@ if ($admin_id) {
 </section>
 
 <script>
-    // Sidebar toggle
-    const sidebar = document.getElementById('sidebar');
-    const menuBtn = document.querySelector('nav .bx-menu');
-
-    menuBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('close');
-    });
-</script>
-
-<script>
 function validatePassword() {
-    var pass = document.getElementById("password").value;
-    var confirm = document.getElementById("confirm_password").value;
-    if (pass !== confirm) {
-        alert("Passwords do not match!");
+    let password = document.getElementById('password').value;
+    let confirm = document.getElementById('confirm_password').value;
+    if (password !== confirm) {
+        alert('Passwords do not match!');
         return false;
     }
     return true;
