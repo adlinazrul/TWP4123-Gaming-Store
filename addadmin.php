@@ -26,6 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password_raw = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
+    $user_type = $_POST['user_type'];  
 
 if ($password_raw !== $confirm_password) {
     echo "<script>alert('Passwords do not match!'); window.location.href='admindashboard.php';</script>";
