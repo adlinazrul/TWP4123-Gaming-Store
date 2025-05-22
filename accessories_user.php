@@ -499,7 +499,7 @@ $result = $conn->query($sql);
             </div>
             
             <div class="icons-right">
-                <a href="custlogin.html">
+                <a href="custeditprofile.php">
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="cart-icon-container">
