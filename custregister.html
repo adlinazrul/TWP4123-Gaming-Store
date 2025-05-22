@@ -450,10 +450,10 @@
 
                <div class="form-group">
               <label for="email">EMAIL</label>
-              <input type="email" id="email" name="email" required
-              pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-              title="Enter a valid email like example@domain.com">
-              </div>
+<input type="text" id="email" name="email" required
+pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?"
+title="Enter a valid email like example@domain.com">
+            </div>
 
 
                 <div class="form-group">
@@ -609,26 +609,45 @@
             }, 100);
 
             // Form submission handler
-            document.getElementById('registrationForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-                var formData = new FormData(this);
+            // Form submission handler with email and password validation
+document.getElementById('registrationForm').addEventListener('submit', function(event) {
+    event.preventDefault();
 
-                fetch('register_customer.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.text())
-                .then(data => {
-                    if (data.includes('New customer registered successfully')) {
-                        document.getElementById('popup').style.display = 'block';
-                    } else {
-                        alert('Registration failed: ' + data);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
+    const email = document.getElementById("email").value;
+    const pw = document.getElementById("password").value;
+    const cpw = document.getElementById("confirm-password").value;
+
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
+
+    if (!emailPattern.test(email)) {
+        alert("Please enter a valid email like example@domain.com");
+        return;
+    }
+
+    if (pw !== cpw) {
+        alert("Passwords do not match.");
+        return;
+    }
+
+    var formData = new FormData(this);
+
+    fetch('register_customer.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        if (data.includes('New customer registered successfully')) {
+            document.getElementById('popup').style.display = 'block';
+        } else {
+            alert('Registration failed: ' + data);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
         });
 
         function closePopup() {
