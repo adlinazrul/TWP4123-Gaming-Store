@@ -320,13 +320,14 @@ if ($admin_id) {
                                     </td>
                                     <td>
                                         <button><a href="edit_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;">Edit</a></button>
-                                         <?php if ($row['id'] != $admin_id): ?>
-                                            <form method="POST" action="deleteadmin.php" style="display:inline;">
-                                            <input type="hidden" name="admin_id" value="<?php echo $row['id']; ?>">
-                                            <button type="submit" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</button>
+                                         <?php if ($row['id'] != $_SESSION['admin_id']): ?>
+                                            <form method="GET" action="deleteadmin.php" style="display:inline;">
+                                                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                                <button type="submit" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</button>
                                             </form>
                                         <?php else: ?>
-                                             <button disabled title="You cannot delete your own account">Delete</button>
+                                            <!-- Do not show the delete button for the current logged-in admin -->
+                                            <span style="color: gray; font-style: italic;">You</span>
                                         <?php endif; ?>
                                      </td>
                 
