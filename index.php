@@ -545,10 +545,11 @@ if (!$user) {
             <div class="logo">NEXUS</div>
             
             <div class="nav-links">
+                <a href="index.php">HOME</a>
                 <a href="nintendo_user.php">NINTENDO</a>
-                <a href="XBOX.php">CONSOLES</a>
-                <a href="ACCESSORIES.php">ACCESSORIES</a>
-                <a href="VR.php">VR</a>
+                <a href="console_user.php">CONSOLES</a>
+                <a href="accessories_user.php" class="active">ACCESSORIES</a>
+                <a href="vr_user.php">VR</a>
             </div>
             
             <div class="icons-right">
@@ -577,7 +578,7 @@ if (!$user) {
         <div class="hero">
             <h1>LEVEL UP YOUR GAME</h1>
             <p>Discover the latest consoles, games, and accessories with exclusive deals for our members</p>
-            <button class="cta-button" onclick="window.location.href='ALLPRODUCT.php'">SHOP NOW</button>
+            <button class="cta-button" onclick="window.location.href='all_product_user.php'">SHOP NOW</button>
         </div>
     </section>
 
