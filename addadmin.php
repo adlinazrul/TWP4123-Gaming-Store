@@ -253,7 +253,7 @@ if ($admin_id) {
         <div class="container">
             <section id="add-employee">
                 <h2>Add Admin</h2>
-                <form method="POST" enctype="multipart/form-data">
+                <form method="POST" action="addadmin.php" enctype="multipart/form-data">
                     <label>Username:</label>
                     <input type="text" name="username" required>
 
