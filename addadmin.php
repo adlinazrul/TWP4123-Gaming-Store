@@ -293,6 +293,7 @@ if ($admin_id) {
                         </tr>
                     </thead>
                     <tbody>
+
                         <?php if ($result && $result->num_rows > 0): ?>
                             <?php while ($row = $result->fetch_assoc()): ?>
                                 <tr>
@@ -317,6 +318,16 @@ if ($admin_id) {
                                         ?>
                                         <img src="<?php echo $imgPath; ?>" alt="Admin Image" width="100" height="100">
                                     </td>
+                                    <td>
+                                         <?php if ($row['id'] != $admin_id): ?>
+                                            <form method="POST" action="delete_admin.php" style="display:inline;">
+                                            <input type="hidden" name="admin_id" value="<?php echo $row['id']; ?>">
+                                            <button type="submit" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</button>
+                                            </form>
+                                        <?php else: ?>
+                                             <button disabled title="You cannot delete your own account">Delete</button>
+                                        <?php endif; ?>
+                                     </td>
                                     <td>
                                         <button><a href="edit_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;">Edit</a></button>
                                         <button><a href="deleteadmin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</a></button>
