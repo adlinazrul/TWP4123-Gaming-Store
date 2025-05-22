@@ -29,13 +29,13 @@ if (isset($_GET['id'])) {
     if ($conn->query($sql) === TRUE) {
     echo "<script>
         alert('Admin deleted successfully!');
-        window.location.href = 'add_admin.php';
+        window.location.href = 'addadmin.php';
     </script>";
     exit;
 } else {
     echo "<script>
         alert('Error deleting admin');
-        window.location.href = 'add_admin.php';
+        window.location.href = 'addadmin.php';
     </script>";
 }
 
