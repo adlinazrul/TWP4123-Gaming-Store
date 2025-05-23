@@ -656,7 +656,7 @@ if (isset($_GET['id'])) {
             <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
             
             <div class="nav-links">
-                <a href="index">HOME</a>
+                <a href="index.html">HOME</a>
                 <a href="NINTENDO.php">NINTENDO</a>
                 <a href="XBOX.php" class="active">CONSOLES</a>
                 <a href="ACCESSORIES.php">ACCESSORIES</a>
@@ -668,7 +668,7 @@ if (isset($_GET['id'])) {
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="cart-icon-container">
-                    <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
+                    <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
                 </div>
             </div>
         </nav>
@@ -733,7 +733,7 @@ if (isset($_GET['id'])) {
             </div>
 
             <div class="action-buttons">
-                <form method="POST" action="add-to-cart.php" style="display: contents;">
+                <form method="POST" action="custlogin.html" style="display: contents;">
                     <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                     <input type="hidden" name="product_name" value="<?= htmlspecialchars($product['product_name']) ?>">
                     <input type="hidden" name="product_price" value="<?= $product['product_price'] ?>">
@@ -741,7 +741,7 @@ if (isset($_GET['id'])) {
                     <input type="hidden" name="quantity" id="formQuantity" value="1">
                     <button type="submit" class="add-to-cart-lg" <?= $product['product_quantity'] <= 0 ? 'disabled' : '' ?>>ADD TO CART</button>
                 </form>
-                <form action="NEW_BuyNow.php" method="post" style="display: contents;">
+                <form action="custlogin.html" method="post" style="display: contents;">
                     <input type="hidden" name="checkout_source" value="single">
                     <input type="hidden" name="product_name" value="<?= htmlspecialchars($product['product_name']) ?>">
                     <input type="hidden" name="price" value="<?= $product['product_price'] ?>">

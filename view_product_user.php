@@ -1,5 +1,5 @@
 <?php
-session_start(); // <-- Required for using $_SESSION
+session_start();
 // Check if the user is logged in
 if (!isset($_SESSION['email'])) {
     header("Location: login.php");
@@ -26,7 +26,7 @@ if (isset($_GET['id'])) {
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
 
-        // ✅ Store single product info in session for checkout
+        // Store single product info in session for checkout
         $_SESSION['checkout_source'] = 'single';
         $_SESSION['single_product'] = [
             'name' => $product['product_name'],
@@ -51,6 +51,8 @@ if (isset($_GET['id'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* [All previous CSS styles remain exactly the same] */
+
         :root {
             --primary: #ff0000;
             --secondary: #d10000;
@@ -648,9 +650,56 @@ if (isset($_GET['id'])) {
                 gap: 10px;
             }
         }
+        
+        .quantity-selector {
+            margin-bottom: 30px;
+        }
+        
+        .quantity-input {
+            width: 60px;
+            height: 40px;
+            text-align: center;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        
+        /* Add styles for success notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.5s, fadeOut 0.5s 2.5s;
+        }
+        
+        @keyframes slideIn {
+            from {right: -300px; opacity: 0;}
+            to {right: 20px; opacity: 1;}
+        }
+        
+        @keyframes fadeOut {
+            from {opacity: 1;}
+            to {opacity: 0;}
+        }
     </style>
 </head>
 <body>
+    <!-- Success notification element -->
+    <div id="successNotification" class="notification">
+        <i class="fas fa-check-circle"></i> Item successfully added to cart!
+    </div>
+
     <header>
         <nav class="nav-menu">
             <div class="icons-left">
@@ -658,7 +707,7 @@ if (isset($_GET['id'])) {
                 <i class="fas fa-bars" id="menuIcon"></i>
             </div>
             
-            <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
+            <div class="logo" onclick="window.location.href='index.php'">NEXUS</div>
             
             <div class="nav-links">
                 <a href="index.php">HOME</a>
@@ -673,7 +722,8 @@ if (isset($_GET['id'])) {
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="cart-icon-container">
-                    <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
+                    <a href="cart.php"><i class="fas fa-shopping-cart"></i></a>
+                    <span class="cart-count"><?= isset($_SESSION['cart_count']) ? $_SESSION['cart_count'] : 0 ?></span>
                 </div>
             </div>
         </nav>
@@ -684,7 +734,7 @@ if (isset($_GET['id'])) {
         <div id="menuContainer">
             <span id="closeMenu">&times;</span>
             <div id="menuContent">
-                <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
+                <div class="menu-item"><a href="ORDERHISTORY.php">ORDER</a></div>
                 <div class="menu-item"><a href="custservice.html">HELP</a></div>
                 <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
             </div>
@@ -697,7 +747,6 @@ if (isset($_GET['id'])) {
             <img src="uploads/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="main-image" id="mainImage">
             <div class="thumbnail-container">
                 <img loading="lazy" src="uploads/<?= htmlspecialchars($product['product_image']) ?>" alt="Main view" class="thumbnail active" onclick="changeImage(this)">
-                <!-- Additional thumbnails could be added here if available in database -->
             </div>
         </div>
 
@@ -717,13 +766,8 @@ if (isset($_GET['id'])) {
             <div class="stock-status <?= $product['product_quantity'] > 10 ? 'in-stock' : ($product['product_quantity'] > 0 ? 'low-stock' : 'out-of-stock') ?>">
                 <i class="fas <?= $product['product_quantity'] > 10 ? 'fa-check-circle' : ($product['product_quantity'] > 0 ? 'fa-exclamation-circle' : 'fa-times-circle') ?>"></i>
                 <span>
-                    <?php if($product['product_quantity'] > 10): ?>
-                        In Stock (<?= $product['product_quantity'] ?> available)
-                    <?php elseif($product['product_quantity'] > 0): ?>
-                        Low Stock (Only <?= $product['product_quantity'] ?> left!)
-                    <?php else: ?>
-                        Out of Stock
-                    <?php endif; ?>
+                    <?= $product['product_quantity'] > 10 ? "In Stock ({$product['product_quantity']} available)" : 
+                       ($product['product_quantity'] > 0 ? "Low Stock (Only {$product['product_quantity']} left!)" : "Out of Stock") ?>
                 </span>
             </div>
 
@@ -732,27 +776,27 @@ if (isset($_GET['id'])) {
             </p>
 
             <div class="quantity-selector">
-                <button type="button" class="quantity-btn minus" onclick="updateQuantity(-1)">-</button>
-                <input type="number" value="1" min="1" max="<?= $product['product_quantity'] ?>" class="quantity-input" id="quantityInput" onchange="validateQuantity()">
-                <button type="button" class="quantity-btn plus" onclick="updateQuantity(1)">+</button>
+                <label for="quantityInput">Quantity:</label>
+                <input type="number" value="1" min="1" max="<?= $product['product_quantity'] ?>" 
+                       class="quantity-input" id="quantityInput" onchange="validateQuantity()">
             </div>
 
             <div class="action-buttons">
-                <form method="POST" action="add-to-cart.php" style="display: contents;">
+                <form id="addToCartForm" class="add-to-cart-form">
                     <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                    <input type="hidden" name="product_name" value="<?= htmlspecialchars($product['product_name']) ?>">
-                    <input type="hidden" name="product_price" value="<?= $product['product_price'] ?>">
-                    <input type="hidden" name="product_image" value="<?= $product['product_image'] ?>">
                     <input type="hidden" name="quantity" id="formQuantity" value="1">
-                    <button type="submit" class="add-to-cart-lg" <?= $product['product_quantity'] <= 0 ? 'disabled' : '' ?>>ADD TO CART</button>
+                    <button type="submit" class="add-to-cart-lg" <?= $product['product_quantity'] <= 0 ? 'disabled' : '' ?>>
+                        ADD TO CART
+                    </button>
                 </form>
-                <form action="NEW_BuyNow.php" method="post" style="display: contents;">
+                
+                <form action="checkout.php" method="post">
                     <input type="hidden" name="checkout_source" value="single">
-                    <input type="hidden" name="product_name" value="<?= htmlspecialchars($product['product_name']) ?>">
-                    <input type="hidden" name="price" value="<?= $product['product_price'] ?>">
-                    <input type="hidden" name="image" value="<?= $product['product_image'] ?>">
+                    <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                     <input type="hidden" name="quantity" id="buyNowQuantity" value="1">
-                    <button type="submit" name="buy_now" class="buy-now" <?= $product['product_quantity'] <= 0 ? 'disabled' : '' ?>>BUY NOW</button>
+                    <button type="submit" name="buy_now" class="buy-now" <?= $product['product_quantity'] <= 0 ? 'disabled' : '' ?>>
+                        BUY NOW
+                    </button>
                 </form>
             </div>
         </div>
@@ -764,7 +808,6 @@ if (isset($_GET['id'])) {
                 <tr><th>Category</th><td><?= htmlspecialchars($product['product_category']) ?></td></tr>
                 <tr><th>Stock</th><td><?= $product['product_quantity'] ?> units</td></tr>
                 <tr><th>Price</th><td>RM <?= number_format($product['product_price'], 2) ?></td></tr>
-                <!-- Additional specifications could be added from database if available -->
             </table>
         </div>
     </div>
@@ -783,8 +826,7 @@ if (isset($_GET['id'])) {
         </div>
         
         <div class="copyright">
-            &copy; 2025 NEXUS GAMING STORE. ALL RIGHTS RESERVED.<br>
-            NEXUS is not affiliated with Nintendo or any other game publishers.
+            &copy; 2025 NEXUS GAMING STORE. ALL RIGHTS RESERVED.
         </div>
     </footer>
 
@@ -822,51 +864,74 @@ if (isset($_GET['id'])) {
                     }, 300);
                 }
             });
+
+            // Update all quantity fields when main input changes
+            document.getElementById('quantityInput').addEventListener('change', function() {
+                const quantity = this.value;
+                document.getElementById('formQuantity').value = quantity;
+                document.getElementById('buyNowQuantity').value = quantity;
+            });
+
+            // Handle add to cart form submission with AJAX
+            document.getElementById('addToCartForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch('add_to_cart.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        // Show success notification
+                        const notification = document.getElementById('successNotification');
+                        notification.style.display = 'block';
+                        
+                        // Hide notification after animation completes
+                        setTimeout(() => {
+                            notification.style.display = 'none';
+                        }, 3000);
+                        
+                        // Update cart count if needed
+                        if(data.cart_count) {
+                            document.querySelector('.cart-count').textContent = data.cart_count;
+                        }
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding to cart');
+                });
+            });
         });
 
-        // Quantity functions
-        function updateQuantity(change) {
-            const quantityInput = document.getElementById('quantityInput');
-            const formQuantity = document.getElementById('formQuantity');
-            const buyNowQuantity = document.getElementById('buyNowQuantity');
-            let newValue = parseInt(quantityInput.value) + change;
-            
-            // Validate the new value
-            if (newValue < 1) newValue = 1;
-            if (newValue > <?= $product['product_quantity'] ?>) {
-                newValue = <?= $product['product_quantity'] ?>;
-                alert(`Only <?= $product['product_quantity'] ?> items available in stock!`);
-            }
-            
-            // Update all quantity fields
-            quantityInput.value = newValue;
-            formQuantity.value = newValue;
-            buyNowQuantity.value = newValue;
-        }
-
+        // Validate quantity input
         function validateQuantity() {
             const quantityInput = document.getElementById('quantityInput');
-            const formQuantity = document.getElementById('formQuantity');
-            const buyNowQuantity = document.getElementById('buyNowQuantity');
             let value = parseInt(quantityInput.value);
-            
+            const max = parseInt(quantityInput.max);
+
             if (isNaN(value) || value < 1) {
                 value = 1;
-            } else if (value > <?= $product['product_quantity'] ?>) {
-                value = <?= $product['product_quantity'] ?>;
-                alert(`Only <?= $product['product_quantity'] ?> items available in stock!`);
+            } else if (value > max) {
+                value = max;
+                alert(`Only ${max} items available in stock!`);
             }
-            
+
             quantityInput.value = value;
-            formQuantity.value = value;
-            buyNowQuantity.value = value;
+            document.getElementById('formQuantity').value = value;
+            document.getElementById('buyNowQuantity').value = value;
         }
 
         // Image gallery functionality
         function changeImage(thumbnail) {
             const mainImage = document.getElementById('mainImage');
             mainImage.src = thumbnail.src;
-            
+
             // Update active thumbnail
             document.querySelectorAll('.thumbnail').forEach(img => {
                 img.classList.remove('active');

@@ -1,6 +1,7 @@
 <?php
 include "db_connect1.php"; // Make sure this file contains your database connection details
 
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"];
     $password = $_POST["password"];
@@ -32,6 +33,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         echo "No account found with that email.";
     }
+
+    $_SESSION['email'] = $customer['email'];
 
     $stmt->close();
     $conn->close();

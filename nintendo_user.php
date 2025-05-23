@@ -487,7 +487,7 @@ $result = $conn->query($sql);
                 <i class="fas fa-bars" id="menuIcon"></i>
             </div>
             
-            <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
+            <div class="logo" onclick="window.location.href='index.php'">NEXUS</div>
             
             <div class="nav-links">
                <a href="index.php">HOME</a>
@@ -498,11 +498,11 @@ $result = $conn->query($sql);
             </div>
             
             <div class="icons-right">
-                <a href="custlogin.html">
+                <a href="custeditprofile.php">
                     <i class="fas fa-user"></i>
                 </a>
                 <div class="cart-icon-container">
-                    <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
+                    <a href="cart.php"><i class="fas fa-shopping-cart"></i></a>
                 </div>
             </div>
         </nav>
