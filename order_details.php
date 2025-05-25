@@ -201,11 +201,14 @@ if ($order) {
     echo "<option value='Cancelled' " . ($order['status_order'] == 'Cancelled' ? 'selected' : '') . ">Cancelled</option>";
     echo "</select>";
     echo "<button type='submit' name='update_status'>💾 Save Status</button>";
+
     echo "</form>";
     echo "</div>";
 
     echo "<div class='divider'></div>";
-
+    echo "<div style='margin-top: 20px;'>";
+    echo "<a href='order.php' style='display: inline-block; padding: 10px 20px; background-color: #4a6fa5; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;'>← Back to Orders</a>";
+    echo "</div>";
     // Fetch items from order_items table
     $items_query = "SELECT product_name, price_items, quantity_items, image_items FROM items_ordered WHERE order_id = ?";
     $stmt = $conn->prepare($items_query);
