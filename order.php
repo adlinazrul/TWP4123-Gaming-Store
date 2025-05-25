@@ -70,13 +70,13 @@ if ($admin_id) {
         }
 
         /* Popup styles */
-        #popup {
+            #popup {
             display: none;
             position: fixed;
             top: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
+            left: 270px; /* Adjust this based on your sidebar width */
+            width: calc(100% - 290px); /* Leaves space for sidebar and some margin */
+            max-width: 800px; /* Optional: limit max width */
             max-height: 80vh;
             overflow-y: auto;
             background-color: white;
@@ -86,6 +86,7 @@ if ($admin_id) {
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             border-radius: 10px;
         }
+
         #popup-overlay {
             display: none;
             position: fixed;
@@ -112,6 +113,14 @@ if ($admin_id) {
         button.view-details-btn:hover {
             background-color: #a22a2a;
         }
+
+        @media (max-width: 768px) {
+        #popup {
+         left: 20px;
+            width: calc(100% - 40px);
+         }
+}
+
     </style>
 </head>
 <body>
