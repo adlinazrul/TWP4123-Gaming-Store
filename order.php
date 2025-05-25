@@ -18,7 +18,7 @@ if ($conn->connect_error) {
 }
 
 // Fetch all orders
-$sql = "SELECT * FROM orders ORDER BY id DESC";
+$sql = "SELECT id, name_cust, date, total_amount, status FROM orders ORDER BY date DESC";
 $result = $conn->query($sql);
 
 // Get admin profile image
@@ -29,36 +29,46 @@ $img_stmt->execute();
 $img_stmt->bind_result($image);
 $profile_image = ($img_stmt->fetch() && !empty($image)) ? 'image/' . $image : 'image/default_profile.jpg';
 $img_stmt->close();
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Order List</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="manageadmin.css">
+    <meta charset="UTF-8" />
+    <title>Orders List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet' />
+    <link rel="stylesheet" href="manageadmin.css" />
     <style>
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px #ccc;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 30px 0;
         }
         th, td {
-            padding: 12px;
+            padding: 12px 15px;
             border: 1px solid #ddd;
-            text-align: center;
+            text-align: left;
         }
-        a.details-link {
-            background-color:rgb(219, 52, 52);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
+        th {
+            background-color: #f4f4f4;
+        }
+        a.order-link {
+            color: #db3434;
+            font-weight: bold;
             text-decoration: none;
         }
-        a.details-link:hover {
-            background-color:rgb(185, 51, 41);
+        a.order-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -81,54 +91,39 @@ $img_stmt->close();
 
 <section id="content">
     <nav>
-        <form action="#">
-            <div class="form-input">
-                <input type="search" placeholder="Search..." />
-                <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
-            </div>
-        </form>
+        <a href="order.php" class="back-link"><i class='bx bx-left-arrow-alt'></i> Orders</a>
         <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
         <a href="profile_admin.php" class="profile"><img src="<?= htmlspecialchars($profile_image) ?>" alt="Profile Picture" /></a>
     </nav>
 
     <main>
-        <div class="head-title" style="margin-bottom: 30px;">
-            <div class="left">
-                <h1>Order List</h1>
-                <ul class="breadcrumb">
-                    <li><a href="#">Dashboard</a></li>
-                    <li><i class='bx bx-chevron-right'></i></li>
-                    <li><a class="active" href="#">Order</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Customer Name</th>
-                    <th>Phone</th>
-                    <th>Date</th>
-                    <th>Details</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if ($result->num_rows > 0): ?>
-                    <?php while ($row = $result->fetch_assoc()): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($row['id']) ?></td>
-                            <td><?= htmlspecialchars($row['name_cust']) ?></td>
-                            <td><?= htmlspecialchars($row['num_tel_cust']) ?></td>
-                            <td><?= htmlspecialchars($row['date']) ?></td>
-                            <td><a class="details-link" href="order_details.php?order_id=<?= $row['id'] ?>">Details</a></td>
-                        </tr>
+        <h2>All Orders</h2>
+        <?php if ($result && $result->num_rows > 0): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer Name</th>
+                        <th>Order Date</th>
+                        <th>Total Amount (RM)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($order = $result->fetch_assoc()): ?>
+                    <tr>
+                        <td><a class="order-link" href="order_details.php?order_id=<?= $order['id'] ?>"><?= $order['id'] ?></a></td>
+                        <td><?= htmlspecialchars($order['name_cust']) ?></td>
+                        <td><?= htmlspecialchars($order['date']) ?></td>
+                        <td><?= number_format($order['total_amount'], 2) ?></td>
+                        <td><?= htmlspecialchars($order['status']) ?></td>
+                    </tr>
                     <?php endwhile; ?>
-                <?php else: ?>
-                    <tr><td colspan="5">No orders found.</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>No orders found.</p>
+        <?php endif; ?>
     </main>
 </section>
 </body>
