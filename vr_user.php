@@ -546,7 +546,7 @@ $result = $conn->query($sql);
                     if ((int)$row["product_quantity"] <= 0) {
                         echo '<div class="out-of-stock">Out of Stock</div>';
                     }
-                    echo '<a href="VIEWPRODUCT.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
+                    echo '<a href="view_product_user.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
                     echo '</div></div>';
                 }
             } else {

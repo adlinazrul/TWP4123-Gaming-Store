@@ -1,12 +1,11 @@
 <?php
-
 session_start();
 
 // Check if the session variable is set
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 } else {
-    // Handle the case when the admin is not logged in (e.g., redirect to login page)
+    // Redirect to login if not logged in
     header("Location: login_admin.php");
     exit;
 }
@@ -24,10 +23,23 @@ if ($conn->connect_error) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $position = $_POST['position'];
-    $salary = $_POST['salary'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
-    $user_type = $_POST['user_type'];  // New input
+
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo "<script>alert('Invalid email format!'); window.location.href='addadmin.php';</script>";
+        exit;
+    }
+
+    $password_raw = $_POST['password'];
+    $confirm_password = $_POST['confirm_password'];
+    $user_type = $_POST['user_type'];
+
+    if ($password_raw !== $confirm_password) {
+        echo "<script>alert('Passwords do not match!'); window.location.href='addadmin.php';</script>";
+        exit;
+    }
+
+    $password = password_hash($password_raw, PASSWORD_BCRYPT);
 
     $target_dir = "uploads/";
     $image_name = basename($_FILES["image"]["name"]);
@@ -38,18 +50,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $conn->prepare($check_email);
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $result = $stmt->get_result();
+    $result_check = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        echo "<script>alert('Error: Email already exists!'); window.location.href='admindashboard.php';</script>";
+    if ($result_check->num_rows > 0) {
+        echo "<script>alert('Error: Email already exists!'); window.location.href='addadmin.php';</script>";
     } else {
-        $sql = "INSERT INTO admin_list (username, email, position, salary, password, image, user_type) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        $domain = substr(strrchr($email, "@"), 1);
+
+        // List of accepted domains or rules
+        $valid_university_pattern = '/\.edu\.my$/i'; // allows all Malaysian university emails
+        $check_mx = checkdnsrr($domain, "MX"); // check MX records
+
+        // If it's not a .edu.my OR a domain with MX, reject
+        if (!preg_match($valid_university_pattern, $domain) && !$check_mx) {
+            echo "<script>alert('Invalid email domain! Only valid public or Malaysian university emails allowed.'); window.location.href='addadmin.php';</script>";
+            exit;
+        }
+
+        $sql = "INSERT INTO admin_list (username, email, password, image, user_type) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssssss", $username, $email, $position, $salary, $password, $image_name, $user_type);
+        $stmt->bind_param("sssss", $username, $email, $password, $image_name, $user_type);
 
         if ($stmt->execute()) {
-            echo "<script>alert('Admin added successfully!'); window.location.href='admindashboard.php';</script>";
+            echo "<script>alert('Admin added successfully!'); window.location.href='addadmin.php';</script>";
         } else {
             echo "<script>alert('Error: " . $stmt->error . "');</script>";
         }
@@ -67,7 +91,7 @@ if ($admin_id) {
     $stmt->execute();
     $stmt->bind_result($image);
     if ($stmt->fetch() && !empty($image)) {
-        $profile_image = 'image/' . $image;
+        $profile_image = 'uploads/' . $image;
     } else {
         $profile_image = 'image/default_profile.jpg';
     }
@@ -82,7 +106,7 @@ if ($admin_id) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Admin</title>
+<title>Admin Management</title>
 <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
 <link rel="stylesheet" href="manageadmin.css" />
 <style>
@@ -247,21 +271,18 @@ if ($admin_id) {
         <div class="container">
             <section id="add-employee">
                 <h2>Add Admin</h2>
-                <form method="POST" enctype="multipart/form-data">
+                <form method="POST" action="addadmin.php" enctype="multipart/form-data">
                     <label>Username:</label>
                     <input type="text" name="username" required>
 
                     <label>Email:</label>
                     <input type="email" name="email" required>
 
-                    <label>Position:</label>
-                    <input type="text" name="position" required>
-
-                    <label>Salary (RM):</label>
-                    <input type="number" name="salary" min="0" step="0.01" required>
-
                     <label>Password:</label>
-                    <input type="password" name="password" required>
+                    <input type="password" name="password" required id="password">
+
+                    <label>Confirm Password:</label>
+                    <input type="password" name="confirm_password" required id="confirm_password">
 
                     <label>Profile Image:</label>
                     <input type="file" name="image" accept="image/*" required>
@@ -275,7 +296,7 @@ if ($admin_id) {
                         <label for="superadmin">Super Admin</label>
                     </div>
 
-                    <button type="submit" name="submit">Add Admin</button>
+                    <button type="submit" name="submit" onclick="return validatePassword()">Add Admin</button>
                 </form>
             </section>
 
@@ -286,23 +307,21 @@ if ($admin_id) {
                         <tr>
                             <th>Username</th>
                             <th>Email</th>
-                            <th>Position</th>
-                            <th>Salary (RM)</th>
                             <th>Roles</th>
                             <th>Image</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
+
                         <?php if ($result && $result->num_rows > 0): ?>
                             <?php while ($row = $result->fetch_assoc()): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($row['username']); ?></td>
                                     <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['position']); ?></td>
-                                    <td><?php echo htmlspecialchars(number_format($row['salary'], 2)); ?></td>
                                     <td>
                                         <?php
+                                        // Make sure to normalize the role string for correct display
                                         $role = strtolower(trim($row['user_type']));
                                         if ($role === 'superadmin' || $role === 'super admin') {
                                             echo "Super Admin";
@@ -321,12 +340,21 @@ if ($admin_id) {
                                     </td>
                                     <td>
                                         <button><a href="edit_admin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;">Edit</a></button>
-                                        <button><a href="deleteadmin.php?id=<?php echo $row['id']; ?>" style="color:white; text-decoration:none;" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</a></button>
-                                    </td>
+                                         <?php if ($row['id'] != $_SESSION['admin_id']): ?>
+                                            <form method="GET" action="deleteadmin.php" style="display:inline;">
+                                                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                                <button type="submit" onclick="return confirm('Are you sure you want to delete this admin?')">Delete</button>
+                                            </form>
+                                        <?php else: ?>
+                                            <!-- Do not show the delete button for the current logged-in admin -->
+                                            <span style="color: green; font-style: italic;">You</span>
+                                        <?php endif; ?>
+                                     </td>
+                
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
-                            <tr><td colspan="7">No admins found.</td></tr>
+                            <tr><td colspan="5">No admins found.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -336,13 +364,15 @@ if ($admin_id) {
 </section>
 
 <script>
-    // Sidebar toggle
-    const sidebar = document.getElementById('sidebar');
-    const menuBtn = document.querySelector('nav .bx-menu');
-
-    menuBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('close');
-    });
+function validatePassword() {
+    let password = document.getElementById('password').value;
+    let confirm = document.getElementById('confirm_password').value;
+    if (password !== confirm) {
+        alert('Passwords do not match!');
+        return false;
+    }
+    return true;
+}
 </script>
 
 </body>

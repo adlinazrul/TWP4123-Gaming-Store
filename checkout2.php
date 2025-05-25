@@ -16,26 +16,29 @@ $user_query->execute();
 $user_result = $user_query->get_result();
 $user = $user_result->fetch_assoc();
 
-// Load cart
-$cart_items = [];
-$subtotal = 0;
+// Fetch product data based on POST data
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now'])) {
+    $product_id = intval($_POST['product_id']);
+    $quantity = intval($_POST['quantity']);
 
-$cart_query = $conn->prepare("SELECT ci.*, p.product_name, p.product_price, p.product_image 
-                              FROM cart_items ci 
-                              JOIN products p ON ci.product_id = p.id 
-                              WHERE ci.email = ?");
-$cart_query->bind_param("s", $email);
-$cart_query->execute();
-$cart_result = $cart_query->get_result();
+    $product_query = $conn->prepare("SELECT * FROM products WHERE id = ?");
+    $product_query->bind_param("i", $product_id);
+    $product_query->execute();
+    $product_result = $product_query->get_result();
+    
+    if ($product_result->num_rows === 0) die("Product not found.");
 
-while ($row = $cart_result->fetch_assoc()) {
-    $cart_items[] = $row;
-    $subtotal += $row['product_price'] * $row['quantity'];
+    $product = $product_result->fetch_assoc();
+    $product_name = $product['product_name'];
+    $price_per_item = floatval($product['product_price']);
+    $product_image = $product['product_image'];
+    $subtotal = $price_per_item * $quantity;
+    $tax = $subtotal * 0.06;
+    $shipping = 0.00;
+    $grand_total = $subtotal + $tax;
+} else {
+    die("Invalid access.");
 }
-
-$tax = $subtotal * 0.06;
-$shipping = 0.00;
-$grand_total = $subtotal + $tax;
 ?>
 
 <!DOCTYPE html>
@@ -55,30 +58,38 @@ $grand_total = $subtotal + $tax;
         <!-- Cart Summary -->
         <div class="col-md-5 order-md-2 mb-4">
             <h4 class="d-flex justify-content-between align-items-center mb-3">
-                <span>Your Cart</span>
-                <span class="badge bg-primary rounded-pill"><?= count($cart_items) ?></span>
+                <span>Your Order</span>
+                <span class="badge bg-primary rounded-pill">1</span>
             </h4>
             <ul class="list-group mb-3">
-                <?php foreach ($cart_items as $item): ?>
-                    <li class="list-group-item d-flex justify-content-between lh-sm">
-                        <div>
-                            <h6 class="my-0"><?= htmlspecialchars($item['product_name']) ?> (x<?= $item['quantity'] ?>)</h6>
-                            <small class="text-muted">RM <?= number_format($item['product_price'], 2) ?></small>
-                        </div>
-                        <span class="text-muted">RM <?= number_format($item['product_price'] * $item['quantity'], 2) ?></span>
-                    </li>
-                <?php endforeach; ?>
+                <li class="list-group-item d-flex justify-content-between lh-sm">
+                    <div>
+                        <h6 class="my-0"><?= htmlspecialchars($product_name) ?> (x<?= $quantity ?>)</h6>
+                        <small class="text-muted">RM <?= number_format($price_per_item, 2) ?></small>
+                    </div>
+                    <span class="text-muted">RM <?= number_format($price_per_item * $quantity, 2) ?></span>
+                </li>
                 <li class="list-group-item d-flex justify-content-between"><span>Subtotal</span><strong>RM <?= number_format($subtotal, 2) ?></strong></li>
                 <li class="list-group-item d-flex justify-content-between"><span>Tax (6%)</span><strong>RM <?= number_format($tax, 2) ?></strong></li>
                 <li class="list-group-item d-flex justify-content-between"><span>Shipping</span><strong>FREE</strong></li>
                 <li class="list-group-item d-flex justify-content-between"><span>Total</span><strong>RM <?= number_format($grand_total, 2) ?></strong></li>
             </ul>
+            
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-title">Product Image</h6>
+                    <img src="uploads/<?= htmlspecialchars($product_image) ?>" alt="<?= htmlspecialchars($product_name) ?>" class="img-fluid" style="max-height: 200px;">
+                </div>
+            </div>
         </div>
 
         <!-- Form -->
         <div class="col-md-7 order-md-1">
             <h4 class="mb-3">Shipping Address</h4>
-            <form method="POST" action="checkout.php" class="needs-validation" novalidate>
+            <form method="POST" action="process_checkout.php" class="needs-validation" novalidate>
+                <input type="hidden" name="product_id" value="<?= $product_id ?>">
+                <input type="hidden" name="quantity" value="<?= $quantity ?>">
+                <input type="hidden" name="order_type" value="buy_now">
                 <input type="hidden" name="total_price" value="<?= $grand_total ?>">
                 <input type="hidden" name="tax_fee" value="<?= $tax ?>">
 

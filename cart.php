@@ -129,10 +129,21 @@ while ($row = $result->fetch_assoc()) {
                     </div>
                 <?php endforeach; ?>
                 
-                <div class="cart-summary">
-                    <h2 class="cart-total">Total: RM<span id="cartTotal"><?= number_format($cart_total, 2) ?></span></h2>
-                    <button id="checkoutBtn" class="checkout-btn" disabled>Checkout (Coming Soon)</button>
-                </div>
+                <form action="checkout.php" method="POST">
+    <?php foreach ($cart_items as $index => $item): ?>
+        <input type="hidden" name="cart[<?= $index ?>][product_id]" value="<?= $item['product_id'] ?>">
+        <input type="hidden" name="cart[<?= $index ?>][product_name]" value="<?= htmlspecialchars($item['product_name']) ?>">
+        <input type="hidden" name="cart[<?= $index ?>][product_price]" value="<?= $item['product_price'] ?>">
+        <input type="hidden" name="cart[<?= $index ?>][quantity]" value="<?= $item['quantity'] ?>">
+        <input type="hidden" name="cart[<?= $index ?>][product_image]" value="<?= $item['product_image'] ?>">
+    <?php endforeach; ?>
+
+    <div class="cart-summary">
+        <h2 class="cart-total">Total: RM<span id="cartTotal"><?= number_format($cart_total, 2) ?></span></h2>
+        <button type="submit" id="checkoutBtn" class="checkout-btn">Checkout</button>
+    </div>
+</form>
+
             <?php endif; ?>
         </div>
     </main>
