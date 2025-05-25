@@ -17,7 +17,7 @@ if ($conn->connect_error) {
 
 // Get all items for the order
 $sql = "SELECT product_name, price_items, quantity_items, image_items, status_order 
-        FROM order_items 
+        FROM items_ordered
         WHERE order_id = ?";
 
 $stmt = $conn->prepare($sql);
