@@ -215,7 +215,7 @@ if ($admin_id) {
             overlay.style.display = 'block';
 
             // Fetch order items
-            fetch('order_items.php?order_id=' + orderId)
+            fetch('order_details.php?order_id=' + orderId)
                 .then(res => res.text())
                 .then(html => {
                     content.innerHTML = html;
