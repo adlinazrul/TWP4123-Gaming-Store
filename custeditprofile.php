@@ -516,10 +516,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             <div class="nav-links">
                 <a href="index.php">HOME</a>
-                <a href="NINTENDO.php">NINTENDO</a>
-                <a href="XBOX.php" class="active">CONSOLES</a>
-                <a href="ACCESSORIES.php">ACCESSORIES</a>
-                <a href="VR.php">VR</a>
+                <a href="nintendo_user.php">NINTENDO</a>
+                <a href="console_user.php" class="active">CONSOLES</a>
+                <a href="accessories_user.php">ACCESSORIES</a>
+                <a href="vr_user.php">VR</a>
             </div>
             
             <div class="icons-right">

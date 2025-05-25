@@ -1,28 +1,24 @@
 <?php
 session_start();
-include "db_connect1.php";
+require 'db_connect.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
-    $product_id = (int) $_POST['product_id'];
+header('Content-Type: application/json');
 
-    if (isset($_SESSION['user_id'])) {
-        $user_id = $_SESSION['user_id'];
-        $stmt = $conn->prepare("DELETE FROM cart_items WHERE user_id = ? AND product_id = ?");
-        $stmt->bind_param("ii", $user_id, $product_id);
-        $stmt->execute();
-        $stmt->close();
-    } else {
-        if (isset($_SESSION['cart'])) {
-            foreach ($_SESSION['cart'] as $key => $item) {
-                if ($item['product_id'] == $product_id) {
-                    unset($_SESSION['cart'][$key]);
-                    $_SESSION['cart'] = array_values($_SESSION['cart']); // reindex
-                    break;
-                }
-            }
-        }
-    }
+if (!isset($_SESSION['email'])) {
+    echo json_encode(['success' => false, 'message' => 'User not logged in']);
+    exit;
 }
 
-header("Location: ADDTOCART.php");
+$data = json_decode(file_get_contents('php://input'), true);
+
+$email = $_SESSION['email'];
+$product_id = intval($data['product_id']);
+
+// Delete from cart
+$stmt = $conn->prepare("DELETE FROM cart_items WHERE email = ? AND product_id = ?");
+$stmt->bind_param("si", $email, $product_id);
+$stmt->execute();
+
+echo json_encode(['success' => true]);
 exit;
+?>

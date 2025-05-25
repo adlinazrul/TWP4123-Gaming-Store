@@ -556,7 +556,7 @@ if (!$user) {
                 <a href="custeditprofile.php">
                     <i class="fas fa-user"></i>
                 </a>
-                <a href="ADDTOCART.php"><i class="fas fa-shopping-cart"></i></a>
+                <a href="cart.php"><i class="fas fa-shopping-cart"></i></a>
             </div>
         </nav>
     </header>
