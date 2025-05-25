@@ -46,7 +46,7 @@ if (isset($_GET['order_id'])) {
         while ($item = $items_result->fetch_assoc()) {
             echo "<tr>";
             echo "<td>" . htmlspecialchars($item['product_name']) . "</td>";
-            echo "<td>" . htmlspecialchars($item['quantity']) . "</td>";
+            echo "<td>" . htmlspecialchars($item['quantity_items']) . "</td>";
             echo "<td>RM " . number_format($item['price_items'], 2) . "</td>";
             echo "</tr>";
         }
