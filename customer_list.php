@@ -19,7 +19,8 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT id, first_name, last_name, email, phone, birthdate, username, bio, address, city, state, postcode, country FROM customers";
+$sql = "SELECT id, first_name, last_name, email, phone, birthdate, username, bio, address, city, state, postcode, country, account_status FROM customers";
+
 $result = $conn->query($sql);
 
 // Fetch admin profile image
@@ -129,6 +130,7 @@ if ($admin_id) {
                         <th>City</th>
                         <th>State</th>
                         <th>Postcode</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -145,6 +147,15 @@ if ($admin_id) {
                                 <td><?= htmlspecialchars($row['city']) ?></td>
                                 <td><?= htmlspecialchars($row['state']) ?></td>
                                 <td><?= htmlspecialchars($row['postcode']) ?></td>
+                                <td>
+                                    <form method="POST" action="toggle_status_admin.php">
+                                        <input type="hidden" name="customer_id" value="<?= $row['id'] ?>">
+                                        <input type="hidden" name="current_status" value="<?= $row['account_status'] ?>">
+                                        <button type="submit" style="background-color: <?= $row['account_status'] == 'active' ? '#4CAF50' : '#f44336' ?>; color: white; border: none; padding: 5px 10px; cursor: pointer;">
+                                            <?= ucfirst($row['account_status']) ?>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>

@@ -33,7 +33,9 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
+        /* [Previous CSS styles remain exactly the same] */
+        /* ... (all the existing CSS content) ... */
+         :root {
             --primary: #ff0000;
             --secondary: #d10000;
             --dark: #0d0221;
@@ -213,7 +215,7 @@ $result = $conn->query($sql);
             object-fit: contain;
             background-color: #000;
             transition: transform 0.5s ease;
-            flex-shrink: 0; /* Prevent image from shrinking */
+            flex-shrink: 0;
         }
         
         .product-card:hover .product-image {
@@ -477,6 +479,7 @@ $result = $conn->query($sql);
                 gap: 10px;
             }
         }
+
     </style>
 </head>
 <body>
@@ -490,7 +493,7 @@ $result = $conn->query($sql);
             <div class="logo" onclick="window.location.href='index.php'">NEXUS</div>
             
             <div class="nav-links">
-               <a href="index.php">HOME</a>
+                <a href="index.php">HOME</a>
                 <a href="nintendo_user.php" class="active">NINTENDO</a>
                 <a href="console_user.php">CONSOLES</a>
                 <a href="accessories_user.php">ACCESSORIES</a>
@@ -503,6 +506,9 @@ $result = $conn->query($sql);
                 </a>
                 <div class="cart-icon-container">
                     <a href="cart.php"><i class="fas fa-shopping-cart"></i></a>
+                    <?php if(isset($_SESSION['cart_count']) && $_SESSION['cart_count'] > 0): ?>
+                        <span class="cart-count"><?php echo $_SESSION['cart_count']; ?></span>
+                    <?php endif; ?>
                 </div>
             </div>
         </nav>
@@ -535,17 +541,19 @@ $result = $conn->query($sql);
                     echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
                     echo '<div class="product-price">';
                     echo 'RM ' . number_format($row["product_price"], 2);
-                    // Add discount display if applicable
+                    
                     if (isset($row["original_price"]) && $row["original_price"] > $row["product_price"]) {
                         echo '<span class="original-price">RM ' . number_format($row["original_price"], 2) . '</span>';
                         $discount = round(($row["original_price"] - $row["product_price"]) / $row["original_price"] * 100);
                         echo '<span class="discount-badge">' . $discount . '% OFF</span>';
                     }
                     echo '</div>';
+                    
                     if ((int)$row["product_quantity"] <= 0) {
                         echo '<div class="out-of-stock">Out of Stock</div>';
                     }
-                    echo '<a href="VIEWPRODUCT.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
+                    
+                    echo '<a href="view_product_user.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
                     echo '</div></div>';
                 }
             } else {
@@ -578,10 +586,9 @@ $result = $conn->query($sql);
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Mobile menu functionality
-            let menuOverlay = document.getElementById("menuOverlay");
-            let menuContainer = document.getElementById("menuContainer");
-            let menuIcon = document.getElementById("menuIcon");
-            let closeMenu = document.getElementById("closeMenu");
+            const menuOverlay = document.getElementById("menuOverlay");
+            const menuIcon = document.getElementById("menuIcon");
+            const closeMenu = document.getElementById("closeMenu");
 
             // Open menu
             menuIcon.addEventListener("click", function () {
@@ -608,11 +615,6 @@ $result = $conn->query($sql);
                         menuOverlay.style.display = "none";
                     }, 300);
                 }
-            });
-
-            // Cart icon click
-            document.getElementById("cartIcon").addEventListener("click", function() {
-                alert("Your cart will be displayed here. This is a demo.");
             });
 
             // Search icon click

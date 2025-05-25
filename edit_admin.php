@@ -2,33 +2,33 @@
 $conn = new mysqli("localhost", "root", "", "gaming_store");
 
 if (isset($_GET['id'])) {
-    $id = $_GET['id'];
+    $id = intval($_GET['id']);
     $result = $conn->query("SELECT * FROM admin_list WHERE id=$id");
     $row = $result->fetch_assoc();
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id = $_POST['id'];
+    $id = intval($_POST['id']);
     $username = $_POST['username'];
     $email = $_POST['email'];
     $user_type = $_POST['user_type'];
-    $salary = $_POST['salary'];
 
     if (!empty($_FILES["image"]["name"])) {
         $image_name = basename($_FILES["image"]["name"]);
         $target_file = "uploads/" . $image_name;
         move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
-        $sql = "UPDATE admin_list SET username=?, email=?, user_type=?, salary=?, image=? WHERE id=?";
+
+        $sql = "UPDATE admin_list SET username=?, email=?, user_type=?, image=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssdsi", $username, $email, $user_type, $salary, $image_name, $id);
+        $stmt->bind_param("ssssi", $username, $email, $user_type, $image_name, $id);
     } else {
-        $sql = "UPDATE admin_list SET username=?, email=?, user_type=?, salary=? WHERE id=?";
+        $sql = "UPDATE admin_list SET username=?, email=?, user_type=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssdi", $username, $email, $user_type, $salary, $id);
+        $stmt->bind_param("sssi", $username, $email, $user_type, $id);
     }
 
     if ($stmt->execute()) {
-        echo "<script>alert('Admin updated.'); window.location.href='addadmin.php';</script>";
+        echo "<script>alert('Admin updated successfully.'); window.location.href='addadmin.php';</script>";
     } else {
         echo "Update failed: " . $conn->error;
     }
@@ -65,7 +65,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         input[type="text"],
         input[type="email"],
-        input[type="number"],
         select,
         input[type="file"] {
             width: 100%;
@@ -115,9 +114,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <option value="Admin" <?= $row['user_type'] == 'Admin' ? 'selected' : '' ?>>Admin</option>
                 <option value="Super Admin" <?= $row['user_type'] == 'Super Admin' ? 'selected' : '' ?>>Super Admin</option>
             </select>
-
-            <label>Salary (RM):</label>
-            <input type="number" name="salary" step="0.01" value="<?= htmlspecialchars($row['salary']) ?>" required>
 
             <label>Profile Image:</label>
             <input type="file" name="image">
