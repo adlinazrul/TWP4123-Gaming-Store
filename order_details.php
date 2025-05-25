@@ -192,7 +192,7 @@ if ($order) {
 
     // Status update form
     echo "<div class='status-form'>";
-    echo "<form method='post' action='order_details.php?order_id=" . $order_id . "'>";
+    echo "<form method='post' action='order.php?order_id=" . $order_id . "'>";
     echo "<label for='status_order' style='margin-right: 10px;'>Update Order Status:</label>";
     echo "<select name='status_order' id='status_order'>";
     echo "<option value='Pending' " . ($order['status_order'] == 'Pending' ? 'selected' : '') . ">Pending</option>";
