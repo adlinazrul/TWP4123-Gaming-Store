@@ -1,13 +1,11 @@
 <?php
 session_start();
 
-// Check admin login
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
 
-// Database connection
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -18,39 +16,10 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Validate and get order_id from URL
-if (!isset($_GET['order_id']) || !is_numeric($_GET['order_id']) || intval($_GET['order_id']) <= 0) {
-    die("Invalid order ID.");
-}
+$sql = "SELECT id, first_name, last_name, date, total_price, status_order FROM orders ORDER BY date DESC";
+$result = $conn->query($sql);
 
-$order_id = intval($_GET['order_id']);
-
-// Check if order exists
-$order_check_stmt = $conn->prepare("SELECT id FROM orders WHERE id = ?");
-$order_check_stmt->bind_param("i", $order_id);
-$order_check_stmt->execute();
-$order_check_result = $order_check_stmt->get_result();
-if ($order_check_result->num_rows === 0) {
-    die("Order not found.");
-}
-$order_check_stmt->close();
-
-// Fetch items in the order
-$stmt = $conn->prepare("SELECT * FROM items_ordered WHERE order_id = ?");
-$stmt->bind_param("i", $order_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$items = [];
-while ($row = $result->fetch_assoc()) {
-    $items[] = $row;
-}
-
-if (count($items) === 0) {
-    die("No items found for this order.");
-}
-
-// Fetch admin profile image
+// Get admin profile image
 $admin_id = $_SESSION['admin_id'];
 $img_stmt = $conn->prepare("SELECT image FROM admin_list WHERE id = ?");
 $img_stmt->bind_param("i", $admin_id);
@@ -58,74 +27,67 @@ $img_stmt->execute();
 $img_stmt->bind_result($image);
 $profile_image = ($img_stmt->fetch() && !empty($image)) ? 'image/' . $image : 'image/default_profile.jpg';
 $img_stmt->close();
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Order Details</title>
+<title>Orders List</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet' />
 <link rel="stylesheet" href="manageadmin.css" />
 <style>
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-    }
-    table th, table td {
-        padding: 12px;
-        text-align: center;
-        border-bottom: 1px solid #ddd;
-    }
-    table img {
-        border-radius: 5px;
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-    }
-    .details-container {
-        padding: 20px;
-    }
-    .total-table {
-        max-width: 300px;
-        margin-left: auto;
-        margin-right: 0;
-        border: 1px solid #ddd;
-    }
-    .total-table th, .total-table td {
-        padding: 10px;
-        text-align: right;
-        border: none;
-        font-weight: bold;
-    }
-    select.status-select {
-        padding: 6px 10px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-        background-color: #f9f9f9;
-        font-weight: 600;
-        color: #333;
-        cursor: pointer;
-        transition: background-color 0.3s ease, border-color 0.3s ease;
-    }
-    select.status-select:hover {
-        background-color: #e0e0e0;
-        border-color: #888;
-    }
-    button.update-btn {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 6px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-    button.update-btn:hover {
-        background-color: #45a049;
-    }
+/* Keep your popup and table styles */
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+th, td {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+th {
+    background-color: #f4f4f4;
+}
+
+#popup {
+    display: none;
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-height: 80vh;
+    overflow-y: auto;
+    background-color: white;
+    border: 2px solid #333;
+    padding: 20px;
+    z-index: 1000;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+#popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+.close-btn {
+    cursor: pointer;
+    color: red;
+    font-weight: bold;
+    float: right;
+    font-size: 18px;
+}
+
+/* Adjust main content spacing so it doesn't hide behind sidebar */
+main {
+    margin: 20px;
+}
 </style>
 </head>
 <body>
@@ -136,7 +98,7 @@ $img_stmt->close();
         <li><a href="admindashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
         <li><a href="manageproduct.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
         <li><a href="manage_category.php"><i class='bx bxs-category'></i><span class="text">Category Management</span></a></li>
-        <li class="active"><a href="order.php"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
+        <li class="active"><a href="orders.php"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
         <li><a href="customer_list.php"><i class='bx bxs-user'></i><span class="text">Customer</span></a></li>
         <li><a href="addadmin.php"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
     </ul>
@@ -148,99 +110,90 @@ $img_stmt->close();
 
 <section id="content">
     <nav>
-        <form action="#">
-            <div class="form-input">
-                <input type="search" placeholder="Search..." />
-                <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
-            </div>
-        </form>
+        <a href="orders.php" class="back-link"><i class='bx bx-left-arrow-alt'></i> Orders</a>
         <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
         <a href="profile_admin.php" class="profile"><img src="<?= htmlspecialchars($profile_image) ?>" alt="Profile Picture" /></a>
     </nav>
 
     <main>
-        <div class="head-title" style="margin-bottom: 30px;">
-            <div class="left">
-                <h1>Order Details</h1>
-                <ul class="breadcrumb">
-                    <li><a href="#">Dashboard</a></li>
-                    <li><i class='bx bx-chevron-right'></i></li>
-                    <li><a class="active" href="#">Order Details</a></li>
-                </ul>
-            </div>
-        </div>
+        <h1>Orders List</h1>
 
-        <div class="details-container">
-            <form action="update_status.php" method="POST">
-                <input type="hidden" name="order_id" value="<?= $order_id ?>">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Product Name</th>
-                            <th>Price (RM)</th>
-                            <th>Quantity</th>
-                            <th>Total (RM)</th>
-                            <th>Status</th>
-                            <th>Customer Name</th>
-                            <th>Contact</th>
-                            <th>Address</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $total_price = 0;
-                        foreach ($items as $index => $row) {
-                            $item_total = $row['price_items'] * $row['quantity_items'];
-                            $total_price += $item_total;
-                            ?>
-                        <tr>
-                            <td><img src="/TWP4123-Gaming-Store/<?= htmlspecialchars($row['image_items']) ?>" alt="Product Image" /></td>
-                            <td><?= htmlspecialchars($row['product_name']) ?></td>
-                            <td><?= number_format($row['price_items'], 2) ?></td>
-                            <td><?= htmlspecialchars($row['quantity_items']) ?></td>
-                            <td><?= number_format($item_total, 2) ?></td>
-                            <td>
-                                <select name="status_order[<?= $index ?>]" class="status-select" required>
-                                    <?php
-                                    $statuses = ['Pending', 'Processing', 'Completed', 'Cancelled'];
-                                    foreach ($statuses as $status) {
-                                        $selected = ($status === $row['status_order']) ? 'selected' : '';
-                                        echo "<option value=\"$status\" $selected>$status</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </td>
-                            <td><?= htmlspecialchars($row['name_cust']) ?></td>
-                            <td><?= htmlspecialchars($row['num_tel_cust']) ?></td>
-                            <td><?= nl2br(htmlspecialchars($row['address_cust'])) ?></td>
-                            <td><?= htmlspecialchars($row['date']) ?></td>
-                        </tr>
-                        <input type="hidden" name="item_id[<?= $index ?>]" value="<?= $row['id'] ?>">
-                        <?php } ?>
-                    </tbody>
-                </table>
-
-                <table class="total-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer Name</th>
+                    <th>Date</th>
+                    <th>Total Price</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php if ($result && $result->num_rows > 0): ?>
+                <?php while($order = $result->fetch_assoc()): ?>
                     <tr>
-                        <th>Total Price:</th>
-                        <td>RM <?= number_format($total_price, 2) ?></td>
+                        <td><?= htmlspecialchars($order['id']) ?></td>
+                        <td><?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></td>
+                        <td><?= htmlspecialchars($order['date']) ?></td>
+                        <td>RM <?= number_format($order['total_price'], 2) ?></td>
+                        <td><?= htmlspecialchars($order['status_order']) ?></td>
+                        <td>
+                            <button class="view-details-btn" data-order-id="<?= htmlspecialchars($order['id']) ?>">View Details</button>
+                        </td>
                     </tr>
-                </table>
-
-                <div style="text-align: right; margin-top: 10px;">
-                    <button type="submit" class="update-btn">Update Status</button>
-                </div>
-            </form>
-        </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <tr><td colspan="6">No orders found.</td></tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
     </main>
 </section>
+
+<!-- Popup container -->
+<div id="popup-overlay"></div>
+<div id="popup">
+    <span class="close-btn" id="close-popup">&times;</span>
+    <h2>Order Items</h2>
+    <div id="order-items-content">Loading...</div>
+</div>
+
+<script>
+document.querySelectorAll('.view-details-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        const orderId = button.getAttribute('data-order-id');
+        const popup = document.getElementById('popup');
+        const overlay = document.getElementById('popup-overlay');
+        const content = document.getElementById('order-items-content');
+
+        content.innerHTML = 'Loading...';
+
+        popup.style.display = 'block';
+        overlay.style.display = 'block';
+
+        fetch('order_items.php?order_id=' + orderId)
+            .then(res => res.text())
+            .then(html => {
+                content.innerHTML = html;
+            })
+            .catch(() => {
+                content.innerHTML = '<p style="color:red;">Failed to load order items.</p>';
+            });
+    });
+});
+
+document.getElementById('close-popup').addEventListener('click', () => {
+    document.getElementById('popup').style.display = 'none';
+    document.getElementById('popup-overlay').style.display = 'none';
+});
+document.getElementById('popup-overlay').addEventListener('click', () => {
+    document.getElementById('popup').style.display = 'none';
+    document.getElementById('popup-overlay').style.display = 'none';
+});
+</script>
 
 </body>
 </html>
 
-<?php
-$stmt->close();
-$conn->close();
-?>
+<?php $conn->close(); ?>
