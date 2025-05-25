@@ -1,63 +1,62 @@
 <?php
-// order_items.php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "gaming_store";
 
-if (!isset($_GET['order_id']) || !is_numeric($_GET['order_id'])) {
-    echo "<p>Invalid order ID.</p>";
-    exit;
-}
-
-$order_id = intval($_GET['order_id']);
-
-// DB connection
-$conn = new mysqli("localhost", "root", "", "gaming_store");
+$conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
-    echo "<p>Database connection failed.</p>";
-    exit;
+    die("Connection failed: " . $conn->connect_error);
 }
 
-// Get all items for the order
-$sql = "SELECT product_name, price_items, quantity_items, image_items, status_order 
-        FROM items_ordered
-        WHERE order_id = ?";
+if (isset($_GET['order_id'])) {
+    $order_id = intval($_GET['order_id']);
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $order_id);
-$stmt->execute();
-$result = $stmt->get_result();
+    // Fetch order main details
+    $order_query = "SELECT * FROM orders WHERE id = ?";
+    $stmt = $conn->prepare($order_query);
+    $stmt->bind_param("i", $order_id);
+    $stmt->execute();
+    $order_result = $stmt->get_result();
+    $order = $order_result->fetch_assoc();
+    $stmt->close();
 
-if ($result && $result->num_rows > 0) {
-    echo '<table border="1" cellpadding="8" cellspacing="0" style="width:100%;">';
-    echo '<thead><tr>
-            <th>Product</th>
-            <th>Image</th>
-            <th>Price (RM)</th>
-            <th>Quantity</th>
-            <th>Status</th>
-          </tr></thead><tbody>';
-
-    while ($item = $result->fetch_assoc()) {
-        echo '<tr>';
-        echo '<td>' . htmlspecialchars($item['product_name']) . '</td>';
-        echo '<td>';
-        if (!empty($item['image_items'])) {
-            // Assuming images are stored in 'uploads/' folder
-            $imgPath = 'uploads/' . htmlspecialchars($item['image_items']);
-            echo '<img src="' . $imgPath . '" alt="Product Image" style="width:60px;height:auto;">';
-        } else {
-            echo 'No image';
-        }
-        echo '</td>';
-        echo '<td>' . number_format($item['price_items'], 2) . '</td>';
-        echo '<td>' . intval($item['quantity_items']) . '</td>';
-        echo '<td>' . htmlspecialchars($item['status_order']) . '</td>';
-        echo '</tr>';
+    if ($order) {
+        echo "<p><strong>Order ID:</strong> " . htmlspecialchars($order['id']) . "</p>";
+        echo "<p><strong>Customer:</strong> " . htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) . "</p>";
+        echo "<p><strong>Date:</strong> " . htmlspecialchars($order['date']) . "</p>";
+        echo "<p><strong>Status:</strong> " . htmlspecialchars($order['status_order']) . "</p>";
+        echo "<p><strong>Total Price:</strong> RM " . number_format($order['total_price'], 2) . "</p>";
+        echo "<hr>";
     }
 
-    echo '</tbody></table>';
+    // Fetch items from order_items table
+    $items_query = "SELECT product_name, price_items, quantity FROM order_items WHERE order_id = ?";
+    $stmt = $conn->prepare($items_query);
+    $stmt->bind_param("i", $order_id);
+    $stmt->execute();
+    $items_result = $stmt->get_result();
+
+    if ($items_result->num_rows > 0) {
+        echo "<h3>Items</h3>";
+        echo "<table style='width: 100%; border-collapse: collapse;'>";
+        echo "<tr><th style='border-bottom: 1px solid #ccc;'>Product</th><th style='border-bottom: 1px solid #ccc;'>Quantity</th><th style='border-bottom: 1px solid #ccc;'>Price</th></tr>";
+        while ($item = $items_result->fetch_assoc()) {
+            echo "<tr>";
+            echo "<td>" . htmlspecialchars($item['product_name']) . "</td>";
+            echo "<td>" . htmlspecialchars($item['quantity']) . "</td>";
+            echo "<td>RM " . number_format($item['price_items'], 2) . "</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
+    } else {
+        echo "<p>No items found for this order.</p>";
+    }
+
+    $stmt->close();
 } else {
-    echo "<p>No items found for this order.</p>";
+    echo "<p style='color:red;'>Invalid order ID.</p>";
 }
 
-$stmt->close();
 $conn->close();
 ?>
