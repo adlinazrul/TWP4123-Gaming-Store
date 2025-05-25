@@ -31,7 +31,9 @@ if (isset($_GET['order_id'])) {
     }
 
     // Fetch items from order_items table
-    $items_query = "SELECT product_name, price_items, quantity FROM order_items WHERE order_id = ?";
+    $items_query = "SELECT  product_name, price_items, quantity_items, image_itemsy FROM items_ordered WHERE order_id = ?";
+    
+
     $stmt = $conn->prepare($items_query);
     $stmt->bind_param("i", $order_id);
     $stmt->execute();
