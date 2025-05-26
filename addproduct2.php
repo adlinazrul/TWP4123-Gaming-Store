@@ -1,13 +1,17 @@
 <?php
-include 'product.php';
+include 'product.php'; // Make sure this connects $conn to your database
 
-// Your existing PHP code to handle form submission
+// Fetch categories from product_categories table
+$category_query = "SELECT * FROM product_categories";
+$category_result = $conn->query($category_query);
+
+// Handle form submission
 if (isset($_POST['add_product'])) {
     $name = $_POST['product_name'];
     $price = $_POST['product_price'];
     $quantity = $_POST['product_quantity'];
     $description = $_POST['product_description'];
-    $category = $_POST['product_category']; // New category field
+    $category = $_POST['product_category'];
 
     // Handle file upload
     $image = $_FILES['product_image']['name'];
@@ -15,10 +19,9 @@ if (isset($_POST['add_product'])) {
     $target_file = $target_dir . basename($image);
 
     if (move_uploaded_file($_FILES['product_image']['tmp_name'], $target_file)) {
-        // Updated SQL to include product_category
         $sql = "INSERT INTO products (product_name, product_price, product_quantity, product_description, product_image, product_category) 
                 VALUES ('$name', '$price', '$quantity', '$description', '$target_file', '$category')";
-        
+
         if ($conn->query($sql) === TRUE) {
             echo "<script>alert('Product added successfully!');</script>";
         } else {
@@ -29,7 +32,7 @@ if (isset($_POST['add_product'])) {
     }
 }
 
-// Fetch products from database
+// Fetch existing products
 $result = $conn->query("SELECT * FROM products");
 ?>
 
@@ -55,13 +58,18 @@ $result = $conn->query("SELECT * FROM products");
          <input type="number" placeholder="Enter product quantity" name="product_quantity" class="box" required />
          <input type="text" placeholder="Enter description" name="product_description" class="box" required />
 
-         <!-- New dropdown for category -->
+         <!-- Dynamic category dropdown -->
          <select name="product_category" class="box" required>
             <option value="" disabled selected>Select category</option>
-            <option value="Nintendo">Nintendo</option>
-            <option value="Consoles">Consoles</option>
-            <option value="Accessories">Accessories</option>
-            <option value="VR">VR</option>
+            <?php
+            if ($category_result->num_rows > 0) {
+                while ($cat = $category_result->fetch_assoc()) {
+                    echo '<option value="' . htmlspecialchars($cat['category_name']) . '">' . htmlspecialchars($cat['category_name']) . '</option>';
+                }
+            } else {
+                echo '<option value="">No categories found</option>';
+            }
+            ?>
          </select>
 
          <input type="file" accept="image/png, image/jpeg, image/jpg" name="product_image" class="box" required />
