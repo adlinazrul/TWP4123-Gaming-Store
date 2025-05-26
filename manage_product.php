@@ -198,7 +198,7 @@ $result = mysqli_query($conn, $sql);
 
 		<section id="product-list">
 			<h2>Manage Products</h2>
-			<button class="add-product" onclick="window.location.href='addproduct.php'">Add New Product</button>
+			<button class="add-product" onclick="window.location.href='addproduct2.php'">Add New Product</button>
 			<table>
 				<thead>
 					<tr>
