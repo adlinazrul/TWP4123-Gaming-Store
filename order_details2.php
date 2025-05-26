@@ -26,7 +26,7 @@ if (isset($_POST['update_status'])) {
         $stmt->bind_param("si", $new_status, $order_id);
         if ($stmt->execute()) {
             // Redirect to avoid resubmission and reflect the update
-            header("Location: order_details.php?order_id=$order_id");
+            header("Location: order_details2.php?order_id=$order_id");
             exit();
         } else {
             echo "<div class='notification'>Error updating status.</div>";
