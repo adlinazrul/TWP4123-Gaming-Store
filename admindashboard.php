@@ -459,22 +459,10 @@ $conn->close();
                     <span class="text">Dashboard</span>
                 </a>
             </li>
-            <li>
-                <a href="manageproduct.php">
-                    <i class='bx bxs-shopping-bag-alt'></i>
-                    <span class="text">Product Management</span>
-                </a>
-            </li>
-            <li>
-                <a href="manage_category.php">
-                    <i class='bx bxs-category'></i>
-                    <span class="text">Category Management</span>
-                </a>
-            </li>
-            <li>
-                <a href="order.php">
-                    <i class='bx bxs-doughnut-chart'></i>
-                    <span class="text">Order</span>
+             <li>
+                <a href="addadmin.php">
+                    <i class='bx bxs-group'></i>
+                    <span class="text">Admin</span>
                 </a>
             </li>
             <li>
@@ -484,11 +472,25 @@ $conn->close();
                 </a>
             </li>
             <li>
-                <a href="addadmin.php">
-                    <i class='bx bxs-group'></i>
-                    <span class="text">Admin</span>
+                <a href="manage_category.php">
+                    <i class='bx bxs-category'></i>
+                    <span class="text">Category Management</span>
                 </a>
             </li>
+            <li>
+                <a href="manageproduct.php">
+                    <i class='bx bxs-shopping-bag-alt'></i>
+                    <span class="text">Product Management</span>
+                </a>
+            </li>
+            <li>
+                <a href="order.php">
+                    <i class='bx bxs-doughnut-chart'></i>
+                    <span class="text">Order</span>
+                </a>
+            </li>
+            
+           
         </ul>
         <ul class="side-menu">
             <li>
