@@ -19,11 +19,11 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Query to get all customers
-$sql = "SELECT id, first_name, last_name, email, phone, birthdate, username, bio, address FROM customers";
+$sql = "SELECT id, first_name, last_name, email, phone, birthdate, username, bio, address, city, state, postcode, country, account_status FROM customers";
+
 $result = $conn->query($sql);
 
-// Get admin profile image
+// Fetch admin profile image
 if ($admin_id) {
     $query = "SELECT image FROM admin_list WHERE id = ?";
     $stmt = $conn->prepare($query);
@@ -69,7 +69,7 @@ if ($admin_id) {
 
         table th {
             background-color: #d03b3b;
-            color: #fff;
+            color: white;
         }
     </style>
 </head>
@@ -78,13 +78,32 @@ if ($admin_id) {
 <section id="sidebar">
     <a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
     <ul class="side-menu top">
-        <li><a href="dashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
-        <li><a href="manage_product.php"><i class='bx bxs-shopping-bag-alt'></i><span class="text">Product Management</span></a></li>
-        <li><a href="managecategory.php"><i class='bx bxs-category'></i><span class="text">Category Management</span></a></li>
-        <li><a href="order_admin.php"><i class='bx bxs-doughnut-chart'></i><span class="text">Order</span></a></li>
-        <li class="active"><a href="cust_list.php"><i class='bx bxs-user'></i><span class="text">Customer</span></a></li>
-        <li><a href="view_admin.php"><i class='bx bxs-group'></i><span class="text">Admin</span></a></li>
-    </ul>
+        <li><a href="admindashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
+        <li>
+                <a href="cust_list.php">
+                    <i class='bx bxs-user'></i>
+                    <span class="text">Customer</span>
+                </a>
+            </li>
+            <li>
+                <a href="managecategory.php">
+                    <i class='bx bxs-category'></i>
+                    <span class="text">Category Management</span>
+                </a>
+            </li>
+            <li>
+                <a href="manage_product.php">
+                    <i class='bx bxs-shopping-bag-alt'></i>
+                    <span class="text">Product Management</span>
+                </a>
+            </li>
+            
+            <li>
+                <a href="order_admin.php">
+                    <i class='bx bxs-doughnut-chart'></i>
+                    <span class="text">Order</span>
+                </a>
+            </li>    </ul>
     <ul class="side-menu">
         <li><a href="#"><i class='bx bxs-cog'></i><span class="text">Settings</span></a></li>
         <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
@@ -121,35 +140,45 @@ if ($admin_id) {
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
+                        <th>Full Name</th>
                         <th>Email</th>
                         <th>Phone</th>
-                        <th>Birthdate</th>
                         <th>Username</th>
                         <th>Bio</th>
                         <th>Address</th>
+                        <th>City</th>
+                        <th>State</th>
+                        <th>Postcode</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if ($result && $result->num_rows > 0): ?>
+                    <?php if ($result->num_rows > 0): ?>
                         <?php while ($row = $result->fetch_assoc()): ?>
                             <tr>
                                 <td><?= htmlspecialchars($row['id']) ?></td>
-                                <td><?= htmlspecialchars($row['first_name']) ?></td>
-                                <td><?= htmlspecialchars($row['last_name']) ?></td>
+                                <td><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></td>
                                 <td><?= htmlspecialchars($row['email']) ?></td>
                                 <td><?= htmlspecialchars($row['phone']) ?></td>
-                                <td><?= htmlspecialchars($row['birthdate']) ?></td>
                                 <td><?= htmlspecialchars($row['username']) ?></td>
                                 <td><?= htmlspecialchars($row['bio']) ?></td>
                                 <td><?= htmlspecialchars($row['address']) ?></td>
+                                <td><?= htmlspecialchars($row['city']) ?></td>
+                                <td><?= htmlspecialchars($row['state']) ?></td>
+                                <td><?= htmlspecialchars($row['postcode']) ?></td>
+                                <td>
+                                    <form method="POST" action="toggle_status_admin.php">
+                                        <input type="hidden" name="customer_id" value="<?= $row['id'] ?>">
+                                        <input type="hidden" name="current_status" value="<?= $row['account_status'] ?>">
+                                        <button type="submit" style="background-color: <?= $row['account_status'] == 'active' ? '#4CAF50' : '#f44336' ?>; color: white; border: none; padding: 5px 10px; cursor: pointer;">
+                                            <?= ucfirst($row['account_status']) ?>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <tr>
-                            <td colspan="9">No customers found.</td>
-                        </tr>
+                        <tr><td colspan="12">No customers found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
