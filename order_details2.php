@@ -207,7 +207,7 @@ if ($order) {
 
     echo "<div class='divider'></div>";
     echo "<div style='margin-top: 20px;'>";
-    echo "<a href='order.php' style='display: inline-block; padding: 10px 20px; background-color: #4a6fa5; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;'>← Back to Orders</a>";
+    echo "<a href='order_admin.php' style='display: inline-block; padding: 10px 20px; background-color: #4a6fa5; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;'>← Back to Orders</a>";
     echo "</div>";
     // Fetch items from order_items table
     $items_query = "SELECT product_name, price_items, quantity_items, image_items FROM items_ordered WHERE order_id = ?";
