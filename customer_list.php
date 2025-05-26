@@ -85,7 +85,7 @@ if ($admin_id) {
                     <span class="text">Admin</span>
                 </a>
             </li>
-            <li>
+            <li class="active">
                 <a href="customer_list.php">
                     <i class='bx bxs-user'></i>
                     <span class="text">Customer</span>
