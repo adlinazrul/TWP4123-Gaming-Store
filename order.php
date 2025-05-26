@@ -150,8 +150,7 @@ if ($admin_id) {
             <li>
                 <a href="manageproduct.php">
                     <i class='bx bxs-shopping-bag-alt'></i>
-                    <span class="text">Product Management</span>
-                </a>
+            -  </a>
             </li>
             <li class="active">
                 <a href="order.php">
