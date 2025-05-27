@@ -920,6 +920,10 @@ if (isset($_GET['id'])) {
                         alert('Error: ' + data.message);
                     }
                 })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding to cart');
+                });
             });
         });
 

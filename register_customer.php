@@ -35,15 +35,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $check_sql = "SELECT * FROM customers WHERE email = ? OR username = ?";
     $check_stmt = $conn->prepare($check_sql);
     $check_stmt->bind_param("ss", $email, $username);
-    $check_stmt->execute();
+    $check_stmt->execute(); 
     $result = $check_stmt->get_result();
 
     if ($result->num_rows > 0) {
         echo "<script>alert('Email or username already exists. Please choose another.'); window.history.back();</script>";
-        exit();
-    }
-    $check_stmt->close();
+    } else {
 
+        $domain = substr(strrchr($email, "@"), 1);
+
+        // List of accepted domains or rules
+        $valid_university_pattern = '/\.edu\.my$/i'; // allows all Malaysian university emails
+        $check_mx = checkdnsrr($domain, "MX"); // check MX records
+
+        // Blacklist of known typo domains (e.g., gmail.co instead of gmail.com)
+$blacklisted_domains = ['gmail.co', 'yahoo.co', 'hotmail.co', 'outlook.co'];
+
+// Reject if domain is blacklisted
+if (in_array(strtolower($domain), $blacklisted_domains)) {
+    echo "<script>alert('Invalid email domain! Did you mean to use .com instead of .co?'); window.location.href='addadmin.php';</script>";
+    exit;
+}
+
+        // If it's not a .edu.my OR a domain with MX, reject
+        if (!preg_match($valid_university_pattern, $domain) && !$check_mx) {
+            echo "<script>alert('Invalid email domain! Only valid public or Malaysian university emails allowed.'); window.location.href='addadmin.php';</script>";
+            exit;
+        }
+
+        
+    
+    $check_stmt->close();
+    }
     // Insert into database
     $sql = "INSERT INTO customers 
         (first_name, last_name, username, email, phone, address, city, state, postcode, country, password) 
