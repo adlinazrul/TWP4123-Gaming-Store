@@ -451,7 +451,9 @@
                <div class="form-group">
               <label for="email">EMAIL</label>
 <input type="text" id="email" name="email" required
+
 pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?"
+
 title="Enter a valid email like example@domain.com">
             </div>
 
@@ -472,23 +474,26 @@ title="Enter a valid email like example@domain.com">
                         <div class="form-group">
                             <label for="state">STATE</label>
                             <select id="state" name="state" required>
-                        <option value="">Select State</option>
-                         <option value="Johor">Johor</option>
-                        <option value="Kedah">Kedah</option>
-                        <option value="Kelantan">Kelantan</option>
-                        <option value="Melaka">Melaka</option>
-                       <option value="Negeri Sembilan">Negeri Sembilan</option>
-                       <option value="Pahang">Pahang</option>
-                       <option value="Perak">Perak</option>
-                       <option value="Perlis">Perlis</option>
-                      <option value="Pulau Pinang">Pulau Pinang</option>
-                      <option value="Sabah">Sabah</option>
-                      <option value="Sarawak">Sarawak</option>
-                      <option value="Selangor">Selangor</option>
-    <option value="Terengganu">Terengganu</option>
-    <option value="Kuala Lumpur">Kuala Lumpur</option>
-    <option value="Labuan">Labuan</option>
-    <option value="Putrajaya">Putrajaya</option>
+                      
+
+  <option value="" disabled selected>Select a state</option>
+  <option style="background-color: white; color: black;" value="johor">Johor</option>
+  <option style="background-color: white; color: black;" value="kedah">Kedah</option>
+  <option style="background-color: white; color: black;" value="kelantan">Kelantan</option>
+  <option style="background-color: white; color: black;" value="kl">Kuala Lumpur</option>
+  <option style="background-color: white; color: black;" value="labuan">Labuan</option>
+  <option style="background-color: white; color: black;" value="melaka">Melaka</option>
+  <option style="background-color: white; color: black;" value="ns">Negeri Sembilan</option>
+  <option style="background-color: white; color: black;" value="pahang">Pahang</option>
+  <option style="background-color: white; color: black;" value="penang">Penang</option>
+  <option style="background-color: white; color: black;" value="perak">Perak</option>
+  <option style="background-color: white; color: black;" value="perlis">Perlis</option>
+  <option style="background-color: white; color: black;" value="putrajaya">Putrajaya</option>
+  <option style="background-color: white; color: black;" value="sabah">Sabah</option>
+  <option style="background-color: white; color: black;" value="sarawak">Sarawak</option>
+  <option style="background-color: white; color: black;" value="selangor">Selangor</option>
+  <option style="background-color: white; color: black;" value="terengganu">Terengganu</option>
+
 </select>
                           
                         </div>
@@ -610,7 +615,7 @@ title="Enter a valid email like example@domain.com">
 
             // Form submission handler
             // Form submission handler with email and password validation
-document.getElementById('registrationForm').addEventListener('submit', function(event) {
+    document.getElementById('registrationForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
     const email = document.getElementById("email").value;

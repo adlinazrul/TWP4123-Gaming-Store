@@ -19,7 +19,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT id, first_name, last_name, email, phone, birthdate, username, bio, address, city, state, postcode, country, account_status FROM customers";
+$sql = "SELECT id,account_status, first_name, last_name, email, phone, birthdate, username, bio, address, city, state, postcode, country FROM customers";
 
 $result = $conn->query($sql);
 
