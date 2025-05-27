@@ -460,9 +460,9 @@ $conn->close();
                 </a>
             </li>
             <li>
-                <a href="manage_product.php">
-                    <i class='bx bxs-shopping-bag-alt'></i>
-                    <span class="text">Product Management</span>
+                <a href="cust_list.php">
+                    <i class='bx bxs-user'></i>
+                    <span class="text">Customer</span>
                 </a>
             </li>
             <li>
@@ -472,23 +472,19 @@ $conn->close();
                 </a>
             </li>
             <li>
+                <a href="manage_product.php">
+                    <i class='bx bxs-shopping-bag-alt'></i>
+                    <span class="text">Product Management</span>
+                </a>
+            </li>
+            
+            <li>
                 <a href="order_admin.php">
                     <i class='bx bxs-doughnut-chart'></i>
                     <span class="text">Order</span>
                 </a>
             </li>
-            <li>
-                <a href="cust_list.php">
-                    <i class='bx bxs-user'></i>
-                    <span class="text">Customer</span>
-                </a>
-            </li>
-            <li>
-                <a href="view_admin.php">
-                    <i class='bx bxs-group'></i>
-                    <span class="text">Admin</span>
-                </a>
-            </li>
+            
         </ul>
         <ul class="side-menu">
             <li>

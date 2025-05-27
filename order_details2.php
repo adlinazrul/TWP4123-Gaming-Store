@@ -26,7 +26,7 @@ if (isset($_POST['update_status'])) {
         $stmt->bind_param("si", $new_status, $order_id);
         if ($stmt->execute()) {
             // Redirect to avoid resubmission and reflect the update
-            header("Location: order_details.php?order_id=$order_id");
+            header("Location: order_details2.php?order_id=$order_id");
             exit();
         } else {
             echo "<div class='notification'>Error updating status.</div>";
@@ -192,7 +192,7 @@ if ($order) {
 
     // Status update form
     echo "<div class='status-form'>";
-    echo "<form method='post' action='order_details.php?order_id=" . $order_id . "'>";
+    echo "<form method='post' action='order_details2.php?order_id=" . $order_id . "'>";
     echo "<label for='status_order' style='margin-right: 10px;'>Update Order Status:</label>";
     echo "<select name='status_order' id='status_order'>";
     echo "<option value='Pending' " . ($order['status_order'] == 'Pending' ? 'selected' : '') . ">Pending</option>";
@@ -207,7 +207,7 @@ if ($order) {
 
     echo "<div class='divider'></div>";
     echo "<div style='margin-top: 20px;'>";
-    echo "<a href='order.php' style='display: inline-block; padding: 10px 20px; background-color: #4a6fa5; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;'>← Back to Orders</a>";
+    echo "<a href='order_admin.php' style='display: inline-block; padding: 10px 20px; background-color: #4a6fa5; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;'>← Back to Orders</a>";
     echo "</div>";
     // Fetch items from order_items table
     $items_query = "SELECT product_name, price_items, quantity_items, image_items FROM items_ordered WHERE order_id = ?";

@@ -142,35 +142,35 @@ $result = $conn->query($sql);
 			</a>
 		</li>
 		<li>
-			<a href="manageproduct.php">
-				<i class='bx bxs-shopping-bag-alt'></i>
-				<span class="text">Product Management</span>
-			</a>
-		</li>
-		<li class="active">
-			<a href="manage_category.php">
-				<i class='bx bxs-category'></i>
-				<span class="text">Category Management</span>
-			</a>
-		</li>
-		<li>
-			<a href="order.php">
-				<i class='bx bxs-doughnut-chart'></i>
-				<span class="text">Order</span>
-			</a>
-		</li>
-		<li>
-			<a href="customer_list.php">
-				<i class='bx bxs-user'></i>
-				<span class="text">Customer</span>
-			</a>
-		</li>
-		<li>
-			<a href="addadmin.php">
-				<i class='bx bxs-group'></i>
-				<span class="text">Admin</span>
-			</a>
-		</li>
+                <a href="addadmin.php">
+                    <i class='bx bxs-group'></i>
+                    <span class="text">Admin</span>
+                </a>
+            </li>
+            <li>
+                <a href="customer_list.php">
+                    <i class='bx bxs-user'></i>
+                    <span class="text">Customer</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="manage_category.php">
+                    <i class='bx bxs-category'></i>
+                    <span class="text">Category Management</span>
+                </a>
+            </li>
+            <li>
+                <a href="manageproduct.php">
+                    <i class='bx bxs-shopping-bag-alt'></i>
+                    <span class="text">Product Management</span>
+                </a>
+            </li>
+            <li>
+                <a href="order.php">
+                    <i class='bx bxs-doughnut-chart'></i>
+                    <span class="text">Order</span>
+                </a>
+            </li>
 	</ul>
 	<ul class="side-menu">
 		<li>
