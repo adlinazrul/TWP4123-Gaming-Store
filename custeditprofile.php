@@ -581,7 +581,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             <div class="form-group">
                 <label for="phone">PHONE</label>
-                <input type="tel" id="phone" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone']) ?>" readonly>
+                <input type="tel" id="phone" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone']) ?>" 
+                      pattern="[0-9]{10,15}"  title="Enter a valid phone number (10-15 digits)" required>
+
             </div>
             
             <div class="form-group" style="grid-column: span 2;">
@@ -617,13 +619,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <div class="form-group" style="position: relative;">
                 <label for="new_password">NEW PASSWORD</label>
-                <input type="password" id="new_password" name="new_password" class="form-control" required>
+                <input type="password" id="new_password" name="new_password" class="form-control"  pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+            title="Must contain at least one number, one lowercase letter, one uppercase letter, one special character, and be at least 8 characters long" required>
                 <span onclick="togglePassword('new_password')" style="position:absolute; top:68%; right:10px; transform:translateY(-50%); cursor:pointer;">👁️</span>
             </div>
 
             <div class="form-group" style="position: relative;">
                 <label for="confirm_password">CONFIRM PASSWORD</label>
-                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+            title="Must contain at least one number, one lowercase letter, one uppercase letter, one special character, and be at least 8 characters long" required>
                 <span onclick="togglePassword('confirm_password')" style="position:absolute; top:68%; right:10px; transform:translateY(-50%); cursor:pointer;">👁️</span>
             </div>
 
