@@ -601,34 +601,33 @@ $conn->close();
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Pending', 'Processing', 'Completed', 'Cancelled'],
+                        labels: ['Pending', 'Completed' ],
                         datasets: [{
                             label: 'Order Status',
                             data: [
                                 <?php echo $statusCounts['pending']; ?>,
-                                <?php echo $statusCounts['processing']; ?>,
                                 <?php echo $statusCounts['completed']; ?>,
-                                <?php echo $statusCounts['cancelled']; ?>
+
                             ],
                             backgroundColor: [
                                 'rgba(255, 193, 7, 0.7)', // Yellow for pending
-                                'rgba(253, 114, 56, 0.7)', // Orange for processing
+                             
                                 'rgba(40, 167, 69, 0.7)', // Green for completed
-                                'rgba(169, 50, 38, 0.7)'  // Red for cancelled
+                                
                             ],
                             borderColor: [
                                 'rgba(255, 193, 7, 1)',
-                                'rgba(253, 114, 56, 1)',
+                                
                                 'rgba(40, 167, 69, 1)',
-                                'rgba(169, 50, 38, 1)'
+                                
                             ],
                             borderWidth: 1,
                             borderRadius: 8,
                             hoverBackgroundColor: [
                                 'rgba(255, 193, 7, 1)',
-                                'rgba(253, 114, 56, 1)',
+                                
                                 'rgba(40, 167, 69, 1)',
-                                'rgba(169, 50, 38, 1)'
+                                
                             ]
                         }]
                     },
