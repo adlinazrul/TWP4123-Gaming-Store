@@ -33,21 +33,23 @@ if ($stmt->fetch() && !empty($image)) {
 $stmt->close();
 
 // Fetch order status counts for the chart
-$statusCounts = [
-    'pending' => 0,
-    'processing' => 0,
-    'completed' => 0,
-    'cancelled' => 0
-];
+$statusCounts = [];
 
-$statusQuery = "SELECT status_order, COUNT(DISTINCT order_id) as count FROM items_ordered GROUP BY status_order";
+// Query and normalize status_order values
+$statusQuery = "SELECT LOWER(status_order) as status, COUNT(DISTINCT order_id) as count FROM items_ordered GROUP BY status";
 $result = $conn->query($statusQuery);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
-        $status = strtolower($row['status_order']);
-        if (isset($statusCounts[$status])) {
-            $statusCounts[$status] = (int)$row['count'];
-        }
+        $status = $row['status'];
+        $statusCounts[$status] = (int)$row['count'];
+    }
+}
+
+// Set default to 0 for common statuses not in DB yet
+$allStatuses = ['pending', 'processing', 'paid', 'completed', 'cancelled'];
+foreach ($allStatuses as $status) {
+    if (!isset($statusCounts[$status])) {
+        $statusCounts[$status] = 0;
     }
 }
 
@@ -91,6 +93,7 @@ if ($resultCust) {
 
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
