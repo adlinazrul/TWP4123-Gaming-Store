@@ -33,21 +33,23 @@ if ($stmt->fetch() && !empty($image)) {
 $stmt->close();
 
 // Fetch order status counts for the chart
-$statusCounts = [
-    'pending' => 0,
-    'processing' => 0,
-    'completed' => 0,
-    'cancelled' => 0
-];
+$statusCounts = [];
 
-$statusQuery = "SELECT status_order, COUNT(DISTINCT order_id) as count FROM items_ordered GROUP BY status_order";
+// Query and normalize status_order values
+$statusQuery = "SELECT LOWER(status_order) as status, COUNT(DISTINCT order_id) as count FROM items_ordered GROUP BY status";
 $result = $conn->query($statusQuery);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
-        $status = strtolower($row['status_order']);
-        if (isset($statusCounts[$status])) {
-            $statusCounts[$status] = (int)$row['count'];
-        }
+        $status = $row['status'];
+        $statusCounts[$status] = (int)$row['count'];
+    }
+}
+
+// Set default to 0 for common statuses not in DB yet
+$allStatuses = ['pending', 'processing', 'paid', 'completed', 'cancelled'];
+foreach ($allStatuses as $status) {
+    if (!isset($statusCounts[$status])) {
+        $statusCounts[$status] = 0;
     }
 }
 
@@ -91,6 +93,7 @@ if ($resultCust) {
 
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -598,34 +601,33 @@ $conn->close();
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Pending', 'Processing', 'Completed', 'Cancelled'],
+                        labels: ['Pending', 'Completed' ],
                         datasets: [{
                             label: 'Order Status',
                             data: [
                                 <?php echo $statusCounts['pending']; ?>,
-                                <?php echo $statusCounts['processing']; ?>,
                                 <?php echo $statusCounts['completed']; ?>,
-                                <?php echo $statusCounts['cancelled']; ?>
+
                             ],
                             backgroundColor: [
                                 'rgba(255, 193, 7, 0.7)', // Yellow for pending
-                                'rgba(253, 114, 56, 0.7)', // Orange for processing
+                             
                                 'rgba(40, 167, 69, 0.7)', // Green for completed
-                                'rgba(169, 50, 38, 0.7)'  // Red for cancelled
+                                
                             ],
                             borderColor: [
                                 'rgba(255, 193, 7, 1)',
-                                'rgba(253, 114, 56, 1)',
+                                
                                 'rgba(40, 167, 69, 1)',
-                                'rgba(169, 50, 38, 1)'
+                                
                             ],
                             borderWidth: 1,
                             borderRadius: 8,
                             hoverBackgroundColor: [
                                 'rgba(255, 193, 7, 1)',
-                                'rgba(253, 114, 56, 1)',
+                                
                                 'rgba(40, 167, 69, 1)',
-                                'rgba(169, 50, 38, 1)'
+                                
                             ]
                         }]
                     },
