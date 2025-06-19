@@ -1,148 +1,151 @@
 <?php
 session_start();
-include 'db_connection.php';
+$conn = new mysqli("localhost", "root", "", "gaming_store");
+if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
-if (!isset($_SESSION['email'])) {
-    header("Location: custlogin.php");
-    exit();
-}
+// Validate if form is submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Start transaction for atomic operations
+    $conn->begin_transaction();
+    
+    try {
+        // 1. Retrieve customer information
+        $firstName = $_POST['first_name'];
+        $lastName = $_POST['last_name'];
+        $email = $_POST['email'];
+        $phone = $_POST['phone_number'];
+        $street = $_POST['street_address'];
+        $city = $_POST['city'];
+        $state = $_POST['state'];
+        $postcode = $_POST['postcode'];
+        $country = $_POST['country'];
+        $cardName = $_POST['cardholder_name'];
+        $cardNumber = $_POST['card_number'];
+        $expiryDate = $_POST['expiry_date'];
+        $cvv = $_POST['cvv'];
+        $totalPrice = $_POST['total_price'];
+        $tax = $_POST['tax_fee']; 
+        $date = date('Y-m-d H:i:s');
+        $userEmail = $_SESSION['email'] ?? $email;
 
-$email = $_SESSION['email'];
+        // 2. Insert order into `orders` table
+       $order_status = "Pending";
 
-// Get user ID from customers table
-$user_query = $conn->prepare("SELECT id FROM customers WHERE email = ?");
-$user_query->bind_param("s", $email);
-$user_query->execute();
-$user_result = $user_query->get_result();
-$user = $user_result->fetch_assoc();
-$user_id = $user['id'];
+$stmt = $conn->prepare("INSERT INTO orders 
+(email, total_price, tax_fee, first_name, last_name, phone_number, street_address, city, state, postcode, country, cardholder_name, card_number, expiry_date, cvv, date, status_order) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-// Sanitize POST data
-$first_name = $_POST['first_name'];
-$last_name = $_POST['last_name'];
-$phone_number = $_POST['phone_number'];
-$street_address = $_POST['street_address'];
-$city = $_POST['city'];
-$state = $_POST['state'];
-$postcode = $_POST['postcode'];
-$country = $_POST['country'];
-$cardholder_name = $_POST['cardholder_name'];
-$card_number = str_replace(' ', '', $_POST['card_number']); // remove spaces
-$expiry_date = $_POST['expiry_date'];
-$cvv = $_POST['cvv'];
-$total_price = $_POST['total_price'];
-$tax_fee = $_POST['tax_fee'];
-$order_date = date("Y-m-d H:i:s");
-$status_order = "Pending";
-
-// Determine order type
-$order_type = $_POST['order_type'] ?? 'cart'; // default to cart if not set
-
-// Validate credit card against dummy table
-$card_query = $conn->prepare("SELECT * FROM credit_card WHERE card_number = ? AND cardholder_name = ? AND expiry_date = ? AND cvv = ?");
-$card_query->bind_param("ssss", $card_number, $cardholder_name, $expiry_date, $cvv);
-$card_query->execute();
-$card_result = $card_query->get_result();
-
-if ($card_result->num_rows === 0) {
-    echo "<script>alert('Invalid credit card information.'); window.location.href='checkout.php';</script>";
-    exit();
-}
-
-// Insert into orders table
-$order_stmt = $conn->prepare("INSERT INTO orders (user_id, first_name, last_name, email, phone_number, street_address, city, state, postcode, country, card_number, cardholder_name, expiry_date, cvv, total_price, tax_fee, date, status_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-$order_stmt->bind_param(
-    "isssssssssssssddss",
-    $user_id, $first_name, $last_name, $email, $phone_number,
-    $street_address, $city, $state, $postcode, $country,
-    $card_number, $cardholder_name, $expiry_date, $cvv,
-    $total_price, $tax_fee, $order_date, $status_order
+$stmt->bind_param(
+    "sddssssssssssssss", 
+    $userEmail, $totalPrice, $tax, $firstName, $lastName, $phone, $street, $city, 
+    $state, $postcode, $country, $cardName, $cardNumber, $expiryDate, $cvv, $date, $order_status
 );
 
-if (!$order_stmt->execute()) {
-    die("Order insertion failed: " . $order_stmt->error);
-}
+        $stmt->execute();
+        $order_id = $stmt->insert_id;
+        $stmt->close();
 
-$order_id = $order_stmt->insert_id;
+        // 3. Process ordered items with stock validation
+        $processed_items = [];
+        $out_of_stock_items = [];
 
-// Unified full address and name
-$full_name = $first_name . " " . $last_name;
-$full_address = $street_address . ", " . $city . ", " . $state . " " . $postcode . ", " . $country;
+        if (isset($_POST['order_type']) && $_POST['order_type'] === 'buy_now') {
+            // Single product checkout (from checkout2.php)
+            $product_id = intval($_POST['product_id']);
+            $quantity = intval($_POST['quantity']);
+            
+            // Verify stock and deduct
+            $stock_check = $conn->prepare("SELECT id, product_name, product_price, product_quantity FROM products WHERE id = ? FOR UPDATE");
+            $stock_check->bind_param("i", $product_id);
+            $stock_check->execute();
+            $product = $stock_check->get_result()->fetch_assoc();
+            
+            if ($product && $product['product_quantity'] >= $quantity) {
+                // Deduct stock
+                $update_stock = $conn->prepare("UPDATE products SET product_quantity = product_quantity - ? WHERE id = ?");
+                $update_stock->bind_param("ii", $quantity, $product_id);
+                $update_stock->execute();
+                
+                // Record order item
+                $stmt2 = $conn->prepare("INSERT INTO items_ordered (order_id, product_id, product_name, price_items, quantity_items, status_order, was_in_stock) VALUES (?, ?, ?, ?, ?, 'Paid', TRUE)");
+                $stmt2->bind_param("iisdi", $order_id, $product_id, $product['product_name'], $product['product_price'], $quantity);
+                $stmt2->execute();
+                $stmt2->close();
+                
+                $processed_items[] = $product['product_name'] . " (x$quantity)";
+            } else {
+                $out_of_stock_items[] = $product['product_name'] . " (Available: " . ($product['product_quantity'] ?? 0) . ")";
+            }
+        } else {
+            // Cart checkout (from checkout.php)
+            foreach ($_POST['cart'] as $item) {
+                $product_id = intval($item['product_id']);
+                $quantity = intval($item['quantity']);
+                
+                // Verify stock and deduct
+                $stock_check = $conn->prepare("SELECT id, product_name, product_price, product_quantity FROM products WHERE id = ? FOR UPDATE");
+                $stock_check->bind_param("i", $product_id);
+                $stock_check->execute();
+                $product = $stock_check->get_result()->fetch_assoc();
+                
+                if ($product && $product['product_quantity'] >= $quantity) {
+                    // Deduct stock
+                    $update_stock = $conn->prepare("UPDATE products SET product_quantity = product_quantity - ? WHERE id = ?");
+                    $update_stock->bind_param("ii", $quantity, $product_id);
+                    $update_stock->execute();
+                    
+                    // Record order item
+                    $stmt3 = $conn->prepare("INSERT INTO items_ordered (order_id, product_id, product_name, price_items, quantity_items, status_order, was_in_stock) VALUES (?, ?, ?, ?, ?, 'Paid', TRUE)");
+                    $stmt3->bind_param("iisdi", $order_id, $product_id, $product['product_name'], $product['product_price'], $quantity);
+                    $stmt3->execute();
+                    $stmt3->close();
+                    
+                    $processed_items[] = $product['product_name'] . " (x$quantity)";
+                } else {
+                    $out_of_stock_items[] = $product['product_name'] . " (Available: " . ($product['product_quantity'] ?? 0) . ")";
+                }
+            }
+            
+            // Clear cart only if all items were processed
+            if (empty($out_of_stock_items)) {
+                $conn->query("DELETE FROM cart_items WHERE email = '$userEmail'");
+            }
+        }
 
-// ✅ If "Buy Now" from checkout2.php
-if ($order_type === 'buy_now') {
-    $product_id = intval($_POST['product_id']);
-    $quantity = intval($_POST['quantity']);
+        // 4. Check if any items were processed
+        if (empty($processed_items)) {
+            throw new Exception("No items were available for purchase");
+        }
 
-    // Get product details
-    $product_stmt = $conn->prepare("SELECT product_name, product_price, product_image FROM products WHERE id = ?");
-    $product_stmt->bind_param("i", $product_id);
-    $product_stmt->execute();
-    $product_result = $product_stmt->get_result();
+        // 5. Update order status to reflect stock update
+        $conn->query("UPDATE orders SET stock_updated = TRUE WHERE id = $order_id");
 
-    if ($product_result->num_rows > 0) {
-        $product = $product_result->fetch_assoc();
+        // 6. Record in stock history (optional)
+        // (Implement if you created the stock_history table)
 
-        $name = $product['product_name'];
-        $price = $product['product_price'];
-        $image = $product['product_image'];
+        // Commit transaction if all operations succeeded
+        $conn->commit();
 
-        // Insert item into items_ordered
-        $item_stmt = $conn->prepare("INSERT INTO items_ordered (order_id, product_name, price_items, quantity_items, image_items, status_order, name_cust, num_tel_cust, address_cust, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $item_stmt->bind_param(
-            "isdissssss",
-            $order_id,
-            $name,
-            $price,
-            $quantity,
-            $image,
-            $status_order,
-            $full_name,
-            $phone_number,
-            $full_address,
-            $order_date
-        );
-        $item_stmt->execute();
+        // 7. Prepare success/partial success message
+        $message = "✅ Order #$order_id placed successfully!";
+        if (!empty($out_of_stock_items)) {
+            $message .= "\n\nSome items were out of stock:\n- " . implode("\n- ", $out_of_stock_items);
+            $_SESSION['out_of_stock_items'] = $out_of_stock_items;
+        }
+
+        // 8. Clear session data and redirect
+        unset($_SESSION['single_product']);
+        unset($_SESSION['checkout_source']);
+        echo "<script>alert('".addslashes($message)."'); window.location.href='orderhistory.php';</script>";
+        exit;
+        
+    } catch (Exception $e) {
+        $conn->rollback();
+        echo "<script>alert('❌ Order failed: ".addslashes($e->getMessage())."'); window.location.href='cart.php';</script>";
+        exit;
     }
+} else {
+    echo "❌ Invalid access.";
 }
-// ✅ If from Cart
-else if (isset($_POST['cart']) && is_array($_POST['cart'])) {
-    foreach ($_POST['cart'] as $item) {
-        $product_id = $item['product_id'];
-        $quantity = $item['quantity'];
-
-        $product_stmt = $conn->prepare("SELECT product_name, product_price, product_image FROM products WHERE id = ?");
-        $product_stmt->bind_param("i", $product_id);
-        $product_stmt->execute();
-        $product_result = $product_stmt->get_result();
-        $product = $product_result->fetch_assoc();
-
-        $name = $product['product_name'];
-        $price = $product['product_price'];
-        $image = $product['product_image'];
-
-        $item_stmt = $conn->prepare("INSERT INTO items_ordered (order_id, product_name, price_items, quantity_items, image_items, status_order, name_cust, num_tel_cust, address_cust, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $item_stmt->bind_param(
-            "isdissssss",
-            $order_id,
-            $name,
-            $price,
-            $quantity,
-            $image,
-            $status_order,
-            $full_name,
-            $phone_number,
-            $full_address,
-            $order_date
-        );
-        $item_stmt->execute();
-    }
-
-    // Clear cart after order
-    $clear_cart = $conn->prepare("DELETE FROM cart_items WHERE email = ?");
-    $clear_cart->bind_param("s", $email);
-    $clear_cart->execute();
-}
-
-echo "<script>alert('Order placed successfully!'); window.location.href='ORDERHISTORY.php';</script>";
+$conn->close();
 ?>

@@ -1,6 +1,5 @@
 <?php
-session_start(); // <-- Required for using $_SESSION
-
+session_start();
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -20,13 +19,11 @@ if (isset($_GET['id'])) {
 
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
-
-        // ✅ Store single product info in session for checkout
         $_SESSION['checkout_source'] = 'single';
         $_SESSION['single_product'] = [
             'name' => $product['product_name'],
             'price' => $product['product_price'],
-            'quantity' => 1, // default quantity, can be modified later
+            'quantity' => 1,
             'image' => $product['product_image']
         ];
     } else {
@@ -516,7 +513,6 @@ if (isset($_GET['id'])) {
             border-top: 1px solid rgba(255, 0, 0, 0.1);
         }
         
-        /* Mobile menu styles */
         #menuOverlay {
             position: fixed;
             top: 0;
@@ -582,7 +578,6 @@ if (isset($_GET['id'])) {
             padding-left: 10px;
         }
         
-        /* Responsive adjustments */
         @media (max-width: 1024px) {
             .nav-links {
                 gap: 15px;
@@ -674,7 +669,6 @@ if (isset($_GET['id'])) {
         </nav>
     </header>
 
-    <!-- Mobile Menu Overlay -->
     <div id="menuOverlay">
         <div id="menuContainer">
             <span id="closeMenu">&times;</span>
@@ -686,13 +680,11 @@ if (isset($_GET['id'])) {
         </div>
     </div>
 
-    <!-- Product Detail Section -->
     <div class="product-detail-container">
         <div class="product-gallery">
             <img src="uploads/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="main-image" id="mainImage">
             <div class="thumbnail-container">
                 <img loading="lazy" src="uploads/<?= htmlspecialchars($product['product_image']) ?>" alt="Main view" class="thumbnail active" onclick="changeImage(this)">
-                <!-- Additional thumbnails could be added here if available in database -->
             </div>
         </div>
 
@@ -709,16 +701,11 @@ if (isset($_GET['id'])) {
 
             <div class="product-price">RM <?= number_format($product['product_price'], 2) ?></div>
             
-            <div class="stock-status <?= $product['product_quantity'] > 10 ? 'in-stock' : ($product['product_quantity'] > 0 ? 'low-stock' : 'out-of-stock') ?>">
-                <i class="fas <?= $product['product_quantity'] > 10 ? 'fa-check-circle' : ($product['product_quantity'] > 0 ? 'fa-exclamation-circle' : 'fa-times-circle') ?>"></i>
+            <div class="stock-status <?= $product['product_quantity'] > $product['min_stock_threshold'] ? 'in-stock' : ($product['product_quantity'] > 0 ? 'low-stock' : 'out-of-stock') ?>">
+                <i class="fas <?= $product['product_quantity'] > $product['min_stock_threshold'] ? 'fa-check-circle' : ($product['product_quantity'] > 0 ? 'fa-exclamation-circle' : 'fa-times-circle') ?>"></i>
                 <span>
-                    <?php if($product['product_quantity'] > 10): ?>
-                        In Stock (<?= $product['product_quantity'] ?> available)
-                    <?php elseif($product['product_quantity'] > 0): ?>
-                        Low Stock (Only <?= $product['product_quantity'] ?> left!)
-                    <?php else: ?>
-                        Out of Stock
-                    <?php endif; ?>
+                    <?= $product['product_quantity'] > $product['min_stock_threshold'] ? "In Stock ({$product['product_quantity']} available)" : 
+                       ($product['product_quantity'] > 0 ? "Low Stock (Only {$product['product_quantity']} left!)" : "Out of Stock") ?>
                 </span>
             </div>
 
@@ -759,12 +746,10 @@ if (isset($_GET['id'])) {
                 <tr><th>Category</th><td><?= htmlspecialchars($product['product_category']) ?></td></tr>
                 <tr><th>Stock</th><td><?= $product['product_quantity'] ?> units</td></tr>
                 <tr><th>Price</th><td>RM <?= number_format($product['product_price'], 2) ?></td></tr>
-                <!-- Additional specifications could be added from database if available -->
             </table>
         </div>
     </div>
 
-    <!-- Footer -->
     <footer>
         <div class="footer-links">
             <a href="ABOUTUS.html">ABOUT US</a>
@@ -785,13 +770,11 @@ if (isset($_GET['id'])) {
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Mobile menu functionality
             let menuOverlay = document.getElementById("menuOverlay");
             let menuContainer = document.getElementById("menuContainer");
             let menuIcon = document.getElementById("menuIcon");
             let closeMenu = document.getElementById("closeMenu");
 
-            // Open menu
             menuIcon.addEventListener("click", function () {
                 menuOverlay.style.display = "block";
                 setTimeout(() => {
@@ -799,7 +782,6 @@ if (isset($_GET['id'])) {
                 }, 10);
             });
 
-            // Close menu when clicking "X"
             closeMenu.addEventListener("click", function (e) {
                 e.stopPropagation();
                 menuOverlay.classList.remove("active");
@@ -808,7 +790,6 @@ if (isset($_GET['id'])) {
                 }, 300);
             });
 
-            // Close menu when clicking outside of menu container
             menuOverlay.addEventListener("click", function (e) {
                 if (e.target === menuOverlay) {
                     menuOverlay.classList.remove("active");
@@ -819,21 +800,18 @@ if (isset($_GET['id'])) {
             });
         });
 
-        // Quantity functions
         function updateQuantity(change) {
             const quantityInput = document.getElementById('quantityInput');
             const formQuantity = document.getElementById('formQuantity');
             const buyNowQuantity = document.getElementById('buyNowQuantity');
             let newValue = parseInt(quantityInput.value) + change;
             
-            // Validate the new value
             if (newValue < 1) newValue = 1;
             if (newValue > <?= $product['product_quantity'] ?>) {
                 newValue = <?= $product['product_quantity'] ?>;
                 alert(`Only <?= $product['product_quantity'] ?> items available in stock!`);
             }
             
-            // Update all quantity fields
             quantityInput.value = newValue;
             formQuantity.value = newValue;
             buyNowQuantity.value = newValue;
@@ -857,12 +835,10 @@ if (isset($_GET['id'])) {
             buyNowQuantity.value = value;
         }
 
-        // Image gallery functionality
         function changeImage(thumbnail) {
             const mainImage = document.getElementById('mainImage');
             mainImage.src = thumbnail.src;
             
-            // Update active thumbnail
             document.querySelectorAll('.thumbnail').forEach(img => {
                 img.classList.remove('active');
             });

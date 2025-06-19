@@ -25,23 +25,39 @@ if ($result->num_rows === 0) {
 $customer = $result->fetch_assoc();
 $customer_id = $customer['id'];
 
-// Fetch cart items with product info
+// Fetch cart items with product info and stock status
 $stmt = $conn->prepare("
-    SELECT ci.product_id, ci.quantity, p.product_name, p.product_price, p.product_image, p.product_quantity
+    SELECT 
+        ci.product_id, 
+        ci.quantity, 
+        p.product_name, 
+        p.product_price, 
+        p.product_image, 
+        p.stock,
+        CASE 
+            WHEN p.stock <= 0 THEN 'Out Of Stock' 
+            WHEN p.stock < ci.quantity THEN 'Low Stock' 
+            ELSE 'In Stock' 
+        END as stock_status
     FROM cart_items ci
     JOIN products p ON ci.product_id = p.id
     WHERE ci.email = ?
 ");
 $stmt->bind_param("s", $customer_email);
-
 $stmt->execute();
 $result = $stmt->get_result();
 
 $cart_items = [];
 $cart_total = 0;
+$can_checkout = true;
 while ($row = $result->fetch_assoc()) {
     $cart_items[] = $row;
     $cart_total += $row['product_price'] * $row['quantity'];
+    
+    // Check if any item is out of stock or has insufficient stock
+    if ($row['stock'] <= 0 || $row['stock'] < $row['quantity']) {
+        $can_checkout = false;
+    }
 }
 ?>
 
@@ -599,6 +615,38 @@ while ($row = $result->fetch_assoc()) {
                 gap: 10px;
             }
         }
+        
+        /* Stock status styles */
+        .stock-status {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .stock-status.in-stock {
+            background-color: rgba(0, 170, 0, 0.2);
+            color: #00aa00;
+        }
+        
+        .stock-status.low-stock {
+            background-color: rgba(255, 153, 0, 0.2);
+            color: #ff9900;
+        }
+        
+        .stock-status.out-of-stock {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+        }
+        
+        .stock-warning {
+            color: #ff0000;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -660,18 +708,28 @@ while ($row = $result->fetch_assoc()) {
                     <div class="cart-item" data-product-id="<?= $item['product_id'] ?>">
                         <img src="images/<?= htmlspecialchars($item['product_image']) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
                         <div class="cart-item-details">
-                            <h3><?= htmlspecialchars($item['product_name']) ?></h3>
+                            <h3><?= htmlspecialchars($item['product_name']) ?>
+                                <span class="stock-status <?= strtolower(str_replace(' ', '-', $item['stock_status'])) ?>">
+                                    <?= $item['stock_status'] ?>
+                                </span>
+                            </h3>
                             <p>Price: RM<?= number_format($item['product_price'], 2) ?></p>
+                            <?php if ($item['stock_status'] == 'Out Of Stock'): ?>
+                                <span class="stock-warning">This item is currently unavailable</span>
+                            <?php elseif ($item['stock_status'] == 'Low Stock'): ?>
+                                <span class="stock-warning">Only <?= $item['stock'] ?> left in stock</span>
+                            <?php endif; ?>
                             <div class="cart-item-quantity">
-                                <button type="button" class="quantity-btn minus" onclick="decreaseQuantity(this, <?= $item['product_id'] ?>)">-</button>
+                                <button type="button" class="quantity-btn minus" onclick="decreaseQuantity(this, <?= $item['product_id'] ?>)" <?= $item['stock_status'] == 'Out Of Stock' ? 'disabled' : '' ?>>-</button>
                                 <input type="number" 
                                        id="quantity-<?= $item['product_id'] ?>" 
                                        min="1" 
-                                       max="<?= $item['product_quantity'] ?>" 
+                                       max="<?= $item['stock'] ?>" 
                                        value="<?= $item['quantity'] ?>" 
-                                       class="quantity-input">
-                                <button type="button" class="quantity-btn plus" onclick="increaseQuantity(this, <?= $item['product_id'] ?>)">+</button>
-                                <button type="button" class="update-btn" onclick="updateQuantity(<?= $item['product_id'] ?>)">Update</button>
+                                       class="quantity-input"
+                                       <?= $item['stock_status'] == 'Out Of Stock' ? 'disabled' : '' ?>>
+                                <button type="button" class="quantity-btn plus" onclick="increaseQuantity(this, <?= $item['product_id'] ?>)" <?= $item['stock_status'] == 'Out Of Stock' ? 'disabled' : '' ?>>+</button>
+                                <button type="button" class="update-btn" onclick="updateQuantity(<?= $item['product_id'] ?>)" <?= $item['stock_status'] == 'Out Of Stock' ? 'disabled' : '' ?>>Update</button>
                             </div>
                             <p>Subtotal: RM<span class="subtotal"><?= number_format($item['product_price'] * $item['quantity'], 2) ?></span></p>
                         </div>
@@ -693,6 +751,12 @@ while ($row = $result->fetch_assoc()) {
             <div class="cart-total">
                 TOTAL: RM<?= number_format($cart_total, 2) ?>
             </div>
+            <?php if (!$can_checkout): ?>
+                <p style="color: #ff0000; text-align: center; margin-bottom: 15px;">
+                    <i class="fas fa-exclamation-circle"></i> Some items in your cart are out of stock or have insufficient quantity. 
+                    Please update your cart before proceeding to checkout.
+                </p>
+            <?php endif; ?>
             <form action="checkout.php" method="POST">
                 <?php foreach ($cart_items as $index => $item): ?>
                     <input type="hidden" name="cart[<?= $index ?>][product_id]" value="<?= $item['product_id'] ?>">
@@ -701,7 +765,7 @@ while ($row = $result->fetch_assoc()) {
                     <input type="hidden" name="cart[<?= $index ?>][quantity]" value="<?= $item['quantity'] ?>">
                     <input type="hidden" name="cart[<?= $index ?>][product_image]" value="<?= $item['product_image'] ?>">
                 <?php endforeach; ?>
-                <button type="submit" class="checkout-button">PROCEED TO CHECKOUT</button>
+                <button type="submit" class="checkout-button" <?= !$can_checkout ? 'disabled' : '' ?>>PROCEED TO CHECKOUT</button>
             </form>
         </div>
         <?php endif; ?>
@@ -818,8 +882,55 @@ while ($row = $result->fetch_assoc()) {
                     const subtotalEl = document.querySelector(`.cart-item[data-product-id="${productId}"] .subtotal`);
                     subtotalEl.textContent = (price * qty).toFixed(2);
                     
+                    // Update stock status
+                    const stockStatusEl = document.querySelector(`.cart-item[data-product-id="${productId}"] .stock-status`);
+                    const warningEl = document.querySelector(`.cart-item[data-product-id="${productId}"] .stock-warning`);
+                    
+                    if (data.stock <= 0) {
+                        stockStatusEl.textContent = 'Out Of Stock';
+                        stockStatusEl.className = 'stock-status out-of-stock';
+                        if (warningEl) {
+                            warningEl.textContent = 'This item is currently unavailable';
+                        } else {
+                            const detailsDiv = document.querySelector(`.cart-item[data-product-id="${productId}"] .cart-item-details`);
+                            const newWarning = document.createElement('span');
+                            newWarning.className = 'stock-warning';
+                            newWarning.textContent = 'This item is currently unavailable';
+                            detailsDiv.appendChild(newWarning);
+                        }
+                        // Disable quantity controls
+                        input.disabled = true;
+                        const plusBtn = input.nextElementSibling;
+                        const minusBtn = input.previousElementSibling;
+                        const updateBtn = plusBtn.nextElementSibling;
+                        plusBtn.disabled = true;
+                        minusBtn.disabled = true;
+                        updateBtn.disabled = true;
+                    } else if (qty > data.stock) {
+                        stockStatusEl.textContent = 'Low Stock';
+                        stockStatusEl.className = 'stock-status low-stock';
+                        if (warningEl) {
+                            warningEl.textContent = `Only ${data.stock} left in stock`;
+                        } else {
+                            const detailsDiv = document.querySelector(`.cart-item[data-product-id="${productId}"] .cart-item-details`);
+                            const newWarning = document.createElement('span');
+                            newWarning.className = 'stock-warning';
+                            newWarning.textContent = `Only ${data.stock} left in stock`;
+                            detailsDiv.appendChild(newWarning);
+                        }
+                    } else {
+                        stockStatusEl.textContent = 'In Stock';
+                        stockStatusEl.className = 'stock-status in-stock';
+                        if (warningEl) {
+                            warningEl.remove();
+                        }
+                    }
+                    
                     // Update total
                     updateTotal();
+                    
+                    // Check if we can enable checkout
+                    checkCheckoutAvailability();
                 } else {
                     alert(data.message);
                 }
@@ -867,6 +978,38 @@ while ($row = $result->fetch_assoc()) {
                 total += parseFloat(subtotalEl.textContent);
             });
             document.querySelector('.cart-total').textContent = `TOTAL: RM${total.toFixed(2)}`;
+        }
+
+        function checkCheckoutAvailability() {
+            let canCheckout = true;
+            document.querySelectorAll('.cart-item').forEach(item => {
+                const stockStatus = item.querySelector('.stock-status').textContent;
+                const quantity = parseInt(item.querySelector('.quantity-input').value);
+                const max = parseInt(item.querySelector('.quantity-input').max);
+                
+                if (stockStatus === 'Out Of Stock' || quantity > max) {
+                    canCheckout = false;
+                }
+            });
+            
+            document.querySelector('.checkout-button').disabled = !canCheckout;
+            
+            if (!canCheckout) {
+                const warningExists = document.querySelector('.cart-summary p[style*="color: #ff0000"]');
+                if (!warningExists) {
+                    const warning = document.createElement('p');
+                    warning.style.color = '#ff0000';
+                    warning.style.textAlign = 'center';
+                    warning.style.marginBottom = '15px';
+                    warning.innerHTML = '<i class="fas fa-exclamation-circle"></i> Some items in your cart are out of stock or have insufficient quantity. Please update your cart before proceeding to checkout.';
+                    document.querySelector('.cart-summary').insertBefore(warning, document.querySelector('.cart-summary form'));
+                }
+            } else {
+                const warning = document.querySelector('.cart-summary p[style*="color: #ff0000"]');
+                if (warning) {
+                    warning.remove();
+                }
+            }
         }
     </script>
 </body>

@@ -37,10 +37,14 @@ if (isset($_POST['reset'])) {
 <?php if (!empty($message)) echo $message; ?>
 <form method="POST">
     <label>New Password:</label><br>
-    <input type="password" name="new_password" required><br><br>
+    <input type="password" name="new_password" class="form-control"  pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+            title="Must contain at least one number, one lowercase letter, one uppercase letter, one special character, and be at least 8 characters long" required>
+                <span onclick="togglePassword('new_password')" style="position:absolute; top:68%; right:10px; transform:translateY(-50%); cursor:pointer;">👁️</span> required><br><br>
 
     <label>Confirm New Password:</label><br>
-    <input type="password" name="confirm_password" required><br><br>
+    <input type="password" name="confirm_password" class="form-control"  pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+            title="Must contain at least one number, one lowercase letter, one uppercase letter, one special character, and be at least 8 characters long" required>
+                <span onclick="togglePassword('new_password')" style="position:absolute; top:68%; right:10px; transform:translateY(-50%); cursor:pointer;">👁️</span> required><br><br>
 
     <button type="submit" name="reset">Update Password</button>
 </form>

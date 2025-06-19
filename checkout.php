@@ -16,9 +16,10 @@ $user_query->execute();
 $user_result = $user_query->get_result();
 $user = $user_result->fetch_assoc();
 
-// Fetch cart items
+// Fetch cart items with stock and threshold information
 $cart_query = $conn->prepare("
-    SELECT ci.product_id, ci.quantity, p.product_name, p.product_price, p.product_image
+    SELECT ci.product_id, ci.quantity, p.product_name, p.product_price, 
+           p.product_image, p.product_quantity as stock, p.min_stock_threshold
     FROM cart_items ci
     JOIN products p ON ci.product_id = p.id
     WHERE ci.email = ?
@@ -30,21 +31,33 @@ $cart_result = $cart_query->get_result();
 $cart_items = [];
 $subtotal = 0;
 $item_count = 0;
+$out_of_stock_items = [];
 
 while ($item = $cart_result->fetch_assoc()) {
+    // Check stock availability
+    if ($item['stock'] < $item['quantity']) {
+        $out_of_stock_items[] = $item;
+        continue;
+    }
+    
     $cart_items[] = $item;
     $subtotal += $item['product_price'] * $item['quantity'];
     $item_count += $item['quantity'];
 }
 
 if ($item_count === 0) {
-    header("Location: cart.php");
+    $_SESSION['out_of_stock'] = $out_of_stock_items;
+    header("Location: cart.php?error=out_of_stock");
     exit();
 }
 
 $tax = $subtotal * 0.06;
 $shipping = 0.00;
 $grand_total = $subtotal + $tax;
+
+if (!empty($out_of_stock_items)) {
+    $_SESSION['partial_out_of_stock'] = $out_of_stock_items;
+}
 ?>
 
 <!DOCTYPE html>
@@ -56,13 +69,30 @@ $grand_total = $subtotal + $tax;
     <style>
         input.card-number { letter-spacing: 2px; }
         .product-img-thumbnail { max-height: 60px; }
+        .out-of-stock-badge { 
+            background-color: #dc3545;
+            font-size: 0.75rem;
+            margin-left: 5px;
+        }
+        .low-stock-badge {
+            background-color: #ffc107;
+            color: #000;
+            font-size: 0.75rem;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body class="bg-light">
 <div class="container py-5">
+    <?php if (!empty($out_of_stock_items)): ?>
+        <div class="alert alert-warning">
+            <strong>Note:</strong> Some items in your cart are out of stock or have insufficient quantity. 
+            They have been removed from this order but remain in your cart.
+        </div>
+    <?php endif; ?>
+    
     <h2 class="mb-4 text-center">Checkout</h2>
     <div class="row">
-        <!-- Cart Summary -->
         <div class="col-md-5 order-md-2 mb-4">
             <h4 class="d-flex justify-content-between align-items-center mb-3">
                 <span>Your Order</span>
@@ -78,11 +108,29 @@ $grand_total = $subtotal + $tax;
                             <div>
                                 <h6 class="my-0"><?= htmlspecialchars($item['product_name']) ?> (x<?= $item['quantity'] ?>)</h6>
                                 <small class="text-muted">RM <?= number_format($item['product_price'], 2) ?></small>
+                                <?php if ($item['stock'] <= $item['min_stock_threshold'] && $item['stock'] > 0): ?>
+                                    <span class="badge low-stock-badge">Low Stock (<?= $item['stock'] ?> left)</span>
+                                <?php elseif ($item['stock'] <= 0): ?>
+                                    <span class="badge out-of-stock-badge">Out of Stock</span>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <span class="text-muted">RM <?= number_format($item['product_price'] * $item['quantity'], 2) ?></span>
                     </li>
                 <?php endforeach; ?>
+                
+                <?php if (!empty($out_of_stock_items)): ?>
+                    <li class="list-group-item bg-light">
+                        <h6 class="text-danger">Removed Out-of-Stock Items:</h6>
+                        <?php foreach ($out_of_stock_items as $item): ?>
+                            <div class="text-muted small">
+                                <?= htmlspecialchars($item['product_name']) ?> 
+                                (Available: <?= $item['stock'] ?>, Requested: <?= $item['quantity'] ?>)
+                            </div>
+                        <?php endforeach; ?>
+                    </li>
+                <?php endif; ?>
+                
                 <li class="list-group-item d-flex justify-content-between"><span>Subtotal</span><strong>RM <?= number_format($subtotal, 2) ?></strong></li>
                 <li class="list-group-item d-flex justify-content-between"><span>Tax (6%)</span><strong>RM <?= number_format($tax, 2) ?></strong></li>
                 <li class="list-group-item d-flex justify-content-between"><span>Shipping</span><strong>FREE</strong></li>
@@ -90,7 +138,6 @@ $grand_total = $subtotal + $tax;
             </ul>
         </div>
 
-        <!-- Form -->
         <div class="col-md-7 order-md-1">
             <h4 class="mb-3">Shipping Address</h4>
             <form method="POST" action="process_checkout.php" class="needs-validation" novalidate>
