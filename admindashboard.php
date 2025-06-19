@@ -515,14 +515,14 @@ $conn->close();
     <section id="content">
         <!-- NAVBAR -->
         <nav>
-            <form action="#">
-                <div class="form-input">
-                    <input type="search" placeholder="Search..." />
-                    <button type="submit" class="search-btn">
-                        <i class='bx bx-search'></i>
-                    </button>
-                </div>
-            </form>
+        <form id="searchForm">
+            <div class="form-input">
+                <input type="search" id="searchInput" name="query" placeholder="Search..." />
+                <button type="submit" class="search-btn">
+                    <i class='bx bx-search'></i>
+                </button>
+            </div>
+        </form>
             <a href="#" class="notification">
                 <i class='bx bxs-bell'></i>
                 <span class="num"></span>
@@ -756,5 +756,22 @@ $conn->close();
                 element.style.transition = 'all 0.3s ease';
             });
     </script>
+    <script>
+document.getElementById("searchForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent the form from refreshing the page
+
+    const query = document.getElementById("searchInput").value.toLowerCase(); // Get input value
+
+    // Example action: log the result
+    console.log("User searched for:", query);
+
+    // Example: search/filter from items on the page (if any)
+    const items = document.querySelectorAll(".searchable-item");
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(query) ? "block" : "none";
+    });
+});
+</script>
 </body>
 </html>
