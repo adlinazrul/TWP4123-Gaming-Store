@@ -1,6 +1,5 @@
 <?php
 session_start();
-// Check if the user is logged in
 if (!isset($_SESSION['email'])) {
     header("Location: login.php");
     exit();
@@ -25,13 +24,11 @@ if (isset($_GET['id'])) {
 
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
-
-        // Store single product info in session for checkout
         $_SESSION['checkout_source'] = 'single';
         $_SESSION['single_product'] = [
             'name' => $product['product_name'],
             'price' => $product['product_price'],
-            'quantity' => 1, // default quantity, can be modified later
+            'quantity' => 1,
             'image' => $product['product_image']
         ];
     } else {
@@ -40,8 +37,6 @@ if (isset($_GET['id'])) {
 } else {
     die("No product ID specified.");
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -53,8 +48,6 @@ if (isset($_GET['id'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* [All previous CSS styles remain exactly the same] */
-
         :root {
             --primary: #ff0000;
             --secondary: #d10000;
@@ -525,7 +518,6 @@ if (isset($_GET['id'])) {
             border-top: 1px solid rgba(255, 0, 0, 0.1);
         }
         
-        /* Mobile menu styles */
         #menuOverlay {
             position: fixed;
             top: 0;
@@ -591,7 +583,6 @@ if (isset($_GET['id'])) {
             padding-left: 10px;
         }
         
-        /* Responsive adjustments */
         @media (max-width: 1024px) {
             .nav-links {
                 gap: 15px;
@@ -669,37 +660,34 @@ if (isset($_GET['id'])) {
             margin-right: 10px;
         }
 
-        
-        /* Add styles for success notification */
-
         .notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #4CAF50;
-    color: white;
-    padding: 15px 25px;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transform: translateX(150%);
-    transition: transform 0.3s ease;
-}
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
 
-.notification.show {
-    transform: translateX(0);
-}
+        .notification.show {
+            transform: translateX(0);
+        }
 
-.notification.error {
-    background: #f44336;
-}
+        .notification.error {
+            background: #f44336;
+        }
 
-.notification i {
-    font-size: 1.2rem;
-}
+        .notification i {
+            font-size: 1.2rem;
+        }
         
         @keyframes slideIn {
             from {right: -300px; opacity: 0;}
@@ -713,7 +701,6 @@ if (isset($_GET['id'])) {
     </style>
 </head>
 <body>
-    <!-- Success notification element -->
     <div id="successNotification" class="notification">
         <i class="fas fa-check-circle"></i> Item successfully added to cart!
     </div>
@@ -741,13 +728,11 @@ if (isset($_GET['id'])) {
                 </a>
                 <div class="cart-icon-container">
                     <a href="cart.php"><i class="fas fa-shopping-cart"></i></a>
-                    
                 </div>
             </div>
         </nav>
     </header>
 
-    <!-- Mobile Menu Overlay -->
     <div id="menuOverlay">
         <div id="menuContainer">
             <span id="closeMenu">&times;</span>
@@ -759,7 +744,6 @@ if (isset($_GET['id'])) {
         </div>
     </div>
 
-    <!-- Product Detail Section -->
     <div class="product-detail-container">
         <div class="product-gallery">
             <img src="uploads/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="main-image" id="mainImage">
@@ -781,10 +765,10 @@ if (isset($_GET['id'])) {
 
             <div class="product-price">RM <?= number_format($product['product_price'], 2) ?></div>
             
-            <div class="stock-status <?= $product['product_quantity'] > 10 ? 'in-stock' : ($product['product_quantity'] > 0 ? 'low-stock' : 'out-of-stock') ?>">
-                <i class="fas <?= $product['product_quantity'] > 10 ? 'fa-check-circle' : ($product['product_quantity'] > 0 ? 'fa-exclamation-circle' : 'fa-times-circle') ?>"></i>
+            <div class="stock-status <?= $product['product_quantity'] > $product['min_stock_threshold'] ? 'in-stock' : ($product['product_quantity'] > 0 ? 'low-stock' : 'out-of-stock') ?>">
+                <i class="fas <?= $product['product_quantity'] > $product['min_stock_threshold'] ? 'fa-check-circle' : ($product['product_quantity'] > 0 ? 'fa-exclamation-circle' : 'fa-times-circle') ?>"></i>
                 <span>
-                    <?= $product['product_quantity'] > 10 ? "In Stock ({$product['product_quantity']} available)" : 
+                    <?= $product['product_quantity'] > $product['min_stock_threshold'] ? "In Stock ({$product['product_quantity']} available)" : 
                        ($product['product_quantity'] > 0 ? "Low Stock (Only {$product['product_quantity']} left!)" : "Out of Stock") ?>
                 </span>
             </div>
@@ -830,7 +814,6 @@ if (isset($_GET['id'])) {
         </div>
     </div>
 
-    <!-- Footer -->
     <footer>
         <div class="footer-links">
             <a href="ABOUTUS.html">ABOUT US</a>
@@ -850,13 +833,11 @@ if (isset($_GET['id'])) {
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Mobile menu functionality
             let menuOverlay = document.getElementById("menuOverlay");
             let menuContainer = document.getElementById("menuContainer");
             let menuIcon = document.getElementById("menuIcon");
             let closeMenu = document.getElementById("closeMenu");
 
-            // Open menu
             menuIcon.addEventListener("click", function () {
                 menuOverlay.style.display = "block";
                 setTimeout(() => {
@@ -864,7 +845,6 @@ if (isset($_GET['id'])) {
                 }, 10);
             });
 
-            // Close menu when clicking "X"
             closeMenu.addEventListener("click", function (e) {
                 e.stopPropagation();
                 menuOverlay.classList.remove("active");
@@ -873,7 +853,6 @@ if (isset($_GET['id'])) {
                 }, 300);
             });
 
-            // Close menu when clicking outside of menu container
             menuOverlay.addEventListener("click", function (e) {
                 if (e.target === menuOverlay) {
                     menuOverlay.classList.remove("active");
@@ -883,14 +862,12 @@ if (isset($_GET['id'])) {
                 }
             });
 
-            // Update all quantity fields when main input changes
             document.getElementById('quantityInput').addEventListener('change', function() {
                 const quantity = this.value;
                 document.getElementById('formQuantity').value = quantity;
                 document.getElementById('buyNowQuantity').value = quantity;
             });
 
-            // Handle add to cart form submission with AJAX
             document.getElementById('addToCartForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
@@ -903,16 +880,13 @@ if (isset($_GET['id'])) {
                 .then(response => response.json())
                 .then(data => {
                     if(data.success) {
-                        // Show success notification
                         const notification = document.getElementById('successNotification');
-                        notification.style.display = 'block';
+                        notification.classList.add('show');
                         
-                        // Hide notification after animation completes
                         setTimeout(() => {
-                            notification.style.display = 'none';
+                            notification.classList.remove('show');
                         }, 3000);
                         
-                        // Update cart count if needed
                         if(data.cart_count) {
                             document.querySelector('.cart-count').textContent = data.cart_count;
                         }
@@ -923,7 +897,6 @@ if (isset($_GET['id'])) {
             });
         });
 
-        // Validate quantity input
         function validateQuantity() {
             const quantityInput = document.getElementById('quantityInput');
             let value = parseInt(quantityInput.value);
@@ -941,12 +914,10 @@ if (isset($_GET['id'])) {
             document.getElementById('buyNowQuantity').value = value;
         }
 
-        // Image gallery functionality
         function changeImage(thumbnail) {
             const mainImage = document.getElementById('mainImage');
             mainImage.src = thumbnail.src;
 
-            // Update active thumbnail
             document.querySelectorAll('.thumbnail').forEach(img => {
                 img.classList.remove('active');
             });
