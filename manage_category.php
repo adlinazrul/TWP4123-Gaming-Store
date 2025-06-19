@@ -235,12 +235,7 @@ if ($admin_id) {
             </li>
     </ul>
     <ul class="side-menu">
-        <li>
-            <a href="#">
-                <i class='bx bxs-cog'></i>
-                <span class="text">Settings</span>
-            </a>
-        </li>
+        
         <li>
             <a href="index.html" class="logout">
                 <i class='bx bxs-log-out-circle'></i>
@@ -261,7 +256,7 @@ if ($admin_id) {
                 <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
             </div>
         </form>
-        <a href="#" class="notification">
+
             <i class='bx bxs-bell'></i>
         </a>
         <a href="profile_admin.php" class="profile">
