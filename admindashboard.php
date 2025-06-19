@@ -32,6 +32,42 @@ if ($stmt->fetch() && !empty($image)) {
 }
 $stmt->close();
 
+// Handle search functionality
+$searchQuery = isset($_GET['query']) ? trim($_GET['query']) : '';
+$searchResults = [];
+$showSearchResults = false;
+
+if (!empty($searchQuery)) {
+    $showSearchResults = true;
+    $searchTerm = $conn->real_escape_string($searchQuery);
+    
+    // Search in orders
+    $searchSql = "
+        SELECT 
+            order_id,
+            name_cust,
+            date,
+            status_order,
+            SUM(price_items * quantity_items) AS total_price,
+            COUNT(*) AS items_count
+        FROM items_ordered
+        WHERE 
+            order_id LIKE '%$searchTerm%' OR 
+            name_cust LIKE '%$searchTerm%' OR
+            status_order LIKE '%$searchTerm%'
+        GROUP BY order_id, name_cust, date, status_order
+        ORDER BY date DESC
+        LIMIT 10
+    ";
+    
+    $searchResult = $conn->query($searchSql);
+    if ($searchResult) {
+        while ($row = $searchResult->fetch_assoc()) {
+            $searchResults[] = $row;
+        }
+    }
+}
+
 // Fetch order status counts for the chart
 $statusCounts = [];
 
@@ -93,7 +129,6 @@ if ($resultCust) {
 
 $conn->close();
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -335,7 +370,7 @@ $conn->close();
         }
         
         .order-status.processing { 
-            background-color: rgba(253, 114, 56, 0.2); /* Using orange instead of teal */
+            background-color: rgba(253, 114, 56, 0.2);
             color: #c94a1f;
         }
         
@@ -417,6 +452,45 @@ $conn->close();
             transform: scale(1.2);
         }
         
+        /* SEARCH RESULTS STYLES */
+        .search-results-container {
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .highlight {
+            background-color: var(--light-yellow);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        
+        .search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .clear-search {
+            color: var(--red);
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .clear-search:hover {
+            color: var(--dark-red);
+            transform: translateX(-3px);
+        }
+        
         /* NO DATA STYLES */
         .no-data {
             display: flex;
@@ -492,8 +566,6 @@ $conn->close();
                     <span class="text">Order</span>
                 </a>
             </li>
-            
-           
         </ul>
         <ul class="side-menu">
             <li>
@@ -515,14 +587,15 @@ $conn->close();
     <section id="content">
         <!-- NAVBAR -->
         <nav>
-        <form id="searchForm">
-            <div class="form-input">
-                <input type="search" id="searchInput" name="query" placeholder="Search..." />
-                <button type="submit" class="search-btn">
-                    <i class='bx bx-search'></i>
-                </button>
-            </div>
-        </form>
+            <form id="searchForm" method="GET" action="">
+                <div class="form-input">
+                    <input type="search" id="searchInput" name="query" placeholder="Search orders..." 
+                           value="<?php echo htmlspecialchars($searchQuery); ?>" />
+                    <button type="submit" class="search-btn">
+                        <i class='bx bx-search'></i>
+                    </button>
+                </div>
+            </form>
             <a href="#" class="notification">
                 <i class='bx bxs-bell'></i>
                 <span class="num"></span>
@@ -534,210 +607,264 @@ $conn->close();
 
         <!-- MAIN -->
         <main>
-            <div class="head-title">
-                <div class="left">
-                    <h1>Dashboard</h1>
-                    <ul class="breadcrumb">
-                        <li><a href="#">Dashboard</a></li>
-                        <li><i class='bx bx-chevron-right'></i></li>
-                        <li><a class="active" href="#">Home</a></li>
-                    </ul>
+            <?php if ($showSearchResults): ?>
+                <!-- SEARCH RESULTS SECTION -->
+                <div class="search-results-container">
+                    <div class="data-card">
+                        <div class="search-header">
+                            <h3><i class='bx bx-search'></i> Search Results for "<?php echo htmlspecialchars($searchQuery); ?>"</h3>
+                            <a href="?" class="clear-search">
+                                <i class='bx bx-x'></i> Clear search
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <?php if (count($searchResults) > 0): ?>
+                                <?php foreach ($searchResults as $order): ?>
+                                    <div class="order-item">
+                                        <div class="order-id">#<?php echo htmlspecialchars($order['order_id']); ?></div>
+                                        <div class="order-details">
+                                            <div class="customer-name">
+                                                <i class='bx bxs-user'></i> 
+                                                <?php 
+                                                    echo preg_replace(
+                                                        "/(" . preg_quote($searchQuery, '/') . ")/i", 
+                                                        '<span class="highlight">$1</span>', 
+                                                        htmlspecialchars($order['name_cust'])
+                                                    ); 
+                                                ?>
+                                            </div>
+                                            <div class="order-date">
+                                                <i class='bx bxs-calendar'></i> <?php echo htmlspecialchars($order['date']); ?>
+                                            </div>
+                                        </div>
+                                        <div class="order-total">
+                                            RM <?php echo number_format($order['total_price'], 2); ?>
+                                        </div>
+                                        <?php
+                                            $statusClass = strtolower($order['status_order']);
+                                            if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled'])) {
+                                                $statusClass = 'pending';
+                                            }
+                                            // Highlight search term in status
+                                            $statusDisplay = preg_replace(
+                                                "/(" . preg_quote($searchQuery, '/') . ")/i", 
+                                                '<span class="highlight">$1</span>', 
+                                                ucfirst($statusClass)
+                                            );
+                                        ?>
+                                        <div class="order-status <?php echo $statusClass; ?>">
+                                            <?php echo $statusDisplay; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="no-data">
+                                    <i class='bx bxs-error-circle'></i>
+                                    <p>No results found for "<?php echo htmlspecialchars($searchQuery); ?>"</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
-               <a href="generate_excel.php" class="btn-download">
-                 <i class='bx bxs-cloud-download'></i>
-                 <span class="text">Download Report</span>
-                </a>
+            <?php else: ?>
+                <!-- REGULAR DASHBOARD CONTENT -->
+                <div class="head-title">
+                    <div class="left">
+                        <h1>Dashboard</h1>
+                        <ul class="breadcrumb">
+                            <li><a href="#">Dashboard</a></li>
+                            <li><i class='bx bx-chevron-right'></i></li>
+                            <li><a class="active" href="#">Home</a></li>
+                        </ul>
+                    </div>
+                    <a href="generate_excel.php" class="btn-download">
+                        <i class='bx bxs-cloud-download'></i>
+                        <span class="text">Download Report</span>
+                    </a>
+                </div>
 
-            </div>
+                <ul class="box-info">
+                    <li>
+                        <div class="icon-circle">
+                            <i class='bx bxs-calendar-check'></i>
+                        </div>
+                        <span class="text">
+                            <h3><?php echo array_sum($statusCounts); ?></h3>
+                            <p>Total Orders</p>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="icon-circle">
+                            <i class='bx bxs-group'></i>
+                        </div>
+                        <span class="text">
+                            <h3><?php echo count($recentCustomers); ?></h3>
+                            <p>Recent Customers</p>
+                        </span>
+                    </li>
+                    <li>
+                        <div class="icon-circle">
+                            <i class='bx bxs-dollar-circle'></i>
+                        </div>
+                        <span class="text">
+                            <h3>RM 
+                                <?php 
+                                    $conn2 = new mysqli($servername, $username, $password, $dbname);
+                                    $salesResult = $conn2->query("SELECT SUM(price_items * quantity_items) AS total_sales FROM items_ordered WHERE status_order = 'completed'");
+                                    $totalSales = 0;
+                                    if ($salesResult && $salesRow = $salesResult->fetch_assoc()) {
+                                        $totalSales = $salesRow['total_sales'] ?? 0;
+                                    }
+                                    $conn2->close();
+                                    echo number_format($totalSales, 2);
+                                ?>
+                            </h3>
+                            <p>Total Sales</p>
+                        </span>
+                    </li>
+                </ul>
 
-            <ul class="box-info">
-                <li>
-                    <div class="icon-circle">
-                        <i class='bx bxs-calendar-check'></i>
-                    </div>
-                    <span class="text">
-                        <h3><?php echo array_sum($statusCounts); ?></h3>
-                        <p>Total Orders</p>
-                    </span>
-                </li>
-                <li>
-                    <div class="icon-circle">
-                        <i class='bx bxs-group'></i>
-                    </div>
-                    <span class="text">
-                        <h3><?php echo count($recentCustomers); ?></h3>
-                        <p>Recent Customers</p>
-                    </span>
-                </li>
-                <li>
-                    <div class="icon-circle">
-                        <i class='bx bxs-dollar-circle'></i>
-                    </div>
-                    <span class="text">
-                        <h3>RM 
-                            <?php 
-                                $conn2 = new mysqli($servername, $username, $password, $dbname);
-                                $salesResult = $conn2->query("SELECT SUM(price_items * quantity_items) AS total_sales FROM items_ordered WHERE status_order = 'completed'");
-                                $totalSales = 0;
-                                if ($salesResult && $salesRow = $salesResult->fetch_assoc()) {
-                                    $totalSales = $salesRow['total_sales'] ?? 0;
+                <!-- CHART -->
+                <div class="chart-container">
+                    <canvas id="dashboardChart"></canvas>
+                </div>
+
+                <script>
+                    const ctx = document.getElementById('dashboardChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Pending', 'Completed'],
+                            datasets: [{
+                                label: 'Order Status',
+                                data: [
+                                    <?php echo $statusCounts['pending']; ?>,
+                                    <?php echo $statusCounts['completed']; ?>,
+                                ],
+                                backgroundColor: [
+                                    'rgba(255, 193, 7, 0.7)',
+                                    'rgba(40, 167, 69, 0.7)',
+                                ],
+                                borderColor: [
+                                    'rgba(255, 193, 7, 1)',
+                                    'rgba(40, 167, 69, 1)',
+                                ],
+                                borderWidth: 1,
+                                borderRadius: 8,
+                                hoverBackgroundColor: [
+                                    'rgba(255, 193, 7, 1)',
+                                    'rgba(40, 167, 69, 1)',
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.raw;
+                                        }
+                                    }
                                 }
-                                $conn2->close();
-                                echo number_format($totalSales, 2);
-                            ?>
-                        </h3>
-                        <p>Total Sales</p>
-                    </span>
-                </li>
-            </ul>
-
-            <!-- CHART -->
-            <div class="chart-container">
-                <canvas id="dashboardChart"></canvas>
-            </div>
-
-            <script>
-                const ctx = document.getElementById('dashboardChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Pending', 'Completed' ],
-                        datasets: [{
-                            label: 'Order Status',
-                            data: [
-                                <?php echo $statusCounts['pending']; ?>,
-                                <?php echo $statusCounts['completed']; ?>,
-
-                            ],
-                            backgroundColor: [
-                                'rgba(255, 193, 7, 0.7)', // Yellow for pending
-                             
-                                'rgba(40, 167, 69, 0.7)', // Green for completed
-                                
-                            ],
-                            borderColor: [
-                                'rgba(255, 193, 7, 1)',
-                                
-                                'rgba(40, 167, 69, 1)',
-                                
-                            ],
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            hoverBackgroundColor: [
-                                'rgba(255, 193, 7, 1)',
-                                
-                                'rgba(40, 167, 69, 1)',
-                                
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
                             },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.dataset.label + ': ' + context.raw;
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
                                     }
                                 }
                             }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1
-                                }
-                            }
                         }
-                    }
-                });
-            </script>
+                    });
+                </script>
 
-            <!-- DATA CONTAINERS -->
-            <div class="data-container">
-                <!-- RECENT ORDERS CARD -->
-                <div class="data-card orders-card">
-                    <div class="card-header">
-                        <h3><i class='bx bxs-receipt'></i> Recent Orders</h3>
-                        <div class="card-actions">
-                            <a href="order.php" class="view-all">View All</a>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <?php if (count($recentOrders) > 0): ?>
-                            <?php foreach ($recentOrders as $order): ?>
-                                <div class="order-item">
-                                    <div class="order-id">#<?php echo htmlspecialchars($order['order_id']); ?></div>
-                                    <div class="order-details">
-                                        <div class="customer-name">
-                                            <i class='bx bxs-user'></i> <?php echo htmlspecialchars($order['name_cust']); ?>
-                                        </div>
-                                        <div class="order-date">
-                                            <i class='bx bxs-calendar'></i> <?php echo htmlspecialchars($order['date']); ?>
-                                        </div>
-                                    </div>
-                                    <div class="order-total">
-                                        RM <?php echo number_format($order['total_price'], 2); ?>
-                                    </div>
-                                    <?php
-                                        $statusClass = strtolower($order['status_order']);
-                                        if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled'])) {
-                                            $statusClass = 'pending';
-                                        }
-                                    ?>
-                                    <div class="order-status <?php echo $statusClass; ?>">
-                                        <?php echo ucfirst($statusClass); ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="no-data">
-                                <i class='bx bxs-inbox'></i>
-                                <p>No orders found</p>
+                <!-- DATA CONTAINERS -->
+                <div class="data-container">
+                    <!-- RECENT ORDERS CARD -->
+                    <div class="data-card orders-card">
+                        <div class="card-header">
+                            <h3><i class='bx bxs-receipt'></i> Recent Orders</h3>
+                            <div class="card-actions">
+                                <a href="order.php" class="view-all">View All</a>
                             </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <!-- RECENT CUSTOMERS CARD -->
-                <div class="data-card customers-card">
-                    <div class="card-header">
-                        <h3><i class='bx bxs-user-detail'></i> Recent Customers</h3>
-                        <div class="card-actions">
-                            <a href="customer_list.php" class="view-all">View All</a>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <?php if (count($recentCustomers) > 0): ?>
-                            <ul class="customer-list">
-                                <?php foreach ($recentCustomers as $cust): ?>
-                                    <li class="customer-item">
-                                        <div class="customer-avatar">
-                                            <?php echo strtoupper(substr($cust, 0, 1)); ?>
+                        <div class="card-body">
+                            <?php if (count($recentOrders) > 0): ?>
+                                <?php foreach ($recentOrders as $order): ?>
+                                    <div class="order-item">
+                                        <div class="order-id">#<?php echo htmlspecialchars($order['order_id']); ?></div>
+                                        <div class="order-details">
+                                            <div class="customer-name">
+                                                <i class='bx bxs-user'></i> <?php echo htmlspecialchars($order['name_cust']); ?>
+                                            </div>
+                                            <div class="order-date">
+                                                <i class='bx bxs-calendar'></i> <?php echo htmlspecialchars($order['date']); ?>
+                                            </div>
                                         </div>
-                                        <div class="customer-info">
-                                            <div class="customer-name"><?php echo htmlspecialchars($cust); ?></div>
-                                            <div class="customer-activity">Recently purchased</div>
+                                        <div class="order-total">
+                                            RM <?php echo number_format($order['total_price'], 2); ?>
                                         </div>
-                                        <button class="customer-action">
-                                            <i class='bx bxs-envelope'></i>
-                                        </button>
-                                    </li>
+                                        <?php
+                                            $statusClass = strtolower($order['status_order']);
+                                            if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled'])) {
+                                                $statusClass = 'pending';
+                                            }
+                                        ?>
+                                        <div class="order-status <?php echo $statusClass; ?>">
+                                            <?php echo ucfirst($statusClass); ?>
+                                        </div>
+                                    </div>
                                 <?php endforeach; ?>
-                            </ul>
-                        <?php else: ?>
-                            <div class="no-data">
-                                <i class='bx bxs-user-x'></i>
-                                <p>No customers found</p>
+                            <?php else: ?>
+                                <div class="no-data">
+                                    <i class='bx bxs-inbox'></i>
+                                    <p>No orders found</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- RECENT CUSTOMERS CARD -->
+                    <div class="data-card customers-card">
+                        <div class="card-header">
+                            <h3><i class='bx bxs-user-detail'></i> Recent Customers</h3>
+                            <div class="card-actions">
+                                <a href="customer_list.php" class="view-all">View All</a>
                             </div>
-                        <?php endif; ?>
+                        </div>
+                        <div class="card-body">
+                            <?php if (count($recentCustomers) > 0): ?>
+                                <ul class="customer-list">
+                                    <?php foreach ($recentCustomers as $cust): ?>
+                                        <li class="customer-item">
+                                            <div class="customer-avatar">
+                                                <?php echo strtoupper(substr($cust, 0, 1)); ?>
+                                            </div>
+                                            <div class="customer-info">
+                                                <div class="customer-name"><?php echo htmlspecialchars($cust); ?></div>
+                                                <div class="customer-activity">Recently purchased</div>
+                                            </div>
+                                            <button class="customer-action">
+                                                <i class='bx bxs-envelope'></i>
+                                            </button>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php else: ?>
+                                <div class="no-data">
+                                    <i class='bx bxs-user-x'></i>
+                                    <p>No customers found</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
-            </div>
+            <?php endif; ?>
         </main>
     </section>
 
@@ -755,23 +882,24 @@ $conn->close();
             .forEach(element => {
                 element.style.transition = 'all 0.3s ease';
             });
+
+        // Focus search input when search icon is clicked
+        document.querySelector('.search-btn').addEventListener('click', function() {
+            document.getElementById('searchInput').focus();
+        });
+
+        // Clear search when clicking the X button
+        document.querySelector('.clear-search')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '?';
+        });
+
+        // Optional: Submit form when pressing Enter in search input
+        document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('searchForm').submit();
+            }
+        });
     </script>
-    <script>
-document.getElementById("searchForm").addEventListener("submit", function(event) {
-    event.preventDefault(); // Prevent the form from refreshing the page
-
-    const query = document.getElementById("searchInput").value.toLowerCase(); // Get input value
-
-    // Example action: log the result
-    console.log("User searched for:", query);
-
-    // Example: search/filter from items on the page (if any)
-    const items = document.querySelectorAll(".searchable-item");
-    items.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        item.style.display = text.includes(query) ? "block" : "none";
-    });
-});
-</script>
 </body>
 </html>
