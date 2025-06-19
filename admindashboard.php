@@ -569,10 +569,7 @@ $conn->close();
         </ul>
         <ul class="side-menu">
             <li>
-                <a href="#">
-                    <i class='bx bxs-cog'></i>
-                    <span class="text">Settings</span>
-                </a>
+               
             </li>
             <li>
                 <a href="index.html" class="logout">
@@ -589,7 +586,7 @@ $conn->close();
         <nav>
             <form id="searchForm" method="GET" action="">
                 <div class="form-input">
-                    <input type="search" id="searchInput" name="query" placeholder="Search orders..." 
+                    <input type="search" id="searchInput" name="query" placeholder="Search customers..." 
                            value="<?php echo htmlspecialchars($searchQuery); ?>" />
                     <button type="submit" class="search-btn">
                         <i class='bx bx-search'></i>
