@@ -19,9 +19,40 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get all orders
-$sql = "SELECT id, first_name, last_name, date, total_price, status_order FROM orders ORDER BY date DESC";
-$result = $conn->query($sql);
+// Handle search functionality
+$searchQuery = isset($_GET['query']) ? trim($_GET['query']) : '';
+$showSearchResults = false;
+$searchResults = [];
+
+if (!empty($searchQuery)) {
+    $showSearchResults = true;
+    $searchTerm = $conn->real_escape_string($searchQuery);
+    
+    $searchSql = "SELECT id, first_name, last_name, date, total_price, status_order 
+                 FROM orders 
+                 WHERE 
+                    id LIKE '%$searchTerm%' OR 
+                    first_name LIKE '%$searchTerm%' OR 
+                    last_name LIKE '%$searchTerm%' OR 
+                    CONCAT(first_name, ' ', last_name) LIKE '%$searchTerm%' OR 
+                    date LIKE '%$searchTerm%' OR 
+                    total_price LIKE '%$searchTerm%' OR 
+                    status_order LIKE '%$searchTerm%'
+                 ORDER BY date DESC";
+    $searchResult = $conn->query($searchSql);
+    
+    if ($searchResult) {
+        while ($row = $searchResult->fetch_assoc()) {
+            $searchResults[] = $row;
+        }
+    }
+}
+
+// Get all orders (if not showing search results)
+if (!$showSearchResults) {
+    $sql = "SELECT id, first_name, last_name, date, total_price, status_order FROM orders ORDER BY date DESC";
+    $result = $conn->query($sql);
+}
 
 // Fetch admin profile image
 if ($admin_id) {
@@ -70,7 +101,7 @@ if ($admin_id) {
         }
 
         /* Popup styles */
-            #popup {
+        #popup {
             display: none;
             position: fixed;
             top: 10%;
@@ -115,12 +146,61 @@ if ($admin_id) {
         }
 
         @media (max-width: 768px) {
-        #popup {
-         left: 20px;
-            width: calc(100% - 40px);
-         }
-}
+            #popup {
+                left: 20px;
+                width: calc(100% - 40px);
+            }
+        }
 
+        /* Search results styling */
+        .search-results-container {
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .highlight {
+            background-color: #fff2c6;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .clear-search {
+            color: #d03b3b;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .clear-search:hover {
+            color: #a22a2a;
+            transform: translateX(-3px);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+
+        .no-data i {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -161,20 +241,21 @@ if ($admin_id) {
             </li>
     </ul>
     <ul class="side-menu">
-        <li><a href="#"><i class='bx bxs-cog'></i><span class="text">Settings</span></a></li>
+        
         <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
     </ul>
 </section>
 
 <section id="content">
     <nav>
-        <form action="#">
+        <form id="searchForm" method="GET" action="">
             <div class="form-input">
-                <input type="search" placeholder="Search...">
+                <input type="search" id="searchInput" name="query" placeholder="Search orders..." 
+                       value="<?php echo htmlspecialchars($searchQuery); ?>">
                 <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
             </div>
         </form>
-        <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
+        
         <a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
     </nav>
 
@@ -190,38 +271,129 @@ if ($admin_id) {
             </div>
         </div>
 
-        <div class="container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Customer Name</th>
-                        <th>Date</th>
-                        <th>Total Price</th>
-                        <th>Status</th>
-                        <th>Details</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if ($result && $result->num_rows > 0): ?>
-                        <?php while($order = $result->fetch_assoc()): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($order['id']) ?></td>
-                                <td><?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></td>
-                                <td><?= htmlspecialchars($order['date']) ?></td>
-                                <td>RM <?= number_format($order['total_price'], 2) ?></td>
-                                <td><?= htmlspecialchars($order['status_order']) ?></td>
-                                <td>
-                                    <button class="view-details-btn" data-order-id="<?= $order['id'] ?>">View Details</button>
-                                </td>
-                            </tr>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <tr><td colspan="6">No orders found.</td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
+        <?php if ($showSearchResults): ?>
+            <!-- SEARCH RESULTS SECTION -->
+            <div class="search-results-container">
+                <div class="search-header">
+                    <h3><i class='bx bx-search'></i> Search Results for "<?php echo htmlspecialchars($searchQuery); ?>"</h3>
+                    <a href="?" class="clear-search">
+                        <i class='bx bx-x'></i> Clear search
+                    </a>
+                </div>
+                
+                <?php if (count($searchResults) > 0): ?>
+                    <div class="container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer Name</th>
+                                    <th>Date</th>
+                                    <th>Total Price</th>
+                                    <th>Status</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($searchResults as $order): ?>
+                                    <tr>
+                                        <td>
+                                            <?php 
+                                                echo preg_replace(
+                                                    "/(" . preg_quote($searchQuery, '/') . ")/i", 
+                                                    '<span class="highlight">$1</span>', 
+                                                    htmlspecialchars($order['id'])
+                                                ); 
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                                $customerName = htmlspecialchars($order['first_name'] . ' ' . $order['last_name']);
+                                                echo preg_replace(
+                                                    "/(" . preg_quote($searchQuery, '/') . ")/i", 
+                                                    '<span class="highlight">$1</span>', 
+                                                    $customerName
+                                                ); 
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                                echo preg_replace(
+                                                    "/(" . preg_quote($searchQuery, '/') . ")/i", 
+                                                    '<span class="highlight">$1</span>', 
+                                                    htmlspecialchars($order['date'])
+                                                ); 
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                                $priceFormatted = "RM " . number_format($order['total_price'], 2);
+                                                echo preg_replace(
+                                                    "/(" . preg_quote($searchQuery, '/') . ")/i", 
+                                                    '<span class="highlight">$1</span>', 
+                                                    $priceFormatted
+                                                ); 
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                                echo preg_replace(
+                                                    "/(" . preg_quote($searchQuery, '/') . ")/i", 
+                                                    '<span class="highlight">$1</span>', 
+                                                    htmlspecialchars($order['status_order'])
+                                                ); 
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <button class="view-details-btn" data-order-id="<?= $order['id'] ?>">View Details</button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="no-data">
+                        <i class='bx bxs-error-circle'></i>
+                        <p>No results found for "<?php echo htmlspecialchars($searchQuery); ?>"</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+        <?php else: ?>
+            <!-- REGULAR ORDERS LIST -->
+            <div class="container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer Name</th>
+                            <th>Date</th>
+                            <th>Total Price</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (isset($result) && $result->num_rows > 0): ?>
+                            <?php while($order = $result->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($order['id']) ?></td>
+                                    <td><?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></td>
+                                    <td><?= htmlspecialchars($order['date']) ?></td>
+                                    <td>RM <?= number_format($order['total_price'], 2) ?></td>
+                                    <td><?= htmlspecialchars($order['status_order']) ?></td>
+                                    <td>
+                                        <button class="view-details-btn" data-order-id="<?= $order['id'] ?>">View Details</button>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr><td colspan="6">No orders found.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
 
         <!-- Popup container -->
         <div id="popup-overlay"></div>
@@ -235,9 +407,9 @@ if ($admin_id) {
 
 <script>
     // Show popup and fetch order items via AJAX
-    document.querySelectorAll('.view-details-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const orderId = button.getAttribute('data-order-id');
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('view-details-btn')) {
+            const orderId = e.target.getAttribute('data-order-id');
             const popup = document.getElementById('popup');
             const overlay = document.getElementById('popup-overlay');
             const content = document.getElementById('order-items-content');
@@ -257,7 +429,7 @@ if ($admin_id) {
                 .catch(() => {
                     content.innerHTML = '<p style="color:red;">Failed to load order items.</p>';
                 });
-        });
+        }
     });
 
     // Close popup
@@ -268,6 +440,24 @@ if ($admin_id) {
     document.getElementById('popup-overlay').addEventListener('click', () => {
         document.getElementById('popup').style.display = 'none';
         document.getElementById('popup-overlay').style.display = 'none';
+    });
+
+    // Focus search input when search icon is clicked
+    document.querySelector('.search-btn')?.addEventListener('click', function() {
+        document.getElementById('searchInput').focus();
+    });
+
+    // Clear search when clicking the X button
+    document.querySelector('.clear-search')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = '?';
+    });
+
+    // Submit form when pressing Enter in search input
+    document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('searchForm').submit();
+        }
     });
 </script>
 
