@@ -5,19 +5,27 @@ session_start();
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
-
-// Add these headers to prevent page from being cached
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 
-if (!isset($_SESSION['admin_id'])) {
+// Handle logout request
+if (isset($_GET['logout'])) {
+    // Unset all session variables
+    $_SESSION = array();
+
+    // Destroy the session
+    session_destroy();
+
+    // Redirect to login page with no-cache headers
+    header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+    header("Cache-Control: post-check=0, pre-check=0", false);
+    header("Pragma: no-cache");
     header("Location: login_admin.php");
     exit;
 }
 
-// Check if user came from logout
-if (isset($_SESSION['logout_flag'])) {
-    unset($_SESSION['logout_flag']);
+// Check if user is logged in
+if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
@@ -573,7 +581,7 @@ $conn->close();
         </ul>
         <ul class="side-menu">
             <li>
-                <a href="logout_admin.php" class="logout">
+                <a href="?logout=1" class="logout" onclick="return confirm('Are you sure you want to logout?')">
                     <i class='bx bxs-log-out-circle'></i>
                     <span class="text">Logout</span>
                 </a>
@@ -896,6 +904,14 @@ $conn->close();
             .forEach(element => {
                 element.style.transition = 'all 0.3s ease';
             });
+
+        // Prevent back button after logout
+        window.onload = function() {
+            if (performance.navigation.type === 2) {
+                // Page was accessed via back/forward button
+                window.location.reload(true);
+            }
+        };
     </script>
 </body>
 </html>
