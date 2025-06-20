@@ -69,8 +69,18 @@ if ($admin_id) {
     $profile_image = 'image/default_profile.jpg';
 }
 
-// Fetch products
-$sql = "SELECT * FROM products";
+// Handle search functionality
+$search = '';
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $search = $conn->real_escape_string($_GET['search']);
+    $sql = "SELECT * FROM products 
+            WHERE product_name LIKE '%$search%' 
+            OR product_description LIKE '%$search%'
+            OR product_category LIKE '%$search%'";
+} else {
+    $sql = "SELECT * FROM products";
+}
+
 $result = mysqli_query($conn, $sql);
 ?>
 
@@ -203,7 +213,6 @@ $result = mysqli_query($conn, $sql);
         </li>
     </ul>
     <ul class="side-menu">
-       
         <li><a href="?logout=1" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
     </ul>
 </section>
@@ -213,9 +222,9 @@ $result = mysqli_query($conn, $sql);
 <section id="content">
     <!-- NAVBAR -->
     <nav>
-        <form action="#">
+        <form action="manage_product.php" method="get">
             <div class="form-input">
-                <input type="search" placeholder="Search...">
+                <input type="search" name="search" placeholder="Search products..." value="<?php echo htmlspecialchars($search); ?>">
                 <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
             </div>
         </form>
@@ -241,6 +250,9 @@ $result = mysqli_query($conn, $sql);
 
         <section id="product-list">
             <h2>Manage Products</h2>
+            <?php if (!empty($search)): ?>
+                <p>Showing results for: "<?php echo htmlspecialchars($search); ?>" <a href="manage_product.php" style="margin-left: 10px; color: #c0392b;">Clear search</a></p>
+            <?php endif; ?>
             <button class="add-product" onclick="window.location.href='addproduct2.php'">Add New Product</button>
             <table>
                 <thead>
@@ -255,22 +267,26 @@ $result = mysqli_query($conn, $sql);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($row = mysqli_fetch_assoc($result)) { ?>
-                    <tr>
-                        <td><img src="<?= $row['product_image']; ?>" alt="Product Image"></td>
-                        <td><?= htmlspecialchars($row['product_name']); ?></td>
-                        <td><?= htmlspecialchars($row['product_description']); ?></td>
-                        <td><?= htmlspecialchars($row['product_category']); ?></td>
-                        <td>RM <?= number_format($row['product_price'], 2); ?></td>
-                        <td><?= $row['product_quantity']; ?></td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="editproductquantity.php?id=<?= $row['id']; ?>"><button>Edit Quantity</button></a>
-                                <a href="deleteproduct.php?id=<?= $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');"><button>Delete</button></a>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php } ?>
+                    <?php if (mysqli_num_rows($result) > 0): ?>
+                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                        <tr>
+                            <td><img src="<?= $row['product_image']; ?>" alt="Product Image"></td>
+                            <td><?= htmlspecialchars($row['product_name']); ?></td>
+                            <td><?= htmlspecialchars($row['product_description']); ?></td>
+                            <td><?= htmlspecialchars($row['product_category']); ?></td>
+                            <td>RM <?= number_format($row['product_price'], 2); ?></td>
+                            <td><?= $row['product_quantity']; ?></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="editproductquantity.php?id=<?= $row['id']; ?>"><button>Edit Quantity</button></a>
+                                    <a href="deleteproduct.php?id=<?= $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');"><button>Delete</button></a>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr><td colspan="7" align="center">No products found<?php echo !empty($search) ? ' matching your search.' : '.'; ?></td></tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </section>
