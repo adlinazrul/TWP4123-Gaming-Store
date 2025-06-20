@@ -56,16 +56,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $confirm_password = $_POST['confirm_password'];
     $user_type = $_POST['user_type'];
 
-    // Server-side password validation
-    if (strlen($password_raw) < 12 || 
-        !preg_match('/[A-Z]/', $password_raw) || 
-        !preg_match('/[a-z]/', $password_raw) || 
-        !preg_match('/[0-9]/', $password_raw) || 
-        !preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\\\|,.<>\/?]/', $password_raw)) {
-        echo "<script>alert('Password must meet all requirements:\\n- 12+ characters\\n- At least one uppercase letter\\n- At least one lowercase letter\\n- At least one number\\n- At least one special character'); window.location.href='addadmin.php';</script>";
-        exit;
-    }
-
     if ($password_raw !== $confirm_password) {
         echo "<script>alert('Passwords do not match!'); window.location.href='addadmin.php';</script>";
         exit;
@@ -508,21 +498,10 @@ if ($admin_id) {
                         <input type="email" name="email" required>
 
                         <label>Password:</label>
-                        <div>
-                            <input type="password" name="password" required id="password" onkeyup="checkPasswordStrength()">
-                            <div id="password-strength" style="font-size: 12px; margin-top: 5px;">
-                                Password must contain: 
-                                <span id="length" style="color:red;">✓ 12+ characters</span>, 
-                                <span id="uppercase" style="color:red;">✓ uppercase letter</span>, 
-                                <span id="lowercase" style="color:red;">✓ lowercase letter</span>, 
-                                <span id="number" style="color:red;">✓ number</span>, 
-                                <span id="special" style="color:red;">✓ special character</span>
-                            </div>
-                        </div>
+                        <input type="password" name="password" required id="password">
 
                         <label>Confirm Password:</label>
-                        <input type="password" name="confirm_password" required id="confirm_password" onkeyup="checkPasswordMatch()">
-                        <div id="password-match" style="font-size: 12px; margin-top: 5px; color:red;"></div>
+                        <input type="password" name="confirm_password" required id="confirm_password">
 
                         <label>Profile Image:</label>
                         <input type="file" name="image" accept="image/*" required>
@@ -601,90 +580,13 @@ if ($admin_id) {
 </section>
 
 <script>
-function checkPasswordStrength() {
-    const password = document.getElementById('password').value;
-    const length = document.getElementById('length');
-    const uppercase = document.getElementById('uppercase');
-    const lowercase = document.getElementById('lowercase');
-    const number = document.getElementById('number');
-    const special = document.getElementById('special');
-    
-    // Check length
-    if (password.length >= 12) {
-        length.style.color = 'green';
-    } else {
-        length.style.color = 'red';
-    }
-    
-    // Check uppercase
-    if (/[A-Z]/.test(password)) {
-        uppercase.style.color = 'green';
-    } else {
-        uppercase.style.color = 'red';
-    }
-    
-    // Check lowercase
-    if (/[a-z]/.test(password)) {
-        lowercase.style.color = 'green';
-    } else {
-        lowercase.style.color = 'red';
-    }
-    
-    // Check number
-    if (/[0-9]/.test(password)) {
-        number.style.color = 'green';
-    } else {
-        number.style.color = 'red';
-    }
-    
-    // Check special character
-    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-        special.style.color = 'green';
-    } else {
-        special.style.color = 'red';
-    }
-}
-
-function checkPasswordMatch() {
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirm_password').value;
-    const message = document.getElementById('password-match');
-    
-    if (password !== '' && confirmPassword !== '') {
-        if (password === confirmPassword) {
-            message.style.color = 'green';
-            message.innerHTML = '✓ Passwords match';
-        } else {
-            message.style.color = 'red';
-            message.innerHTML = '✗ Passwords do not match';
-        }
-    } else {
-        message.innerHTML = '';
-    }
-}
-
 function validatePassword() {
-    const password = document.getElementById('password').value;
-    
-    // Check all requirements
-    const isLongEnough = password.length >= 12;
-    const hasUppercase = /[A-Z]/.test(password);
-    const hasLowercase = /[a-z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
-    
-    if (!isLongEnough || !hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
-        alert('Password must meet all requirements:\n- 12+ characters\n- At least one uppercase letter\n- At least one lowercase letter\n- At least one number\n- At least one special character');
-        return false;
-    }
-    
-    // Check password match
-    const confirmPassword = document.getElementById('confirm_password').value;
-    if (password !== confirmPassword) {
+    let password = document.getElementById('password').value;
+    let confirm = document.getElementById('confirm_password').value;
+    if (password !== confirm) {
         alert('Passwords do not match!');
         return false;
     }
-    
     return true;
 }
 
