@@ -270,7 +270,7 @@ $result = $conn->query($sql);
 								<td><?= htmlspecialchars($row['description']); ?></td>
 								<td><?= $row['created_at']; ?></td>
 								<td class="action-buttons">
-									<a href="editcategory.php?id=<?= $row['id']; ?>"><button>Edit</button></a>
+									<a href="edit_category.php?id=<?= $row['id']; ?>"><button>Edit</button></a>
 									<a href="delete_category.php?id=<?= $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this category?');"><button>Delete</button></a>
 								</td>
 							</tr>
