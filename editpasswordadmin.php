@@ -34,18 +34,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Compare old password with current password from DB
     if ($old_password === $current_password) {
         if ($new_password === $confirm_password) {
-            // Update to new password
-            $sql = "UPDATE admin_list SET password=? WHERE id=?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("si", $new_password, $admin_id);
-
-            if ($stmt->execute()) {
-                $message = "Password updated successfully!";
+            // Validate new password strength
+            if (strlen($new_password) < 12) {
+                $message = "Password must be at least 12 characters long.";
+            } elseif (!preg_match('/[A-Z]/', $new_password)) {
+                $message = "Password must contain at least one uppercase letter.";
+            } elseif (!preg_match('/[a-z]/', $new_password)) {
+                $message = "Password must contain at least one lowercase letter.";
+            } elseif (!preg_match('/[0-9]/', $new_password)) {
+                $message = "Password must contain at least one number.";
+            } elseif (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
+                $message = "Password must contain at least one special character.";
             } else {
-                $message = "Error updating password: " . $stmt->error;
-            }
+                // Update to new password
+                $sql = "UPDATE admin_list SET password=? WHERE id=?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("si", $new_password, $admin_id);
 
-            $stmt->close();
+                if ($stmt->execute()) {
+                    $message = "Password updated successfully!";
+                } else {
+                    $message = "Error updating password: " . $stmt->error;
+                }
+
+                $stmt->close();
+            }
         } else {
             $message = "New password and confirm password do not match.";
         }
@@ -128,6 +141,12 @@ $conn->close();
             text-decoration: none;
             color: #3b82f6;
         }
+        
+        .password-requirements {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -146,6 +165,15 @@ $conn->close();
 
             <label for="new_password">New Password:</label>
             <input type="password" name="new_password" required>
+            <div class="password-requirements">
+                Password must be at least 12 characters long and contain:
+                <ul>
+                    <li>At least one uppercase letter</li>
+                    <li>At least one lowercase letter</li>
+                    <li>At least one number</li>
+                    <li>At least one special character</li>
+                </ul>
+            </div>
 
             <label for="confirm_password">Confirm New Password:</label>
             <input type="password" name="confirm_password" required>
