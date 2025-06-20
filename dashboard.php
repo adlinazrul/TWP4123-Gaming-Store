@@ -5,22 +5,33 @@ session_start();
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
+
+// Add these headers to prevent page from being cached
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 
-// Handle logout request
+// Check if logout request
 if (isset($_GET['logout'])) {
     // Unset all session variables
     $_SESSION = array();
-
+    
     // Destroy the session
     session_destroy();
-
-    // Redirect to login page with no-cache headers
+    
+    // Invalidate the session cookie
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    
+    // Redirect to login with no-cache headers
     header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
     header("Cache-Control: post-check=0, pre-check=0", false);
     header("Pragma: no-cache");
-    header("Location: login_admin.php");
+    header("Location: login_admin.php?logout=1");
     exit;
 }
 
@@ -581,7 +592,7 @@ $conn->close();
         </ul>
         <ul class="side-menu">
             <li>
-                <a href="?logout=1" class="logout" onclick="return confirm('Are you sure you want to logout?')">
+                <a href="?logout=1" class="logout">
                     <i class='bx bxs-log-out-circle'></i>
                     <span class="text">Logout</span>
                 </a>
@@ -904,14 +915,6 @@ $conn->close();
             .forEach(element => {
                 element.style.transition = 'all 0.3s ease';
             });
-
-        // Prevent back button after logout
-        window.onload = function() {
-            if (performance.navigation.type === 2) {
-                // Page was accessed via back/forward button
-                window.location.reload(true);
-            }
-        };
     </script>
 </body>
 </html>
