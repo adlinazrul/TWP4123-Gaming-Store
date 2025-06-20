@@ -1,6 +1,38 @@
 <?php
 session_start();
 
+// Prevent caching of protected pages
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+
+// Check if logout request
+if (isset($_GET['logout'])) {
+    // Unset all session variables
+    $_SESSION = array();
+    
+    // Destroy the session
+    session_destroy();
+    
+    // Invalidate the session cookie
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    
+    // Redirect to login with no-cache headers
+    header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+    header("Cache-Control: post-check=0, pre-check=0", false);
+    header("Pragma: no-cache");
+    header("Location: login_admin.php?logout=1");
+    exit;
+}
+
 // CONNECT TO DATABASE FIRST
 $host = 'localhost';
 $dbname = 'gaming_store';
@@ -13,12 +45,12 @@ if ($conn->connect_error) {
 }
 
 // Check if the session variable is set
-if (isset($_SESSION['admin_id'])) {
-    $admin_id = $_SESSION['admin_id'];
-} else {
+if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
+
+$admin_id = $_SESSION['admin_id'];
 
 if ($admin_id) {
     // Correct SQL query to fetch the profile image (use 'image' column)
@@ -175,7 +207,7 @@ $result = $conn->query($sql);
 			</a>
 		</li>
 		<li>
-			<a href="index.html" class="logout">
+			<a href="?logout=1" class="logout">
 				<i class='bx bxs-log-out-circle'></i>
 				<span class="text">Logout</span>
 			</a>
