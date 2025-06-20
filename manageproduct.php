@@ -1,10 +1,12 @@
 <?php
 session_start();
 
-// Prevent page caching
-header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
-header("Pragma: no-cache"); // HTTP 1.0
-header("Expires: 0"); // Proxies
+// Prevent caching of protected pages
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 
 // Enhanced logout handling
 if (isset($_GET['logout'])) {
@@ -32,12 +34,12 @@ if (isset($_GET['logout'])) {
 }
 
 // Check if the session variable is set
-if (isset($_SESSION['admin_id'])) {
-    $admin_id = $_SESSION['admin_id'];
-} else {
+if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
+
+$admin_id = $_SESSION['admin_id'];
 
 // Database connection
 $servername = "localhost";
@@ -215,6 +217,19 @@ if (!$showSearchResults) {
             margin-bottom: 10px;
             color: #ccc;
         }
+        /* Confirmation dialog for delete */
+        .confirm-delete {
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        .confirm-delete-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -364,7 +379,7 @@ if (!$showSearchResults) {
                                     <td>
                                         <div class="action-buttons">
                                             <a href="editproductquantity.php?id=<?= $row['id']; ?>"><button>Edit Quantity</button></a>
-                                            <a href="deleteproduct.php?id=<?= $row['id']; ?>"><button>Delete</button></a>
+                                            <a href="deleteproduct.php?id=<?= $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');"><button>Delete</button></a>
                                         </div>
                                     </td>
                                 </tr>
@@ -407,7 +422,7 @@ if (!$showSearchResults) {
                             <td>
                                 <div class="action-buttons">
                                     <a href="editproductquantity.php?id=<?= $row['id']; ?>"><button>Edit Quantity</button></a>
-                                    <a href="deleteproduct.php?id=<?= $row['id']; ?>"><button>Delete</button></a>
+                                    <a href="deleteproduct.php?id=<?= $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');"><button>Delete</button></a>
                                 </div>
                             </td>
                         </tr>
@@ -447,6 +462,11 @@ let sidebarBtn = document.querySelector("nav .bx-menu");
 sidebarBtn.addEventListener("click", () => {
     sidebar.classList.toggle("active");
 });
+
+// Prevent form resubmission on page refresh
+if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
+}
 </script>
 
 </body>
