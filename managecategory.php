@@ -227,9 +227,7 @@ $result = $conn->query($sql);
 				<button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
 			</div>
 		</form>
-		<a href="#" class="notification">
-			<i class='bx bxs-bell'></i>
-		</a>
+		
 		<a href="profile_admin.php" class="profile">
 			<img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture">
 		</a>
@@ -273,7 +271,7 @@ $result = $conn->query($sql);
 								<td><?= $row['created_at']; ?></td>
 								<td class="action-buttons">
 									<a href="editcategory.php?id=<?= $row['id']; ?>"><button>Edit</button></a>
-									<a href="deletecategory.php?id=<?= $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this category?');"><button>Delete</button></a>
+									<a href="delete_category.php?id=<?= $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this category?');"><button>Delete</button></a>
 								</td>
 							</tr>
 						<?php endwhile; ?>
