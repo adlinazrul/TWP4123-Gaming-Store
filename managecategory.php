@@ -69,11 +69,19 @@ if ($admin_id) {
     $profile_image = 'image/default_profile.jpg';
 }
 
-// Fetch categories
-$sql = "SELECT * FROM product_categories";
+// Handle search functionality
+$search = '';
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $search = $conn->real_escape_string($_GET['search']);
+    $sql = "SELECT * FROM product_categories 
+            WHERE category_name LIKE '%$search%' 
+            OR description LIKE '%$search%'";
+} else {
+    $sql = "SELECT * FROM product_categories";
+}
+
 $result = $conn->query($sql);
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -213,9 +221,9 @@ $result = $conn->query($sql);
 <!-- CONTENT -->
 <section id="content">
 	<nav>
-		<form action="#">
+		<form action="managecategory.php" method="get">
 			<div class="form-input">
-				<input type="search" placeholder="Search...">
+				<input type="search" name="search" placeholder="Search categories..." value="<?php echo htmlspecialchars($search); ?>">
 				<button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
 			</div>
 		</form>
@@ -241,6 +249,9 @@ $result = $conn->query($sql);
 
 		<section id="category-list">
 			<h2>Manage Categories</h2>
+			<?php if (!empty($search)): ?>
+				<p>Showing results for: "<?php echo htmlspecialchars($search); ?>" <a href="managecategory.php" style="margin-left: 10px; color: #c0392b;">Clear search</a></p>
+			<?php endif; ?>
 			<button class="add-category" onclick="window.location.href='addcategory.php'">Add New Category</button>
 			<table>
 				<thead>
@@ -267,7 +278,7 @@ $result = $conn->query($sql);
 							</tr>
 						<?php endwhile; ?>
 					<?php else: ?>
-						<tr><td colspan="5" align="center">No categories found.</td></tr>
+						<tr><td colspan="5" align="center">No categories found<?php echo !empty($search) ? ' matching your search.' : '.'; ?></td></tr>
 					<?php endif; ?>
 				</tbody>
 			</table>
