@@ -10,6 +10,19 @@ if (isset($_SESSION['admin_id'])) {
     exit;
 }
 
+// Handle logout
+if (isset($_GET['logout'])) {
+    // Unset all session variables
+    $_SESSION = array();
+    
+    // Destroy the session
+    session_destroy();
+    
+    // Redirect to login page
+    header("Location: login_admin.php");
+    exit;
+}
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -381,8 +394,7 @@ if ($admin_id) {
         </li>
     </ul>
     <ul class="side-menu">
-       
-        <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
+        <li><a href="?logout=1" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
     </ul>
 </section>
 
