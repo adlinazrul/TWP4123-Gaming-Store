@@ -61,6 +61,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
+    // New password requirements
+    if (strlen($password_raw) < 12 || 
+        !preg_match('/[A-Z]/', $password_raw) || 
+        !preg_match('/[a-z]/', $password_raw) || 
+        !preg_match('/[0-9]/', $password_raw) || 
+        !preg_match('/[^A-Za-z0-9]/', $password_raw)) {
+        echo "<script>alert('Password must be at least 12 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character!'); window.location.href='addadmin.php';</script>";
+        exit;
+    }
+
     $password = password_hash($password_raw, PASSWORD_BCRYPT);
 
     $target_dir = "uploads/";
@@ -498,7 +508,7 @@ if ($admin_id) {
                         <input type="email" name="email" required>
 
                         <label>Password:</label>
-                        <input type="password" name="password" required id="password">
+                        <input type="password" name="password" required id="password" placeholder="At least 12 characters with uppercase, lowercase, number, and special character">
 
                         <label>Confirm Password:</label>
                         <input type="password" name="confirm_password" required id="confirm_password">
@@ -583,10 +593,34 @@ if ($admin_id) {
 function validatePassword() {
     let password = document.getElementById('password').value;
     let confirm = document.getElementById('confirm_password').value;
+    
     if (password !== confirm) {
         alert('Passwords do not match!');
         return false;
     }
+    
+    // Check password requirements
+    if (password.length < 12) {
+        alert('Password must be at least 12 characters long!');
+        return false;
+    }
+    if (!/[A-Z]/.test(password)) {
+        alert('Password must contain at least one uppercase letter!');
+        return false;
+    }
+    if (!/[a-z]/.test(password)) {
+        alert('Password must contain at least one lowercase letter!');
+        return false;
+    }
+    if (!/[0-9]/.test(password)) {
+        alert('Password must contain at least one number!');
+        return false;
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+        alert('Password must contain at least one special character!');
+        return false;
+    }
+    
     return true;
 }
 
