@@ -1,10 +1,10 @@
 <?php
 session_start();
 
-// Prevent caching of protected pages
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
+// Enhanced security headers
+header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
+header("Expires: 0");
 
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
         $stmt->bind_param("sss", $searchTerm, $searchTerm, $searchTerm);
         $stmt->execute();
         $result = $stmt->get_result();
-        $searchResults['orders'] = $result->fetch_all(MQLI_ASSOC);
+        $searchResults['orders'] = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
         
         // Search in customers
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
         $stmt->bind_param("s", $searchTerm);
         $stmt->execute();
         $result = $stmt->get_result();
-        $searchResults['customers'] = $result->fetch_all(MQLI_ASSOC);
+        $searchResults['customers'] = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
     }
 }
@@ -85,7 +85,7 @@ if ($stmt->fetch() && !empty($image)) {
 }
 $stmt->close();
 
-// Fetch only Pending and Completed order counts from items_ordered table
+// Fetch only Pending and Completed order counts
 $statusCounts = [
     'pending' => 0,
     'completed' => 0
@@ -146,11 +146,14 @@ $conn->close();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet' />
-    <link rel="stylesheet" href="admindashboard.css" />
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="css/admindashboard.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -519,7 +522,6 @@ $conn->close();
     </style>
 </head>
 <body>
-
     <!-- SIDEBAR -->
     <section id="sidebar">
         <a href="#" class="brand">
@@ -551,18 +553,16 @@ $conn->close();
                     <span class="text">Product Management</span>
                 </a>
             </li>
-            
             <li>
                 <a href="order_admin.php">
                     <i class='bx bxs-doughnut-chart'></i>
                     <span class="text">Order</span>
                 </a>
             </li>
-            
         </ul>
         <ul class="side-menu">
             <li>
-                <a href="login_admin.php" class="logout">
+                <a href="logout.php" class="logout">
                     <i class='bx bxs-log-out-circle'></i>
                     <span class="text">Logout</span>
                 </a>
@@ -793,7 +793,7 @@ $conn->close();
                         <div class="card-header">
                             <h3><i class='bx bxs-receipt'></i> Recent Orders</h3>
                             <div class="card-actions">
-                                <a href="order.php" class="view-all">View All</a>
+                                <a href="order_admin.php" class="view-all">View All</a>
                             </div>
                         </div>
                         <div class="card-body">
@@ -837,7 +837,7 @@ $conn->close();
                         <div class="card-header">
                             <h3><i class='bx bxs-user-detail'></i> Recent Customers</h3>
                             <div class="card-actions">
-                                <a href="customer_list.php" class="view-all">View All</a>
+                                <a href="cust_list.php" class="view-all">View All</a>
                             </div>
                         </div>
                         <div class="card-body">
