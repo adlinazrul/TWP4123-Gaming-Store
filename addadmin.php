@@ -341,6 +341,24 @@ if ($admin_id) {
         color: var(--dark-red);
         transform: translateX(-3px);
     }
+
+    /* New styles for inline profile image and roles */
+    .inline-fields {
+        grid-column: 1 / span 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .inline-fields > div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .inline-fields label {
+        text-align: left;
+        margin-bottom: 5px;
+    }
 </style>
 </head>
 <body>
@@ -381,7 +399,6 @@ if ($admin_id) {
         </li>
     </ul>
     <ul class="side-menu">
-       
         <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
     </ul>
 </section>
@@ -524,16 +541,21 @@ if ($admin_id) {
                         <input type="password" name="confirm_password" required id="confirm_password" onkeyup="checkPasswordMatch()">
                         <div id="password-match" style="font-size: 12px; margin-top: 5px; color:red;"></div>
 
-                        <label>Profile Image:</label>
-                        <input type="file" name="image" accept="image/*" required>
+                        <div class="inline-fields">
+                            <div>
+                                <label>Profile Image:</label>
+                                <input type="file" name="image" accept="image/*" required>
+                            </div>
+                            <div>
+                                <label>Roles:</label>
+                                <div class="role-buttons">
+                                    <input type="radio" id="admin" name="user_type" value="Admin" required>
+                                    <label for="admin">Admin</label>
 
-                        <label>Roles:</label>
-                        <div class="role-buttons">
-                            <input type="radio" id="admin" name="user_type" value="Admin" required>
-                            <label for="admin">Admin</label>
-
-                            <input type="radio" id="superadmin" name="user_type" value="Super Admin" required>
-                            <label for="superadmin">Super Admin</label>
+                                    <input type="radio" id="superadmin" name="user_type" value="Super Admin" required>
+                                    <label for="superadmin">Super Admin</label>
+                                </div>
+                            </div>
                         </div>
 
                         <button type="submit" name="submit" onclick="return validatePassword()">Add Admin</button>
