@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+// Prevent page caching
+header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
+header("Pragma: no-cache"); // HTTP 1.0
+header("Expires: 0"); // Proxies
+
 // Check if the session variable is set
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
@@ -10,7 +15,7 @@ if (isset($_SESSION['admin_id'])) {
     exit;
 }
 
-// Handle logout
+// Enhanced logout handling
 if (isset($_GET['logout'])) {
     // Unset all session variables
     $_SESSION = array();
@@ -18,8 +23,20 @@ if (isset($_GET['logout'])) {
     // Destroy the session
     session_destroy();
     
-    // Redirect to login page
-    header("Location: login_admin.php");
+    // Invalidate the session cookie
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    
+    // Redirect with no-cache headers and prevent back-button access
+    header("Cache-Control: no-cache, no-store, must-revalidate");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    header("Location: login_admin.php?logout=1");
     exit;
 }
 
@@ -661,6 +678,11 @@ document.getElementById('searchInput')?.addEventListener('keypress', function(e)
         document.getElementById('searchForm').submit();
     }
 });
+
+// Prevent form resubmission on page refresh
+if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
+}
 </script>
 
 </body>
