@@ -1,13 +1,45 @@
 <?php
 session_start();
 
+// Prevent caching of protected pages
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+
+// Enhanced logout handling
+if (isset($_GET['logout'])) {
+    // Unset all session variables
+    $_SESSION = array();
+    
+    // Destroy the session
+    session_destroy();
+    
+    // Invalidate the session cookie
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    
+    // Redirect with no-cache headers and prevent back-button access
+    header("Cache-Control: no-cache, no-store, must-revalidate");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    header("Location: login_admin.php?logout=1");
+    exit;
+}
+
 // Check if the session variable is set
-if (isset($_SESSION['admin_id'])) {
-    $admin_id = $_SESSION['admin_id'];
-} else {
+if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
+
+$admin_id = $_SESSION['admin_id'];
 
 $servername = "localhost";
 $username = "root";
@@ -69,8 +101,32 @@ if ($admin_id) {
             color: white;
         }
 
+        /* Status badges */
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-processing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
         /* Popup styles */
-            #popup {
+        #popup {
             display: none;
             position: fixed;
             top: 10%;
@@ -109,18 +165,18 @@ if ($admin_id) {
             padding: 6px 12px;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
         button.view-details-btn:hover {
             background-color: #a22a2a;
         }
 
         @media (max-width: 768px) {
-        #popup {
-         left: 20px;
-            width: calc(100% - 40px);
-         }
-}
-
+            #popup {
+                left: 20px;
+                width: calc(100% - 40px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -130,40 +186,39 @@ if ($admin_id) {
     <ul class="side-menu top">
         <li><a href="admindashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
         <li>
-                <a href="addadmin.php">
-                    <i class='bx bxs-group'></i>
-                    <span class="text">Admin</span>
-                </a>
-            </li>
-            <li>
-                <a href="cust_list.php">
-                    <i class='bx bxs-user'></i>
-                    <span class="text">Customer</span>
-                </a>
-            </li>
-            <li>
-                <a href="managecategory.php">
-                    <i class='bx bxs-category'></i>
-                    <span class="text">Category Management</span>
-                </a>
-            </li>
-            <li>
-                <a href="manage_product.php">
-                    <i class='bx bxs-shopping-bag-alt'></i>
-                    <span class="text">Product Management</span>
-                </a>
-            </li>
-            
-            <li class="active">
-                <a href="order_admin.php">
-                    <i class='bx bxs-doughnut-chart'></i>
-                    <span class="text">Order</span>
-                </a>
-            </li>
+            <a href="addadmin.php">
+                <i class='bx bxs-group'></i>
+                <span class="text">Admin</span>
+            </a>
+        </li>
+        <li>
+            <a href="cust_list.php">
+                <i class='bx bxs-user'></i>
+                <span class="text">Customer</span>
+            </a>
+        </li>
+        <li>
+            <a href="managecategory.php">
+                <i class='bx bxs-category'></i>
+                <span class="text">Category Management</span>
+            </a>
+        </li>
+        <li>
+            <a href="manage_product.php">
+                <i class='bx bxs-shopping-bag-alt'></i>
+                <span class="text">Product Management</span>
+            </a>
+        </li>
+        <li class="active">
+            <a href="order_admin.php">
+                <i class='bx bxs-doughnut-chart'></i>
+                <span class="text">Order</span>
+            </a>
+        </li>
     </ul>
     <ul class="side-menu">
-        <li><a href="#"><i class='bx bxs-cog'></i><span class="text">Settings</span></a></li>
-        <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
+
+        <li><a href="?logout=1" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
     </ul>
 </section>
 
@@ -175,7 +230,6 @@ if ($admin_id) {
                 <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
             </div>
         </form>
-        <a href="#" class="notification"><i class='bx bxs-bell'></i></a>
         <a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
     </nav>
 
@@ -205,13 +259,15 @@ if ($admin_id) {
                 </thead>
                 <tbody>
                     <?php if ($result && $result->num_rows > 0): ?>
-                        <?php while($order = $result->fetch_assoc()): ?>
+                        <?php while($order = $result->fetch_assoc()): 
+                            $statusClass = 'status-' . strtolower(str_replace(' ', '-', $order['status_order']));
+                        ?>
                             <tr>
                                 <td><?= htmlspecialchars($order['id']) ?></td>
                                 <td><?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></td>
                                 <td><?= htmlspecialchars($order['date']) ?></td>
                                 <td>RM <?= number_format($order['total_price'], 2) ?></td>
-                                <td><?= htmlspecialchars($order['status_order']) ?></td>
+                                <td><span class="status-badge <?= $statusClass ?>"><?= htmlspecialchars($order['status_order']) ?></span></td>
                                 <td>
                                     <button class="view-details-btn" data-order-id="<?= $order['id'] ?>">View Details</button>
                                 </td>
@@ -251,12 +307,16 @@ if ($admin_id) {
 
             // Fetch order items
             fetch('order_details2.php?order_id=' + orderId)
-                .then(res => res.text())
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.text();
+                })
                 .then(html => {
                     content.innerHTML = html;
                 })
-                .catch(() => {
-                    content.innerHTML = '<p style="color:red;">Failed to load order items.</p>';
+                .catch(error => {
+                    console.error('Error:', error);
+                    content.innerHTML = '<p style="color:red;">Failed to load order items. Please try again.</p>';
                 });
         });
     });
@@ -270,6 +330,19 @@ if ($admin_id) {
         document.getElementById('popup').style.display = 'none';
         document.getElementById('popup-overlay').style.display = 'none';
     });
+
+    // Close popup when pressing Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('popup-overlay').style.display = 'none';
+        }
+    });
+
+    // Prevent form resubmission on page refresh
+    if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+    }
 </script>
 
 </body>
