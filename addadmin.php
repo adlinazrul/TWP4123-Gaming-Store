@@ -595,29 +595,29 @@ function validatePassword() {
     let confirm = document.getElementById('confirm_password').value;
     
     if (password !== confirm) {
-        alert('Passwords do not match!');
+        alert('Passwords do not match');
         return false;
     }
     
     // Check password requirements
     if (password.length < 12) {
-        alert('Password must be at least 12 characters long!');
+        alert('Password must be at least 12 characters long');
         return false;
     }
     if (!/[A-Z]/.test(password)) {
-        alert('Password must contain at least one uppercase letter!');
+        alert('Password must contain at least one uppercase letter');
         return false;
     }
     if (!/[a-z]/.test(password)) {
-        alert('Password must contain at least one lowercase letter!');
+        alert('Password must contain at least one lowercase letter');
         return false;
     }
     if (!/[0-9]/.test(password)) {
-        alert('Password must contain at least one number!');
+        alert('Password must contain at least one number');
         return false;
     }
     if (!/[^A-Za-z0-9]/.test(password)) {
-        alert('Password must contain at least one special character!');
+        alert('Password must contain at least one special character');
         return false;
     }
     
