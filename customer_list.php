@@ -1,13 +1,43 @@
 <?php
 session_start();
 
+// Prevent page caching
+header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
+header("Pragma: no-cache"); // HTTP 1.0
+header("Expires: 0"); // Proxies
+
 // Check if the session variable is set
-if (isset($_SESSION['admin_id'])) {
-    $admin_id = $_SESSION['admin_id'];
-} else {
+if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
+
+// Enhanced logout handling
+if (isset($_GET['logout'])) {
+    // Unset all session variables
+    $_SESSION = array();
+    
+    // Destroy the session
+    session_destroy();
+    
+    // Invalidate the session cookie
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    
+    // Redirect with no-cache headers and prevent back-button access
+    header("Cache-Control: no-cache, no-store, must-revalidate");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    header("Location: login_admin.php?logout=1");
+    exit;
+}
+
+$admin_id = $_SESSION['admin_id'];
 
 $servername = "localhost";
 $username = "root";
@@ -96,7 +126,7 @@ if ($admin_id) {
         }
 
         table th {
-            background-color: #d03b3b;
+            background-color: #a93226;
             color: white;
         }
         
@@ -125,7 +155,7 @@ if ($admin_id) {
         }
 
         .clear-search {
-            color: #d03b3b;
+            color: #a93226;
             text-decoration: none;
             font-size: 14px;
             display: flex;
@@ -135,8 +165,35 @@ if ($admin_id) {
         }
 
         .clear-search:hover {
-            color: #a93226;
+            color: #7d241b;
             transform: translateX(-3px);
+        }
+        
+        .status-btn {
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .status-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .status-active {
+            background-color: #28a745;
+        }
+        
+        .status-inactive {
+            background-color: #dc3545;
+        }
+        
+        .status-pending {
+            background-color: #ffc107;
+            color: #212529;
         }
     </style>
 </head>
@@ -147,39 +204,38 @@ if ($admin_id) {
     <ul class="side-menu top">
         <li><a href="admindashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
         <li>
-                <a href="addadmin.php">
-                    <i class='bx bxs-group'></i>
-                    <span class="text">Admin</span>
-                </a>
-            </li>
-            <li class="active">
-                <a href="customer_list.php">
-                    <i class='bx bxs-user'></i>
-                    <span class="text">Customer</span>
-                </a>
-            </li>
-            <li>
-                <a href="manage_category.php">
-                    <i class='bx bxs-category'></i>
-                    <span class="text">Category Management</span>
-                </a>
-            </li>
-            <li>
-                <a href="manageproduct.php">
-                    <i class='bx bxs-shopping-bag-alt'></i>
-                    <span class="text">Product Management</span>
-                </a>
-            </li>
-            <li>
-                <a href="order.php">
-                    <i class='bx bxs-doughnut-chart'></i>
-                    <span class="text">Order</span>
-                </a>
-            </li>
+            <a href="addadmin.php">
+                <i class='bx bxs-group'></i>
+                <span class="text">Admin</span>
+            </a>
+        </li>
+        <li class="active">
+            <a href="customer_list.php">
+                <i class='bx bxs-user'></i>
+                <span class="text">Customer</span>
+            </a>
+        </li>
+        <li>
+            <a href="manage_category.php">
+                <i class='bx bxs-category'></i>
+                <span class="text">Category Management</span>
+            </a>
+        </li>
+        <li>
+            <a href="manageproduct.php">
+                <i class='bx bxs-shopping-bag-alt'></i>
+                <span class="text">Product Management</span>
+            </a>
+        </li>
+        <li>
+            <a href="order.php">
+                <i class='bx bxs-doughnut-chart'></i>
+                <span class="text">Order</span>
+            </a>
+        </li>
     </ul>
     <ul class="side-menu">
-
-        <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
+        <li><a href="?logout=1" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
     </ul>
 </section>
 
@@ -228,12 +284,8 @@ if ($admin_id) {
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>Username</th>
-                                    <th>Bio</th>
-                                    <th>Address</th>
-                                    <th>City</th>
-                                    <th>State</th>
-                                    <th>Postcode</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -277,19 +329,19 @@ if ($admin_id) {
                                                 ); 
                                             ?>
                                         </td>
-                                        <td><?= htmlspecialchars($row['bio']) ?></td>
-                                        <td><?= htmlspecialchars($row['address']) ?></td>
-                                        <td><?= htmlspecialchars($row['city']) ?></td>
-                                        <td><?= htmlspecialchars($row['state']) ?></td>
-                                        <td><?= htmlspecialchars($row['postcode']) ?></td>
                                         <td>
-                                            <form method="POST" action="toggle_status_admin.php">
+                                            <form method="POST" action="toggle_status_admin.php" style="display:inline;">
                                                 <input type="hidden" name="customer_id" value="<?= $row['id'] ?>">
                                                 <input type="hidden" name="current_status" value="<?= $row['account_status'] ?>">
-                                                <button type="submit" style="background-color: <?= $row['account_status'] == 'active' ? '#4CAF50' : '#f44336' ?>; color: white; border: none; padding: 5px 10px; cursor: pointer;">
+                                                <button type="submit" class="status-btn status-<?= $row['account_status'] ?>">
                                                     <?= ucfirst($row['account_status']) ?>
                                                 </button>
                                             </form>
+                                        </td>
+                                        <td>
+                                            <a href="view_customer.php?id=<?= $row['id'] ?>" class="btn-view" style="background-color: #17a2b8; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;">
+                                                <i class='bx bx-show'></i> View
+                                            </a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -297,7 +349,7 @@ if ($admin_id) {
                         </table>
                     <?php else: ?>
                         <div style="text-align: center; padding: 20px;">
-                            <i class='bx bxs-error-circle' style="font-size: 48px; color: #d03b3b;"></i>
+                            <i class='bx bxs-error-circle' style="font-size: 48px; color: #a93226;"></i>
                             <p>No customers found matching "<?php echo htmlspecialchars($searchQuery); ?>"</p>
                         </div>
                     <?php endif; ?>
@@ -313,12 +365,8 @@ if ($admin_id) {
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Username</th>
-                            <th>Bio</th>
-                            <th>Address</th>
-                            <th>City</th>
-                            <th>State</th>
-                            <th>Postcode</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -330,24 +378,24 @@ if ($admin_id) {
                                     <td><?= htmlspecialchars($row['email']) ?></td>
                                     <td><?= htmlspecialchars($row['phone']) ?></td>
                                     <td><?= htmlspecialchars($row['username']) ?></td>
-                                    <td><?= htmlspecialchars($row['bio']) ?></td>
-                                    <td><?= htmlspecialchars($row['address']) ?></td>
-                                    <td><?= htmlspecialchars($row['city']) ?></td>
-                                    <td><?= htmlspecialchars($row['state']) ?></td>
-                                    <td><?= htmlspecialchars($row['postcode']) ?></td>
                                     <td>
-                                        <form method="POST" action="toggle_status_admin.php">
+                                        <form method="POST" action="toggle_status_admin.php" style="display:inline;">
                                             <input type="hidden" name="customer_id" value="<?= $row['id'] ?>">
                                             <input type="hidden" name="current_status" value="<?= $row['account_status'] ?>">
-                                            <button type="submit" style="background-color: <?= $row['account_status'] == 'active' ? '#4CAF50' : '#f44336' ?>; color: white; border: none; padding: 5px 10px; cursor: pointer;">
+                                            <button type="submit" class="status-btn status-<?= $row['account_status'] ?>">
                                                 <?= ucfirst($row['account_status']) ?>
                                             </button>
                                         </form>
                                     </td>
+                                    <td>
+                                        <a href="view_customer.php?id=<?= $row['id'] ?>" class="btn-view" style="background-color: #17a2b8; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;">
+                                            <i class='bx bx-show'></i> View
+                                        </a>
+                                    </td>
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
-                            <tr><td colspan="12">No customers found.</td></tr>
+                            <tr><td colspan="7">No customers found.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -374,6 +422,11 @@ document.getElementById('searchInput')?.addEventListener('keypress', function(e)
         document.getElementById('searchForm').submit();
     }
 });
+
+// Prevent form resubmission on page refresh
+if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
+}
 </script>
 
 </body>
