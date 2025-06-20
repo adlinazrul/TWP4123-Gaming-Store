@@ -176,16 +176,18 @@ if ($admin_id) {
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
+    /* Form styling for vertical layout */
     form {
-        display: grid;
-        grid-template-columns: 1fr 2fr;
+        display: flex;
+        flex-direction: column;
         gap: 15px;
-        align-items: center;
+        max-width: 600px;
     }
 
     form label {
-        text-align: right;
+        text-align: left;
         font-weight: bold;
+        margin-bottom: -10px;
     }
 
     form input[type="text"],
@@ -231,11 +233,11 @@ if ($admin_id) {
         color: var(--dark-grey);
     }
 
-    /* New role selection buttons styling */
+    /* Role selection buttons styling */
     .role-buttons {
         display: flex;
         gap: 15px;
-        justify-content: start;
+        margin-top: 5px;
     }
 
     .role-buttons input[type="radio"] {
@@ -259,7 +261,7 @@ if ($admin_id) {
     }
 
     form button[type="submit"] {
-        grid-column: 2;
+        margin-top: 10px;
         padding: 10px 20px;
         background-color: var(--red);
         color: white;
@@ -267,6 +269,7 @@ if ($admin_id) {
         border-radius: 5px;
         cursor: pointer;
         transition: 0.3s;
+        align-self: flex-start;
     }
 
     form button[type="submit"]:hover {
@@ -342,22 +345,21 @@ if ($admin_id) {
         transform: translateX(-3px);
     }
 
-    /* New styles for inline profile image and roles */
-    .inline-fields {
-        grid-column: 1 / span 2;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-    }
-
-    .inline-fields > div {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .inline-fields label {
-        text-align: left;
-        margin-bottom: 5px;
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px;
+            gap: 20px;
+        }
+        
+        nav .form-input {
+            width: 200px;
+        }
+        
+        .role-buttons {
+            flex-direction: column;
+            gap: 10px;
+        }
     }
 </style>
 </head>
@@ -518,44 +520,37 @@ if ($admin_id) {
                 <section id="add-employee">
                     <h2>Add Admin</h2>
                     <form method="POST" action="addadmin.php" enctype="multipart/form-data">
-                        <label>Username:</label>
-                        <input type="text" name="username" required>
+                        <label for="username">Username:</label>
+                        <input type="text" name="username" id="username" required>
 
-                        <label>Email:</label>
-                        <input type="email" name="email" required>
+                        <label for="email">Email:</label>
+                        <input type="email" name="email" id="email" required>
 
-                        <label>Password:</label>
-                        <div>
-                            <input type="password" name="password" required id="password" onkeyup="checkPasswordStrength()">
-                            <div id="password-strength" style="font-size: 12px; margin-top: 5px;">
-                                Password must contain: 
-                                <span id="length" style="color:red;">✓ 12+ characters</span>, 
-                                <span id="uppercase" style="color:red;">✓ uppercase letter</span>, 
-                                <span id="lowercase" style="color:red;">✓ lowercase letter</span>, 
-                                <span id="number" style="color:red;">✓ number</span>, 
-                                <span id="special" style="color:red;">✓ special character</span>
-                            </div>
+                        <label for="password">Password:</label>
+                        <input type="password" name="password" required id="password" onkeyup="checkPasswordStrength()">
+                        <div id="password-strength" style="font-size: 12px; margin-top: -10px;">
+                            Password must contain: 
+                            <span id="length" style="color:red;">✓ 12+ characters</span>, 
+                            <span id="uppercase" style="color:red;">✓ uppercase letter</span>, 
+                            <span id="lowercase" style="color:red;">✓ lowercase letter</span>, 
+                            <span id="number" style="color:red;">✓ number</span>, 
+                            <span id="special" style="color:red;">✓ special character</span>
                         </div>
 
-                        <label>Confirm Password:</label>
+                        <label for="confirm_password">Confirm Password:</label>
                         <input type="password" name="confirm_password" required id="confirm_password" onkeyup="checkPasswordMatch()">
-                        <div id="password-match" style="font-size: 12px; margin-top: 5px; color:red;"></div>
+                        <div id="password-match" style="font-size: 12px; margin-top: -10px; color:red;"></div>
 
-                        <div class="inline-fields">
-                            <div>
-                                <label>Profile Image:</label>
-                                <input type="file" name="image" accept="image/*" required>
-                            </div>
-                            <div>
-                                <label>Roles:</label>
-                                <div class="role-buttons">
-                                    <input type="radio" id="admin" name="user_type" value="Admin" required>
-                                    <label for="admin">Admin</label>
+                        <label for="image">Profile Image:</label>
+                        <input type="file" name="image" id="image" accept="image/*" required>
 
-                                    <input type="radio" id="superadmin" name="user_type" value="Super Admin" required>
-                                    <label for="superadmin">Super Admin</label>
-                                </div>
-                            </div>
+                        <label>Roles:</label>
+                        <div class="role-buttons">
+                            <input type="radio" id="admin" name="user_type" value="Admin" required>
+                            <label for="admin">Admin</label>
+
+                            <input type="radio" id="superadmin" name="user_type" value="Super Admin" required>
+                            <label for="superadmin">Super Admin</label>
                         </div>
 
                         <button type="submit" name="submit" onclick="return validatePassword()">Add Admin</button>
