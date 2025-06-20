@@ -176,18 +176,16 @@ if ($admin_id) {
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    /* Form styling for vertical layout */
     form {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
         gap: 15px;
-        max-width: 600px;
+        align-items: center;
     }
 
     form label {
-        text-align: left;
+        text-align: right;
         font-weight: bold;
-        margin-bottom: -10px;
     }
 
     form input[type="text"],
@@ -233,11 +231,11 @@ if ($admin_id) {
         color: var(--dark-grey);
     }
 
-    /* Role selection buttons styling */
+    /* New role selection buttons styling */
     .role-buttons {
         display: flex;
         gap: 15px;
-        margin-top: 5px;
+        justify-content: start;
     }
 
     .role-buttons input[type="radio"] {
@@ -261,7 +259,7 @@ if ($admin_id) {
     }
 
     form button[type="submit"] {
-        margin-top: 10px;
+        grid-column: 2;
         padding: 10px 20px;
         background-color: var(--red);
         color: white;
@@ -269,7 +267,6 @@ if ($admin_id) {
         border-radius: 5px;
         cursor: pointer;
         transition: 0.3s;
-        align-self: flex-start;
     }
 
     form button[type="submit"]:hover {
@@ -344,23 +341,6 @@ if ($admin_id) {
         color: var(--dark-red);
         transform: translateX(-3px);
     }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .container {
-            padding: 10px;
-            gap: 20px;
-        }
-        
-        nav .form-input {
-            width: 200px;
-        }
-        
-        .role-buttons {
-            flex-direction: column;
-            gap: 10px;
-        }
-    }
 </style>
 </head>
 <body>
@@ -401,6 +381,7 @@ if ($admin_id) {
         </li>
     </ul>
     <ul class="side-menu">
+       
         <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
     </ul>
 </section>
@@ -520,29 +501,31 @@ if ($admin_id) {
                 <section id="add-employee">
                     <h2>Add Admin</h2>
                     <form method="POST" action="addadmin.php" enctype="multipart/form-data">
-                        <label for="username">Username:</label>
-                        <input type="text" name="username" id="username" required>
+                        <label>Username:</label>
+                        <input type="text" name="username" required>
 
-                        <label for="email">Email:</label>
-                        <input type="email" name="email" id="email" required>
+                        <label>Email:</label>
+                        <input type="email" name="email" required>
 
-                        <label for="password">Password:</label>
-                        <input type="password" name="password" required id="password" onkeyup="checkPasswordStrength()">
-                        <div id="password-strength" style="font-size: 12px; margin-top: -10px;">
-                            Password must contain: 
-                            <span id="length" style="color:red;">✓ 12+ characters</span>, 
-                            <span id="uppercase" style="color:red;">✓ uppercase letter</span>, 
-                            <span id="lowercase" style="color:red;">✓ lowercase letter</span>, 
-                            <span id="number" style="color:red;">✓ number</span>, 
-                            <span id="special" style="color:red;">✓ special character</span>
+                        <label>Password:</label>
+                        <div>
+                            <input type="password" name="password" required id="password" onkeyup="checkPasswordStrength()">
+                            <div id="password-strength" style="font-size: 12px; margin-top: 5px;">
+                                Password must contain: 
+                                <span id="length" style="color:red;">✓ 12+ characters</span>, 
+                                <span id="uppercase" style="color:red;">✓ uppercase letter</span>, 
+                                <span id="lowercase" style="color:red;">✓ lowercase letter</span>, 
+                                <span id="number" style="color:red;">✓ number</span>, 
+                                <span id="special" style="color:red;">✓ special character</span>
+                            </div>
                         </div>
 
-                        <label for="confirm_password">Confirm Password:</label>
+                        <label>Confirm Password:</label>
                         <input type="password" name="confirm_password" required id="confirm_password" onkeyup="checkPasswordMatch()">
-                        <div id="password-match" style="font-size: 12px; margin-top: -10px; color:red;"></div>
+                        <div id="password-match" style="font-size: 12px; margin-top: 5px; color:red;"></div>
 
-                        <label for="image">Profile Image:</label>
-                        <input type="file" name="image" id="image" accept="image/*" required>
+                        <label>Profile Image:</label>
+                        <input type="file" name="image" accept="image/*" required>
 
                         <label>Roles:</label>
                         <div class="role-buttons">
