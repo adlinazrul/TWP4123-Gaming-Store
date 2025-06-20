@@ -130,24 +130,19 @@ $result = $conn->query($sql);
             transform: scale(1.1);
         }
         
-        .cart-count {
+        .login-btn {
             background: var(--primary);
             color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.7rem;
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            font-family: 'Rubik', sans-serif;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
         }
         
-        .cart-icon-container {
-            position: relative;
+        .login-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
         }
         
         .product-listing {
@@ -490,12 +485,7 @@ $result = $conn->query($sql);
             </div>
             
             <div class="icons-right">
-                <a href="custlogin.html">
-                    <i class="fas fa-user"></i>
-                </a>
-                <div class="cart-icon-container">
-                    <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
-                </div>
+                <a href="custlogin.html" class="login-btn">LOGIN</a>
             </div>
         </nav>
     </header>

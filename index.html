@@ -235,6 +235,21 @@
             color: var(--dark);
             text-decoration: none; 
         }
+
+        .login-btn {
+            background: var(--primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
         
         .deals-section {
     display: flex;
@@ -516,14 +531,13 @@
                 <a href="XBOX.php">CONSOLES</a>
                 <a href="ACCESSORIES.php">ACCESSORIES</a>
                 <a href="VR.php">VR</a>
+                <a href="other_categories.php">OTHERS</a>
             </div>
             
             <div class="icons-right">
-                <a href="custlogin.html">
-                    <i class="fas fa-user"></i>
-                </a>
-                <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
+                <a href="custlogin.html" class="login-btn">LOGIN</a>
             </div>
+
         </nav>
     </header>
 
@@ -548,83 +562,6 @@
 
         </div>
     </section>
-
-    <!-- Featured Products -->
-    <section class="featured-section">
-        <h2 class="section-title">NEW PRODUCTS</h2>
-        <div class="products-grid">
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1592155931584-901ac15763e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>DualSense Controller</h3>
-                    <div class="product-price">RM269.00</div>
-                    <a href="VIEWPRODUCT.php" class="view-product">View Product</a>
-                </div>
-            </div>
-    
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://wallpapercave.com/wp/wp9957698.jpg');"></div>
-                <div class="product-info">
-                    <h3>Nintendo Switch</h3>
-                    <div class="product-price">RM1,499.00</div>
-                    <a href="VIEWPRODUCT.php" class="view-product">View Product</a>
-                </div>
-            </div>
-    
-            <!-- Product 3 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1607853202273-797f1c22a38e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>PS5 PRO CONTROLLER</h3>
-                    <div class="product-price">RM2,399.00</div>
-                    <a href="VIEWPRODUCT.php" class="view-product">View Product</a>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-
-
-    <!-- Deals Section -->
-    <section class="featured-section">
-        <h2 class="section-title">HOT DEALS</h2>
-        <div class="deals-section">
-        
-            <a href="FLASHSALE.html" class="deal-card">
-                <div class="deal-icon">
-                    <i class="fas fa-tags"></i>
-                </div>
-                <h3>FLASH SALE</h3>
-                <p>Up to 50% off select items for the next 24 hours only</p>
-            </a>
-    
-    
-            <a href="BUNDLE.html" class="deal-card">
-                <div class="deal-icon">
-                    <i class="fas fa-headset"></i>
-                </div>
-                <h3>PREMIUM BUNDLES</h3>
-                <p>Save big with our specially curated console bundles</p>
-            </a>
-            
-        </div>
-    </section>
-    
-
-    <!-- Newsletter Section -->
-    <section class="newsletter-section">
-        <div class="newsletter-content">
-            <h2 class="section-title">JOIN THE NEXUS</h2>
-            <p>Subscribe to our newsletter for exclusive deals, early access to sales, and gaming news</p>
-            <form class="newsletter-form">
-                <input type="email" class="newsletter-input" placeholder="Your email address" required>
-                <button type="submit" class="newsletter-button">SUBSCRIBE</button>
-            </form>
-        </div>
-    </section>
-
 
     <!-- Footer -->
     <footer>

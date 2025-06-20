@@ -1,11 +1,13 @@
 <?php
 session_start();
 
-// Check if the user is logged in
-if (!isset($_SESSION['email'])) {
-    header("Location: login.php");
+// Check if category parameter is set
+if (!isset($_GET['category'])) {
+    header("Location: other_categories.php");
     exit();
 }
+
+$category_name = urldecode($_GET['category']);
 
 $servername = "localhost";
 $username = "root";
@@ -20,8 +22,12 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM products WHERE product_category = 'Nintendo'";
-$result = $conn->query($sql);
+// Fetch products for the selected category
+$products_sql = "SELECT * FROM products WHERE product_category = ?";
+$products_stmt = $conn->prepare($products_sql);
+$products_stmt->bind_param("s", $category_name);
+$products_stmt->execute();
+$products_result = $products_stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -29,13 +35,13 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Nintendo Products</title>
+    <title>NEXUS | <?php echo htmlspecialchars($category_name); ?> Products</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         /* [Previous CSS styles remain exactly the same] */
         /* ... (all the existing CSS content) ... */
-         :root {
+          :root {
             --primary: #ff0000;
             --secondary: #d10000;
             --dark: #0d0221;
@@ -138,6 +144,21 @@ $result = $conn->query($sql);
         .icons-left i:hover, .icons-right i:hover {
             color: var(--primary);
             transform: scale(1.1);
+        }
+
+        .login-btn {
+            background: var(--primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
         }
         
         .cart-count {
@@ -479,7 +500,6 @@ $result = $conn->query($sql);
                 gap: 10px;
             }
         }
-
     </style>
 </head>
 <body>
@@ -490,27 +510,19 @@ $result = $conn->query($sql);
                 <i class="fas fa-bars" id="menuIcon"></i>
             </div>
             
-            <div class="logo" onclick="window.location.href='index.php'">NEXUS</div>
+            <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
             
             <div class="nav-links">
-                <a href="index.php">HOME</a>
-                <a href="nintendo_user.php" class="active">NINTENDO</a>
-                <a href="console_user.php">CONSOLES</a>
-                <a href="accessories_user.php">ACCESSORIES</a>
-                <a href="vr_user.php">VR</a>
-                <a href="other_categories_user.php">OTHERS</a>
+                <a href="index.html">HOME</a>
+                <a href="nintendo.php">NINTENDO</a>
+                <a href="console.php">CONSOLES</a>
+                <a href="accessories.php">ACCESSORIES</a>
+                <a href="vr.php">VR</a>
+                <a href="other_categories.php" class="active">OTHERS</a>
             </div>
             
             <div class="icons-right">
-                <a href="custeditprofile.php">
-                    <i class="fas fa-user"></i>
-                </a>
-                <div class="cart-icon-container">
-                    <a href="cart.php"><i class="fas fa-shopping-cart"></i></a>
-                    <?php if(isset($_SESSION['cart_count']) && $_SESSION['cart_count'] > 0): ?>
-                        <span class="cart-count"><?php echo $_SESSION['cart_count']; ?></span>
-                    <?php endif; ?>
-                </div>
+                <a href="login.php" class="login-btn">LOGIN</a>
             </div>
         </nav>
     </header>
@@ -520,21 +532,20 @@ $result = $conn->query($sql);
         <div id="menuContainer">
             <span id="closeMenu">&times;</span>
             <div id="menuContent">
-                <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
+                <div class="menu-item"><a href="login.php">LOGIN</a></div>
                 <div class="menu-item"><a href="custservice.html">HELP</a></div>
-                <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
             </div>
         </div>
     </div>
 
     <!-- Product Listing Section -->
     <section class="product-listing">
-        <h2 class="section-title">NINTENDO</h2>
+        <h2 class="section-title"><?php echo htmlspecialchars($category_name); ?></h2>
         
         <div class="products-grid">
             <?php
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
+            if ($products_result->num_rows > 0) {
+                while($row = $products_result->fetch_assoc()) {
                     echo '<div class="product-card">';
                     echo '<img class="product-image" src="uploads/' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
                     echo '<div class="product-info">';
@@ -554,11 +565,11 @@ $result = $conn->query($sql);
                         echo '<div class="out-of-stock">Out of Stock</div>';
                     }
                     
-                    echo '<a href="view_product_user.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
+                    echo '<a href="VIEWPRODUCT.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
                     echo '</div></div>';
                 }
             } else {
-                echo "<p>No Nintendo products available at the moment.</p>";
+                echo "<p style='grid-column: 1/-1; text-align: center;'>No products available in this category at the moment.</p>";
             }
             $conn->close();
             ?>

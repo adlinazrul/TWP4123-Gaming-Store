@@ -20,8 +20,24 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM products WHERE product_category = 'Nintendo'";
-$result = $conn->query($sql);
+// Fetch user information
+$email = $_SESSION['email'];
+$sql = "SELECT * FROM customers WHERE email = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+
+if (!$user) {
+    echo "User not found!";
+    exit();
+}
+
+// Fetch all categories EXCEPT the ones shown in the image
+$categories_sql = "SELECT * FROM product_categories 
+                  WHERE category_name NOT IN ('NINTENDO', 'CONSOLE', 'ACCESSORIES', 'VR')";
+$categories_result = $conn->query($categories_sql);
 ?>
 
 <!DOCTYPE html>
@@ -29,13 +45,13 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Nintendo Products</title>
+    <title>NEXUS | All Categories</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         /* [Previous CSS styles remain exactly the same] */
         /* ... (all the existing CSS content) ... */
-         :root {
+        :root {
             --primary: #ff0000;
             --secondary: #d10000;
             --dark: #0d0221;
@@ -160,10 +176,11 @@ $result = $conn->query($sql);
             position: relative;
         }
         
-        .product-listing {
+        .categories-listing {
             max-width: 1400px;
-            margin: 50px auto;
-            padding: 0 30px;
+    margin: 50px auto;
+    padding: 0 30px;
+    width: calc(100% - 60px); /* Ensures equal padding on both sides */
         }
         
         .section-title {
@@ -189,88 +206,61 @@ $result = $conn->query($sql);
             border-radius: 3px;
         }
         
-        .products-grid {
+        .categories-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Further reduced from 250px */
+    gap: 15px; /* Reduced from 20px */
         }
         
-        .product-card {
+        .category-card {
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 0, 0, 0.1);
+    border-radius: 6px; /* Smaller radius */
+    border: 1px solid rgba(255, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-align: center;
+    padding: 12px; /* Reduced padding */
+    min-height: 30px; /* Reduced height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer; /* Indicates it's clickable */
         }
         
-        .product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(255, 0, 0, 0.2);
-            border-color: rgba(255, 0, 0, 0.3);
+        .category-card:hover {
+            transform: translateY(-5px); /* Smaller hover movement */
+    box-shadow: 0 10px 20px rgba(255, 0, 0, 0.15); /* More subtle shadow */
+    border-color: rgba(255, 0, 0, 0.3);
         }
         
-        .product-image {
+        .category-image {
             height: 200px;
             width: 100%;
-            object-fit: contain;
+            object-fit: cover;
             background-color: #000;
             transition: transform 0.5s ease;
-            flex-shrink: 0;
         }
         
-        .product-card:hover .product-image {
+        .category-card:hover .category-image {
             transform: scale(1.05);
         }
         
-        .product-info {
-            padding: 20px;
-        }
-        
-        .product-info h3 {
+        .category-info h3 {
             margin: 0 0 10px;
             font-family: 'Orbitron', sans-serif;
             color: var(--primary);
         }
+
+        .category-card h3 {
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--light); /* Changed from primary to light (white) */
+    font-size: 1rem; /* Smaller font size */
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
         
-        .product-description {
-            color: var(--gray);
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-        
-        .product-price {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.3rem;
-            color: var(--primary);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .original-price {
-            text-decoration: line-through;
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-        
-        .discount-badge {
-            background: var(--primary);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            font-family: 'Rubik', sans-serif;
-        }
-        
-        .out-of-stock {
-            color: var(--primary);
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        
-        .view-product {
+        .view-category {
             background: transparent;
             color: var(--primary);
             border: 1px solid var(--primary);
@@ -287,7 +277,7 @@ $result = $conn->query($sql);
             box-sizing: border-box;
         }
         
-        .view-product:hover {
+        .view-category:hover {
             background: var(--primary);
             color: var(--dark);
         }
@@ -460,7 +450,7 @@ $result = $conn->query($sql);
                 max-width: 320px;
             }
             
-            .product-card {
+            .category-card {
                 max-width: 100%;
             }
             
@@ -480,6 +470,35 @@ $result = $conn->query($sql);
             }
         }
 
+        @media (max-width: 768px) {
+    .categories-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    .category-card {
+        min-height: 70px;
+        padding: 10px;
+    }
+    
+    .category-card h3 {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .categories-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+    
+    .category-card {
+        min-height: 60px;
+    }
+    
+    .category-card h3 {
+        font-size: 0.8rem;
+    }
+}
     </style>
 </head>
 <body>
@@ -494,11 +513,11 @@ $result = $conn->query($sql);
             
             <div class="nav-links">
                 <a href="index.php">HOME</a>
-                <a href="nintendo_user.php" class="active">NINTENDO</a>
+                <a href="nintendo_user.php">NINTENDO</a>
                 <a href="console_user.php">CONSOLES</a>
                 <a href="accessories_user.php">ACCESSORIES</a>
                 <a href="vr_user.php">VR</a>
-                <a href="other_categories_user.php">OTHERS</a>
+                <a href="other_categories_user.php" class="active">OTHERS</a>
             </div>
             
             <div class="icons-right">
@@ -507,9 +526,6 @@ $result = $conn->query($sql);
                 </a>
                 <div class="cart-icon-container">
                     <a href="cart.php"><i class="fas fa-shopping-cart"></i></a>
-                    <?php if(isset($_SESSION['cart_count']) && $_SESSION['cart_count'] > 0): ?>
-                        <span class="cart-count"><?php echo $_SESSION['cart_count']; ?></span>
-                    <?php endif; ?>
                 </div>
             </div>
         </nav>
@@ -527,38 +543,20 @@ $result = $conn->query($sql);
         </div>
     </div>
 
-    <!-- Product Listing Section -->
-    <section class="product-listing">
-        <h2 class="section-title">NINTENDO</h2>
+    <!-- Categories Listing Section -->
+    <section class="categories-listing">
+        <h2 class="section-title">OTHER CATEGORIES</h2>
         
-        <div class="products-grid">
+        <div class="categories-grid">
             <?php
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    echo '<div class="product-card">';
-                    echo '<img class="product-image" src="uploads/' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
-                    echo '<div class="product-info">';
-                    echo '<h3>' . htmlspecialchars($row["product_name"]) . '</h3>';
-                    echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
-                    echo '<div class="product-price">';
-                    echo 'RM ' . number_format($row["product_price"], 2);
-                    
-                    if (isset($row["original_price"]) && $row["original_price"] > $row["product_price"]) {
-                        echo '<span class="original-price">RM ' . number_format($row["original_price"], 2) . '</span>';
-                        $discount = round(($row["original_price"] - $row["product_price"]) / $row["original_price"] * 100);
-                        echo '<span class="discount-badge">' . $discount . '% OFF</span>';
-                    }
+            if ($categories_result->num_rows > 0) {
+                while($category = $categories_result->fetch_assoc()) {
+                    echo '<div class="category-card" onclick="window.location.href=\'category_products.php?category=' . urlencode($category['category_name']) . '\'">';
+                    echo '<h3>' . htmlspecialchars($category['category_name']) . '</h3>';
                     echo '</div>';
-                    
-                    if ((int)$row["product_quantity"] <= 0) {
-                        echo '<div class="out-of-stock">Out of Stock</div>';
-                    }
-                    
-                    echo '<a href="view_product_user.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
-                    echo '</div></div>';
                 }
             } else {
-                echo "<p>No Nintendo products available at the moment.</p>";
+                echo "<p style='grid-column: 1/-1; text-align: center;'>No categories available at the moment.</p>";
             }
             $conn->close();
             ?>
@@ -587,9 +585,10 @@ $result = $conn->query($sql);
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Mobile menu functionality
-            const menuOverlay = document.getElementById("menuOverlay");
-            const menuIcon = document.getElementById("menuIcon");
-            const closeMenu = document.getElementById("closeMenu");
+            let menuOverlay = document.getElementById("menuOverlay");
+            let menuContainer = document.getElementById("menuContainer");
+            let menuIcon = document.getElementById("menuIcon");
+            let closeMenu = document.getElementById("closeMenu");
 
             // Open menu
             menuIcon.addEventListener("click", function () {
@@ -623,15 +622,15 @@ $result = $conn->query($sql);
                 alert("Search functionality would appear here. This is a demo.");
             });
 
-            // Add hover effect to all buttons
-            const buttons = document.querySelectorAll("button, .view-product");
-            buttons.forEach(button => {
-                button.addEventListener("mouseenter", function() {
-                    this.style.transform = "translateY(-3px)";
-                    this.style.boxShadow = "0 5px 15px rgba(255, 0, 0, 0.3)";
+            // Add click functionality to category cards
+            const cards = document.querySelectorAll(".category-card");
+            cards.forEach(card => {
+                card.addEventListener("mouseenter", function() {
+                    this.style.transform = "translateY(-5px)";
+                    this.style.boxShadow = "0 10px 20px rgba(255, 0, 0, 0.15)";
                 });
                 
-                button.addEventListener("mouseleave", function() {
+                card.addEventListener("mouseleave", function() {
                     this.style.transform = "translateY(0)";
                     this.style.boxShadow = "none";
                 });

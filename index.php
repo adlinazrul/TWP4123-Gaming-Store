@@ -30,7 +30,6 @@ $user = $result->fetch_assoc();
 if (!$user) {
     echo "User not found!";
     exit();
-
 }
 ?>
 
@@ -198,163 +197,6 @@ if (!$user) {
             transform: translateY(-3px);
         }
         
-        .featured-section {
-            max-width: 1400px;
-            margin: 80px auto;
-            padding: 0 30px;
-        }
-        
-        .section-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem;
-            text-align: center;
-            margin-bottom: 50px;
-            color: var(--primary);
-        }
-        
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-        }
-        
-        .product-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(255, 0, 0, 0.2);
-        }
-        
-        .product-image {
-            height: 200px;
-            background-size: cover;
-            background-position: center;
-        }
-        
-        .product-info {
-            padding: 20px;
-        }
-        
-        .product-info h3 {
-            margin: 0 0 10px;
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
-        }
-        
-        .product-price {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.3rem;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-        
-        .view-product {
-            background: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 8px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Orbitron', sans-serif;
-            width: 100%;
-            text-decoration: none; 
-        }
-        
-        .view-product:hover {
-            background: var(--primary);
-            color: var(--dark);
-            text-decoration: none; 
-        }
-        
-        .deals-section {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin: 80px auto;
-            max-width: 1400px;
-            padding: 0 30px;
-            text-align: center;
-        }
-
-        /* Make anchor links behave like regular cards */
-        .deals-section a.deal-card {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        /* Hover effect for entire clickable card */
-        .deals-section a.deal-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.2);
-        }
-
-        .deal-icon {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
-
-        .deal-card h3 {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
-        }
-
-        .newsletter-section {
-            background: var(--dark);
-            padding: 80px 30px;
-            text-align: center;
-            border-top: 1px solid var(--primary);
-            border-bottom: 1px solid var(--primary);
-        }
-        
-        .newsletter-content {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .newsletter-form {
-            display: flex;
-            margin-top: 30px;
-        }
-        
-        .newsletter-input {
-            flex: 1;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 50px 0 0 50px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-family: 'Rubik', sans-serif;
-        }
-        
-        .newsletter-button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0 30px;
-            border-radius: 0 50px 50px 0;
-            font-family: 'Orbitron', sans-serif;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .newsletter-button:hover {
-            background: var(--accent);
-        }
-        
         footer {
             background: #0a0118;
             padding: 50px 30px 20px;
@@ -473,10 +315,6 @@ if (!$user) {
             .nav-links {
                 gap: 15px;
             }
-            
-            .deals-section {
-                grid-template-columns: 1fr;
-            }
         }
         
         @media (max-width: 768px) {
@@ -492,37 +330,12 @@ if (!$user) {
                 font-size: 2.5rem;
             }
             
-            .newsletter-form {
-                flex-direction: column;
-            }
-            
-            .newsletter-input {
-                border-radius: 50px;
-                margin-bottom: 10px;
-            }
-            
-            .newsletter-button {
-                border-radius: 50px;
-                padding: 15px;
-            }
-            
             #menuContainer {
                 width: 100%;
                 max-width: 320px;
             }
         }
         @media (max-width: 768px) {
-            .newsletter-form {
-                flex-direction: column;
-            }
-
-            .newsletter-input,
-            .newsletter-button {
-                border-radius: 50px;
-                width: 100%;
-                margin-bottom: 10px;
-            }
-
             #menuContainer {
                 width: 100%;
                 left: -100%;
@@ -550,6 +363,7 @@ if (!$user) {
                 <a href="console_user.php">CONSOLES</a>
                 <a href="accessories_user.php">ACCESSORIES</a>
                 <a href="vr_user.php">VR</a>
+                <a href="other_categories_user.php">OTHERS</a>
             </div>
             
             <div class="icons-right">
@@ -579,76 +393,6 @@ if (!$user) {
             <h1>LEVEL UP YOUR GAME</h1>
             <p>Discover the latest consoles, games, and accessories with exclusive deals for our members</p>
             <button class="cta-button" onclick="window.location.href='all_product_user.php'">SHOP NOW</button>
-        </div>
-    </section>
-
-    <!-- Featured Products -->
-    <section class="featured-section">
-        <h2 class="section-title">NEW PRODUCTS</h2>
-        <div class="products-grid">
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1592155931584-901ac15763e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>DualSense Controller</h3>
-                    <div class="product-price">RM269.00</div>
-                    <a href="view_product_user.php" class="view-product">View Product</a>
-                </div>
-            </div>
-    
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://wallpapercave.com/wp/wp9957698.jpg');"></div>
-                <div class="product-info">
-                    <h3>Nintendo Switch</h3>
-                    <div class="product-price">RM1,499.00</div>
-                    <a href="view_product_user.php" class="view-product">View Product</a>
-                </div>
-            </div>
-    
-            <!-- Product 3 -->
-            <div class="product-card">
-                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1607853202273-797f1c22a38e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');"></div>
-                <div class="product-info">
-                    <h3>PS5 PRO CONTROLLER</h3>
-                    <div class="product-price">RM2,399.00</div>
-                    <a href="view_product_user.php" class="view-product">View Product</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Deals Section -->
-    <section class="featured-section">
-        <h2 class="section-title">HOT DEALS</h2>
-        <div class="deals-section">
-            <a href="FLASHSALE.html" class="deal-card">
-                <div class="deal-icon">
-                    <i class="fas fa-tags"></i>
-                </div>
-                <h3>FLASH SALE</h3>
-                <p>Up to 50% off select items for the next 24 hours only</p>
-            </a>
-    
-            <a href="BUNDLE.html" class="deal-card">
-                <div class="deal-icon">
-                    <i class="fas fa-headset"></i>
-                </div>
-                <h3>PREMIUM BUNDLES</h3>
-                <p>Save big with our specially curated console bundles</p>
-            </a>
-        </div>
-    </section>
-
-    <!-- Newsletter Section -->
-    <section class="newsletter-section">
-        <div class="newsletter-content">
-            <h2 class="section-title">JOIN THE NEXUS</h2>
-            <p>Subscribe to our newsletter for exclusive deals, early access to sales, and gaming news</p>
-            <form class="newsletter-form">
-                <input type="email" class="newsletter-input" placeholder="Your email address" required>
-                <button type="submit" class="newsletter-button">SUBSCRIBE</button>
-            </form>
         </div>
     </section>
 
@@ -702,23 +446,6 @@ if (!$user) {
                         menuOverlay.style.display = "none";
                     }, 300);
                 }
-            });
-            
-            // Add animation to product cards on scroll
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = "1";
-                        entry.target.style.transform = "translateY(0)";
-                    }
-                });
-            }, { threshold: 0.1 });
-
-            document.querySelectorAll('.product-card, .deal-card').forEach(card => {
-                card.style.opacity = "0";
-                card.style.transform = "translateY(20px)";
-                card.style.transition = "all 0.5s ease";
-                observer.observe(card);
             });
         });
     </script>
