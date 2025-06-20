@@ -5,11 +5,24 @@ $conn = new mysqli("localhost", "root", "", "gaming_store");
 $message = '';
 
 if (isset($_POST['reset'])) {
-    $new_pass = $_POST['new_password']; // No encryption
+    $new_pass = $_POST['new_password'];
+    $confirm_pass = $_POST['confirm_password'];
     $email = $_SESSION['reset_email'] ?? '';
 
     if (!$email) {
         $message = "<div class='error-message'><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-alert-circle'><circle cx='12' cy='12' r='10'></circle><line x1='12' y1='8' x2='12' y2='12'></line><line x1='12' y1='16' x2='12' y2='16'></line></svg> Session expired or invalid. Please restart the password reset process.</div>";
+    } elseif ($new_pass !== $confirm_pass) {
+        $message = "<div class='error-message'><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-x-circle'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Passwords do not match.</div>";
+    } elseif (strlen($new_pass) < 12) {
+        $message = "<div class='error-message'><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-x-circle'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Password must be at least 12 characters long.</div>";
+    } elseif (!preg_match('/[A-Z]/', $new_pass)) {
+        $message = "<div class='error-message'><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-x-circle'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Password must contain at least one uppercase letter.</div>";
+    } elseif (!preg_match('/[a-z]/', $new_pass)) {
+        $message = "<div class='error-message'><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-x-circle'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Password must contain at least one lowercase letter.</div>";
+    } elseif (!preg_match('/[0-9]/', $new_pass)) {
+        $message = "<div class='error-message'><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-x-circle'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Password must contain at least one number.</div>";
+    } elseif (!preg_match('/[^A-Za-z0-9]/', $new_pass)) {
+        $message = "<div class='error-message'><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-x-circle'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Password must contain at least one special character.</div>";
     } else {
         $update = $conn->query("UPDATE admin_list SET password='$new_pass' WHERE email='$email'");
         if ($update) {
@@ -30,7 +43,6 @@ if (isset($_POST['reset'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset Password - Gaming Store</title>
     <style>
-        /* Your existing CSS (unchanged) */
         :root {
             --primary: #ef4444;
             --primary-dark: #dc2626;
@@ -128,9 +140,13 @@ if (isset($_POST['reset'])) {
             color: var(--text-dark);
         }
 
-        input[type="password"] {
+        .password-input-group {
+            position: relative;
+        }
+
+        .password-input-group input {
             width: 100%;
-            padding: 15px;
+            padding: 15px 45px 15px 15px;
             border: 2px solid #e2e8f0;
             background: #ffffff;
             border-radius: 8px;
@@ -138,21 +154,53 @@ if (isset($_POST['reset'])) {
             font-size: 16px;
         }
 
-        input[type="password"]:hover {
+        .password-input-group input:hover {
             border-color: var(--secondary);
         }
 
-        input[type="password"]:focus {
+        .password-input-group input:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px var(--primary-light);
         }
 
-        .password-hint {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: -15px;
-            margin-bottom: 20px;
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 14px;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .password-toggle:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .password-requirements {
+            margin: 15px 0;
+            padding: 12px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #4b5563;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .password-requirements ul {
+            margin: 8px 0 0 20px;
+            padding: 0;
+        }
+
+        .password-requirements li {
+            margin-bottom: 5px;
         }
 
         button {
@@ -215,13 +263,52 @@ if (isset($_POST['reset'])) {
         <form method="POST" novalidate>
             <div class="form-group">
                 <label for="new_password">New Password</label>
-                <input type="password" name="new_password" id="new_password" required minlength="6" placeholder="Enter your new password">
-                <br>
-                <br><div class="password-hint">Password must be at least 6 characters long</div>
+                <div class="password-input-group">
+                    <input type="password" name="new_password" id="new_password" required placeholder="Enter your new password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('new_password', this)">
+                        <span class="toggle-text">Show</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <div class="password-input-group">
+                    <input type="password" name="confirm_password" id="confirm_password" required placeholder="Confirm your new password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('confirm_password', this)">
+                        <span class="toggle-text">Show</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="password-requirements">
+                <strong>Password Requirements:</strong>
+                <ul>
+                    <li>Minimum 12 characters</li>
+                    <li>At least one uppercase letter (A-Z)</li>
+                    <li>At least one lowercase letter (a-z)</li>
+                    <li>At least one number (0-9)</li>
+                    <li>At least one special character (!@#$%^&*, etc.)</li>
+                </ul>
             </div>
 
             <button type="submit" name="reset">Reset Password</button>
         </form>
     </div>
+
+    <script>
+        function togglePassword(fieldId, button) {
+            const passwordField = document.getElementById(fieldId);
+            const toggleText = button.querySelector('.toggle-text');
+            
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                toggleText.textContent = "Hide";
+            } else {
+                passwordField.type = "password";
+                toggleText.textContent = "Show";
+            }
+        }
+    </script>
 </body>
 </html>
