@@ -92,40 +92,47 @@ $conn->close();
         h2 {
             text-align: center;
             color: #ef4444;
+            margin-bottom: 25px;
         }
 
         form label {
             display: block;
             margin-top: 20px;
             font-weight: bold;
+            margin-bottom: 5px;
         }
 
-        .password-wrapper {
+        .password-input-group {
             position: relative;
+            margin-bottom: 15px;
         }
 
-        .password-wrapper input[type="password"],
-        .password-wrapper input[type="text"] {
+        .password-input-group input {
             width: 100%;
-            padding: 10px;
-            margin-top: 5px;
+            padding: 10px 45px 10px 15px;
             border-radius: 5px;
             border: 1px solid #ccc;
-            padding-right: 40px;
+            font-size: 16px;
+            box-sizing: border-box;
         }
 
-        .toggle-password {
+        .password-toggle {
             position: absolute;
             right: 10px;
-            top: 35px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
             cursor: pointer;
             color: #666;
             font-size: 14px;
-            background: none;
-            border: none;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.3s;
         }
 
-        .toggle-password:hover {
+        .password-toggle:hover {
+            background-color: #f0f0f0;
             color: #333;
         }
 
@@ -139,20 +146,29 @@ $conn->close();
             cursor: pointer;
             width: 100%;
             font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        form input[type="submit"]:hover {
+            background-color: #dc2626;
         }
 
         .message {
-            margin-top: 20px;
+            margin: 20px 0;
+            padding: 12px;
+            border-radius: 5px;
             text-align: center;
             font-weight: bold;
         }
 
         .message.error {
-            color: #ef4444;
+            color: #dc2626;
+            background-color: #fee2e2;
         }
 
         .message.success {
-            color: #10b981;
+            color: #059669;
+            background-color: #d1fae5;
         }
 
         .back-link {
@@ -161,12 +177,30 @@ $conn->close();
             text-align: center;
             text-decoration: none;
             color: #3b82f6;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: #2563eb;
         }
         
         .password-requirements {
-            margin-top: 10px;
+            margin: 15px 0;
+            padding: 12px;
+            background-color: #f8fafc;
+            border-radius: 5px;
             font-size: 14px;
-            color: #666;
+            color: #4b5563;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .password-requirements ul {
+            margin: 8px 0 0 20px;
+            padding: 0;
+        }
+
+        .password-requirements li {
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -182,30 +216,38 @@ $conn->close();
 
         <form method="POST">
             <label for="old_password">Old Password:</label>
-            <div class="password-wrapper">
+            <div class="password-input-group">
                 <input type="password" name="old_password" id="old_password" required>
-                <button type="button" class="toggle-password" onclick="togglePassword('old_password')">Show</button>
+                <button type="button" class="password-toggle" onclick="togglePassword('old_password', this)">
+                    <span class="toggle-text">Show</span>
+                </button>
             </div>
 
             <label for="new_password">New Password:</label>
-            <div class="password-wrapper">
+            <div class="password-input-group">
                 <input type="password" name="new_password" id="new_password" required>
-                <button type="button" class="toggle-password" onclick="togglePassword('new_password')">Show</button>
+                <button type="button" class="password-toggle" onclick="togglePassword('new_password', this)">
+                    <span class="toggle-text">Show</span>
+                </button>
             </div>
+            
             <div class="password-requirements">
-                Password must be at least 12 characters long and contain:
+                <strong>Password Requirements:</strong>
                 <ul>
-                    <li>At least one uppercase letter</li>
-                    <li>At least one lowercase letter</li>
-                    <li>At least one number</li>
-                    <li>At least one special character</li>
+                    <li>Minimum 12 characters</li>
+                    <li>At least one uppercase letter (A-Z)</li>
+                    <li>At least one lowercase letter (a-z)</li>
+                    <li>At least one number (0-9)</li>
+                    <li>At least one special character (!@#$%^&*, etc.)</li>
                 </ul>
             </div>
 
             <label for="confirm_password">Confirm New Password:</label>
-            <div class="password-wrapper">
+            <div class="password-input-group">
                 <input type="password" name="confirm_password" id="confirm_password" required>
-                <button type="button" class="toggle-password" onclick="togglePassword('confirm_password')">Show</button>
+                <button type="button" class="password-toggle" onclick="togglePassword('confirm_password', this)">
+                    <span class="toggle-text">Show</span>
+                </button>
             </div>
 
             <input type="submit" value="Update Password">
@@ -215,16 +257,16 @@ $conn->close();
     </div>
 
     <script>
-        function togglePassword(fieldId) {
+        function togglePassword(fieldId, button) {
             const passwordField = document.getElementById(fieldId);
-            const toggleButton = passwordField.nextElementSibling;
+            const toggleText = button.querySelector('.toggle-text');
             
             if (passwordField.type === "password") {
                 passwordField.type = "text";
-                toggleButton.textContent = "Hide";
+                toggleText.textContent = "Hide";
             } else {
                 passwordField.type = "password";
-                toggleButton.textContent = "Show";
+                toggleText.textContent = "Show";
             }
         }
     </script>
