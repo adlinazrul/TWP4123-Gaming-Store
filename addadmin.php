@@ -1,12 +1,42 @@
 <?php
 session_start();
 
+// Prevent page caching
+header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
+header("Pragma: no-cache"); // HTTP 1.0
+header("Expires: 0"); // Proxies
+
 // Check if the session variable is set
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 } else {
     // Redirect to login if not logged in
     header("Location: login_admin.php");
+    exit;
+}
+
+// Enhanced logout handling
+if (isset($_GET['logout'])) {
+    // Unset all session variables
+    $_SESSION = array();
+    
+    // Destroy the session
+    session_destroy();
+    
+    // Invalidate the session cookie
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    
+    // Redirect with no-cache headers and prevent back-button access
+    header("Cache-Control: no-cache, no-store, must-revalidate");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    header("Location: login_admin.php?logout=1");
     exit;
 }
 
@@ -58,6 +88,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($password_raw !== $confirm_password) {
         echo "<script>alert('Passwords do not match!'); window.location.href='addadmin.php';</script>";
+        exit;
+    }
+
+    // New password requirements
+    if (strlen($password_raw) < 12 || 
+        !preg_match('/[A-Z]/', $password_raw) || 
+        !preg_match('/[a-z]/', $password_raw) || 
+        !preg_match('/[0-9]/', $password_raw) || 
+        !preg_match('/[^A-Za-z0-9]/', $password_raw)) {
+        echo "<script>alert('Password must be at least 12 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character!'); window.location.href='addadmin.php';</script>";
         exit;
     }
 
@@ -371,8 +411,7 @@ if ($admin_id) {
         </li>
     </ul>
     <ul class="side-menu">
-       
-        <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
+        <li><a href="?logout=1" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
     </ul>
 </section>
 
@@ -498,7 +537,7 @@ if ($admin_id) {
                         <input type="email" name="email" required>
 
                         <label>Password:</label>
-                        <input type="password" name="password" required id="password">
+                        <input type="password" name="password" required id="password" placeholder="At least 12 characters with uppercase, lowercase, number, and special character">
 
                         <label>Confirm Password:</label>
                         <input type="password" name="confirm_password" required id="confirm_password">
@@ -583,10 +622,34 @@ if ($admin_id) {
 function validatePassword() {
     let password = document.getElementById('password').value;
     let confirm = document.getElementById('confirm_password').value;
+    
     if (password !== confirm) {
-        alert('Passwords do not match!');
+        alert('Passwords do not match');
         return false;
     }
+    
+    // Check password requirements
+    if (password.length < 12) {
+        alert('Password must be at least 12 characters long');
+        return false;
+    }
+    if (!/[A-Z]/.test(password)) {
+        alert('Password must contain at least one uppercase letter');
+        return false;
+    }
+    if (!/[a-z]/.test(password)) {
+        alert('Password must contain at least one lowercase letter');
+        return false;
+    }
+    if (!/[0-9]/.test(password)) {
+        alert('Password must contain at least one number');
+        return false;
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+        alert('Password must contain at least one special character');
+        return false;
+    }
+    
     return true;
 }
 
@@ -615,6 +678,11 @@ document.getElementById('searchInput')?.addEventListener('keypress', function(e)
         document.getElementById('searchForm').submit();
     }
 });
+
+// Prevent form resubmission on page refresh
+if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
+}
 </script>
 
 </body>

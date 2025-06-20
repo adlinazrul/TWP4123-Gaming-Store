@@ -1,13 +1,43 @@
 <?php
 session_start();
 
+// Prevent page caching
+header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
+header("Pragma: no-cache"); // HTTP 1.0
+header("Expires: 0"); // Proxies
+
 // Check if the session variable is set
-if (isset($_SESSION['admin_id'])) {
-    $admin_id = $_SESSION['admin_id'];
-} else {
+if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
 }
+
+// Enhanced logout handling
+if (isset($_GET['logout'])) {
+    // Unset all session variables
+    $_SESSION = array();
+    
+    // Destroy the session
+    session_destroy();
+    
+    // Invalidate the session cookie
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    
+    // Redirect with no-cache headers and prevent back-button access
+    header("Cache-Control: no-cache, no-store, must-revalidate");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    header("Location: login_admin.php?logout=1");
+    exit;
+}
+
+$admin_id = $_SESSION['admin_id'];
 
 $servername = "localhost";
 $username = "root";
@@ -178,8 +208,7 @@ if ($admin_id) {
             </li>
     </ul>
     <ul class="side-menu">
-
-        <li><a href="index.html" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
+        <li><a href="?logout=1" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
     </ul>
 </section>
 
@@ -374,6 +403,11 @@ document.getElementById('searchInput')?.addEventListener('keypress', function(e)
         document.getElementById('searchForm').submit();
     }
 });
+
+// Prevent form resubmission on page refresh
+if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
+}
 </script>
 
 </body>
