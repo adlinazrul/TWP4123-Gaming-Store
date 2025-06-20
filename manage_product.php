@@ -278,7 +278,7 @@ $result = mysqli_query($conn, $sql);
                             <td><?= $row['product_quantity']; ?></td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="editproductquantity.php?id=<?= $row['id']; ?>"><button>Edit Quantity</button></a>
+                                    <a href="edit_productquantity.php?id=<?= $row['id']; ?>"><button>Edit Quantity</button></a>
                                     <a href="delete_product.php?id=<?= $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');"><button>Delete</button></a>
                                 </div>
                             </td>
