@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+// Prevent caching of protected pages
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login_admin.php");
     exit;
@@ -48,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
         $stmt->bind_param("sss", $searchTerm, $searchTerm, $searchTerm);
         $stmt->execute();
         $result = $stmt->get_result();
-        $searchResults['orders'] = $result->fetch_all(MYSQLI_ASSOC);
+        $searchResults['orders'] = $result->fetch_all(MQLI_ASSOC);
         $stmt->close();
         
         // Search in customers
@@ -62,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
         $stmt->bind_param("s", $searchTerm);
         $stmt->execute();
         $result = $stmt->get_result();
-        $searchResults['customers'] = $result->fetch_all(MYSQLI_ASSOC);
+        $searchResults['customers'] = $result->fetch_all(MQLI_ASSOC);
         $stmt->close();
     }
 }
@@ -557,13 +562,7 @@ $conn->close();
         </ul>
         <ul class="side-menu">
             <li>
-                <a href="#">
-                    <i class='bx bxs-cog'></i>
-                    <span class="text">Settings</span>
-                </a>
-            </li>
-            <li>
-                <a href="index.html" class="logout">
+                <a href="logout.php" class="logout">
                     <i class='bx bxs-log-out-circle'></i>
                     <span class="text">Logout</span>
                 </a>
@@ -583,10 +582,7 @@ $conn->close();
                     </button>
                 </div>
             </form>
-            <a href="#" class="notification">
-                <i class='bx bxs-bell'></i>
-                <span class="num"></span>
-            </a>
+            
             <a href="profile_admin.php" class="profile">
                 <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture" />
             </a>
