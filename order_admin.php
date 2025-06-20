@@ -184,13 +184,7 @@ if ($admin_id) {
 <section id="sidebar">
     <a href="#" class="brand"><br><span class="text">Admin Dashboard</span></a>
     <ul class="side-menu top">
-        <li><a href="admindashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
-        <li>
-            <a href="addadmin.php">
-                <i class='bx bxs-group'></i>
-                <span class="text">Admin</span>
-            </a>
-        </li>
+        <li><a href="dashboard.php"><i class='bx bxs-dashboard'></i><span class="text">Dashboard</span></a></li>
         <li>
             <a href="cust_list.php">
                 <i class='bx bxs-user'></i>
