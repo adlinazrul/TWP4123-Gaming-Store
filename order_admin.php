@@ -51,8 +51,19 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get all orders
-$sql = "SELECT id, first_name, last_name, date, total_price, status_order FROM orders ORDER BY date DESC";
+// Handle search functionality
+$search = '';
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $search = $conn->real_escape_string($_GET['search']);
+    $sql = "SELECT id, first_name, last_name, date, total_price, status_order FROM orders 
+            WHERE CONCAT(first_name, ' ', last_name) LIKE '%$search%'
+            OR id LIKE '%$search%'
+            OR status_order LIKE '%$search%'
+            ORDER BY date DESC";
+} else {
+    $sql = "SELECT id, first_name, last_name, date, total_price, status_order FROM orders ORDER BY date DESC";
+}
+
 $result = $conn->query($sql);
 
 // Fetch admin profile image
@@ -177,6 +188,16 @@ if ($admin_id) {
                 width: calc(100% - 40px);
             }
         }
+        
+        /* Search clear link */
+        .search-clear {
+            margin-left: 10px;
+            color: #d03b3b;
+            text-decoration: none;
+        }
+        .search-clear:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -211,16 +232,15 @@ if ($admin_id) {
         </li>
     </ul>
     <ul class="side-menu">
-
         <li><a href="?logout=1" class="logout"><i class='bx bxs-log-out-circle'></i><span class="text">Logout</span></a></li>
     </ul>
 </section>
 
 <section id="content">
     <nav>
-        <form action="#">
+        <form action="order_admin.php" method="get">
             <div class="form-input">
-                <input type="search" placeholder="Search...">
+                <input type="search" name="search" placeholder="Search orders..." value="<?php echo htmlspecialchars($search); ?>">
                 <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
             </div>
         </form>
@@ -240,6 +260,9 @@ if ($admin_id) {
         </div>
 
         <div class="container">
+            <?php if (!empty($search)): ?>
+                <p>Showing results for: "<?php echo htmlspecialchars($search); ?>" <a href="order_admin.php" class="search-clear">Clear search</a></p>
+            <?php endif; ?>
             <table>
                 <thead>
                     <tr>
@@ -268,7 +291,7 @@ if ($admin_id) {
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <tr><td colspan="6">No orders found.</td></tr>
+                        <tr><td colspan="6">No orders found<?php echo !empty($search) ? ' matching your search.' : '.'; ?></td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
