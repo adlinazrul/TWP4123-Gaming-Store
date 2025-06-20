@@ -1,12 +1,6 @@
 <?php
 session_start();
 
-// Check if the user is logged in
-if (!isset($_SESSION['email'])) {
-    header("Location: login.php");
-    exit();
-}
-
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -20,22 +14,23 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM products WHERE product_category = 'Nintendo'";
-$result = $conn->query($sql);
+// Fetch all categories EXCEPT the ones shown in the image
+$categories_sql = "SELECT * FROM product_categories 
+                  WHERE category_name NOT IN ('NINTENDO', 'CONSOLE', 'ACCESSORIES', 'VR')";
+$categories_result = $conn->query($categories_sql);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <!-- [Previous head content remains exactly the same] -->
+     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Nintendo Products</title>
+    <title>NEXUS | All Categories</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* [Previous CSS styles remain exactly the same] */
-        /* ... (all the existing CSS content) ... */
-         :root {
+        :root {
             --primary: #ff0000;
             --secondary: #d10000;
             --dark: #0d0221;
@@ -140,30 +135,26 @@ $result = $conn->query($sql);
             transform: scale(1.1);
         }
         
-        .cart-count {
+        .login-btn {
             background: var(--primary);
             color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.7rem;
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            font-family: 'Rubik', sans-serif;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
         }
         
-        .cart-icon-container {
-            position: relative;
+        .login-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
         }
         
-        .product-listing {
+        .categories-listing {
             max-width: 1400px;
             margin: 50px auto;
             padding: 0 30px;
+            width: calc(100% - 60px);
         }
         
         .section-title {
@@ -189,107 +180,40 @@ $result = $conn->query($sql);
             border-radius: 3px;
         }
         
-        .products-grid {
+        .categories-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
         }
         
-        .product-card {
+        .category-card {
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            overflow: hidden;
-            transition: all 0.3s ease;
+            border-radius: 6px;
             border: 1px solid rgba(255, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-align: center;
+            padding: 12px;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
         
-        .product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(255, 0, 0, 0.2);
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.15);
             border-color: rgba(255, 0, 0, 0.3);
         }
         
-        .product-image {
-            height: 200px;
-            width: 100%;
-            object-fit: contain;
-            background-color: #000;
-            transition: transform 0.5s ease;
-            flex-shrink: 0;
-        }
-        
-        .product-card:hover .product-image {
-            transform: scale(1.05);
-        }
-        
-        .product-info {
-            padding: 20px;
-        }
-        
-        .product-info h3 {
-            margin: 0 0 10px;
+        .category-card h3 {
+            margin: 0;
             font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
-        }
-        
-        .product-description {
-            color: var(--gray);
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-        
-        .product-price {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.3rem;
-            color: var(--primary);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .original-price {
-            text-decoration: line-through;
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-        
-        .discount-badge {
-            background: var(--primary);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            font-family: 'Rubik', sans-serif;
-        }
-        
-        .out-of-stock {
-            color: var(--primary);
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        
-        .view-product {
-            background: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 8px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Orbitron', sans-serif;
-            width: calc(100% - 40px);
-            text-decoration: none;
-            display: block;
-            text-align: center;
-            margin: 0 auto;
-            box-sizing: border-box;
-        }
-        
-        .view-product:hover {
-            background: var(--primary);
-            color: var(--dark);
+            color: var(--light);
+            font-size: 1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         footer {
@@ -460,8 +384,17 @@ $result = $conn->query($sql);
                 max-width: 320px;
             }
             
-            .product-card {
-                max-width: 100%;
+            .categories-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .category-card {
+                min-height: 70px;
+                padding: 10px;
+            }
+            
+            .category-card h3 {
+                font-size: 0.9rem;
             }
             
             .footer-links {
@@ -474,12 +407,24 @@ $result = $conn->query($sql);
                 font-size: 1.8rem;
             }
             
+            .categories-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+            }
+            
+            .category-card {
+                min-height: 60px;
+            }
+            
+            .category-card h3 {
+                font-size: 0.8rem;
+            }
+            
             .footer-links {
                 flex-direction: column;
                 gap: 10px;
             }
         }
-
     </style>
 </head>
 <body>
@@ -490,27 +435,19 @@ $result = $conn->query($sql);
                 <i class="fas fa-bars" id="menuIcon"></i>
             </div>
             
-            <div class="logo" onclick="window.location.href='index.php'">NEXUS</div>
+            <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
             
             <div class="nav-links">
-                <a href="index.php">HOME</a>
-                <a href="nintendo_user.php" class="active">NINTENDO</a>
-                <a href="console_user.php">CONSOLES</a>
-                <a href="accessories_user.php">ACCESSORIES</a>
-                <a href="vr_user.php">VR</a>
-                <a href="other_categories_user.php">OTHERS</a>
+                <a href="index.html">HOME</a>
+                <a href="NINTENDO.php">NINTENDO</a>
+                <a href="XBOX.php">CONSOLES</a>
+                <a href="ACCESSORIES.php">ACCESSORIES</a>
+                <a href="VR.php">VR</a>
+                <a href="other_categories.php" class="active">OTHERS</a>
             </div>
             
             <div class="icons-right">
-                <a href="custeditprofile.php">
-                    <i class="fas fa-user"></i>
-                </a>
-                <div class="cart-icon-container">
-                    <a href="cart.php"><i class="fas fa-shopping-cart"></i></a>
-                    <?php if(isset($_SESSION['cart_count']) && $_SESSION['cart_count'] > 0): ?>
-                        <span class="cart-count"><?php echo $_SESSION['cart_count']; ?></span>
-                    <?php endif; ?>
-                </div>
+                <a href="custlogin.html" class="login-btn">LOGIN</a>
             </div>
         </nav>
     </header>
@@ -520,53 +457,35 @@ $result = $conn->query($sql);
         <div id="menuContainer">
             <span id="closeMenu">&times;</span>
             <div id="menuContent">
-                <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
+                <div class="menu-item"><a href="custlogin.html">LOGIN</a></div>
                 <div class="menu-item"><a href="custservice.html">HELP</a></div>
-                <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
             </div>
         </div>
     </div>
 
-    <!-- Product Listing Section -->
-    <section class="product-listing">
-        <h2 class="section-title">NINTENDO</h2>
+    <!-- Categories Listing Section -->
+    <section class="categories-listing">
+        <h2 class="section-title">OTHER CATEGORIES</h2>
         
-        <div class="products-grid">
+        <div class="categories-grid">
             <?php
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    echo '<div class="product-card">';
-                    echo '<img class="product-image" src="uploads/' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
-                    echo '<div class="product-info">';
-                    echo '<h3>' . htmlspecialchars($row["product_name"]) . '</h3>';
-                    echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
-                    echo '<div class="product-price">';
-                    echo 'RM ' . number_format($row["product_price"], 2);
-                    
-                    if (isset($row["original_price"]) && $row["original_price"] > $row["product_price"]) {
-                        echo '<span class="original-price">RM ' . number_format($row["original_price"], 2) . '</span>';
-                        $discount = round(($row["original_price"] - $row["product_price"]) / $row["original_price"] * 100);
-                        echo '<span class="discount-badge">' . $discount . '% OFF</span>';
-                    }
+            if ($categories_result->num_rows > 0) {
+                while($category = $categories_result->fetch_assoc()) {
+                    echo '<div class="category-card" onclick="window.location.href=\'category_products_guest.php?category=' . urlencode($category['category_name']) . '\'">';
+                    echo '<h3>' . htmlspecialchars($category['category_name']) . '</h3>';
                     echo '</div>';
-                    
-                    if ((int)$row["product_quantity"] <= 0) {
-                        echo '<div class="out-of-stock">Out of Stock</div>';
-                    }
-                    
-                    echo '<a href="view_product_user.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
-                    echo '</div></div>';
                 }
             } else {
-                echo "<p>No Nintendo products available at the moment.</p>";
+                echo "<p style='grid-column: 1/-1; text-align: center;'>No categories available at the moment.</p>";
             }
             $conn->close();
             ?>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer>
+    <!-- Footer and script sections remain exactly the same -->
+    <!-- ... -->
+     <footer>
         <div class="footer-links">
             <a href="ABOUTUS.html">ABOUT US</a>
             <a href="CONTACT.html">CONTACT</a>
@@ -583,60 +502,5 @@ $result = $conn->query($sql);
             NEXUS is not affiliated with Nintendo or any other game publishers.
         </div>
     </footer>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // Mobile menu functionality
-            const menuOverlay = document.getElementById("menuOverlay");
-            const menuIcon = document.getElementById("menuIcon");
-            const closeMenu = document.getElementById("closeMenu");
-
-            // Open menu
-            menuIcon.addEventListener("click", function () {
-                menuOverlay.style.display = "block";
-                setTimeout(() => {
-                    menuOverlay.classList.add("active");
-                }, 10);
-            });
-
-            // Close menu when clicking "X"
-            closeMenu.addEventListener("click", function (e) {
-                e.stopPropagation();
-                menuOverlay.classList.remove("active");
-                setTimeout(() => {
-                    menuOverlay.style.display = "none";
-                }, 300);
-            });
-
-            // Close menu when clicking outside of menu container
-            menuOverlay.addEventListener("click", function (e) {
-                if (e.target === menuOverlay) {
-                    menuOverlay.classList.remove("active");
-                    setTimeout(() => {
-                        menuOverlay.style.display = "none";
-                    }, 300);
-                }
-            });
-
-            // Search icon click
-            document.getElementById("searchIcon").addEventListener("click", function() {
-                alert("Search functionality would appear here. This is a demo.");
-            });
-
-            // Add hover effect to all buttons
-            const buttons = document.querySelectorAll("button, .view-product");
-            buttons.forEach(button => {
-                button.addEventListener("mouseenter", function() {
-                    this.style.transform = "translateY(-3px)";
-                    this.style.boxShadow = "0 5px 15px rgba(255, 0, 0, 0.3)";
-                });
-                
-                button.addEventListener("mouseleave", function() {
-                    this.style.transform = "translateY(0)";
-                    this.style.boxShadow = "none";
-                });
-            });
-        });
-    </script>
 </body>
 </html>

@@ -7,6 +7,14 @@ if (!isset($_SESSION['email'])) {
     exit();
 }
 
+// Check if category parameter is set
+if (!isset($_GET['category'])) {
+    header("Location: other_categories_user.php");
+    exit();
+}
+
+$category_name = urldecode($_GET['category']);
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -20,8 +28,26 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM products WHERE product_category = 'Nintendo'";
-$result = $conn->query($sql);
+// Fetch user information
+$email = $_SESSION['email'];
+$user_sql = "SELECT * FROM customers WHERE email = ?";
+$user_stmt = $conn->prepare($user_sql);
+$user_stmt->bind_param("s", $email);
+$user_stmt->execute();
+$user_result = $user_stmt->get_result();
+$user = $user_result->fetch_assoc();
+
+if (!$user) {
+    echo "User not found!";
+    exit();
+}
+
+// Fetch products for the selected category
+$products_sql = "SELECT * FROM products WHERE product_category = ?";
+$products_stmt = $conn->prepare($products_sql);
+$products_stmt->bind_param("s", $category_name);
+$products_stmt->execute();
+$products_result = $products_stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -29,13 +55,11 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Nintendo Products</title>
+    <title>NEXUS | <?php echo htmlspecialchars($category_name); ?> Products</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* [Previous CSS styles remain exactly the same] */
-        /* ... (all the existing CSS content) ... */
-         :root {
+        :root {
             --primary: #ff0000;
             --secondary: #d10000;
             --dark: #0d0221;
@@ -479,7 +503,6 @@ $result = $conn->query($sql);
                 gap: 10px;
             }
         }
-
     </style>
 </head>
 <body>
@@ -494,11 +517,11 @@ $result = $conn->query($sql);
             
             <div class="nav-links">
                 <a href="index.php">HOME</a>
-                <a href="nintendo_user.php" class="active">NINTENDO</a>
+                <a href="nintendo_user.php">NINTENDO</a>
                 <a href="console_user.php">CONSOLES</a>
                 <a href="accessories_user.php">ACCESSORIES</a>
                 <a href="vr_user.php">VR</a>
-                <a href="other_categories_user.php">OTHERS</a>
+                <a href="other_categories_user.php" class="active">OTHERS</a>
             </div>
             
             <div class="icons-right">
@@ -529,12 +552,12 @@ $result = $conn->query($sql);
 
     <!-- Product Listing Section -->
     <section class="product-listing">
-        <h2 class="section-title">NINTENDO</h2>
+        <h2 class="section-title"><?php echo htmlspecialchars($category_name); ?></h2>
         
         <div class="products-grid">
             <?php
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
+            if ($products_result->num_rows > 0) {
+                while($row = $products_result->fetch_assoc()) {
                     echo '<div class="product-card">';
                     echo '<img class="product-image" src="uploads/' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
                     echo '<div class="product-info">';
@@ -558,7 +581,7 @@ $result = $conn->query($sql);
                     echo '</div></div>';
                 }
             } else {
-                echo "<p>No Nintendo products available at the moment.</p>";
+                echo "<p style='grid-column: 1/-1; text-align: center;'>No products available in this category at the moment.</p>";
             }
             $conn->close();
             ?>
