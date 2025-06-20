@@ -100,12 +100,33 @@ $conn->close();
             font-weight: bold;
         }
 
-        form input[type="password"] {
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input[type="password"],
+        .password-wrapper input[type="text"] {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            padding-right: 40px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 35px;
+            cursor: pointer;
+            color: #666;
+            font-size: 14px;
+            background: none;
+            border: none;
+        }
+
+        .toggle-password:hover {
+            color: #333;
         }
 
         form input[type="submit"] {
@@ -161,10 +182,16 @@ $conn->close();
 
         <form method="POST">
             <label for="old_password">Old Password:</label>
-            <input type="password" name="old_password" required>
+            <div class="password-wrapper">
+                <input type="password" name="old_password" id="old_password" required>
+                <button type="button" class="toggle-password" onclick="togglePassword('old_password')">Show</button>
+            </div>
 
             <label for="new_password">New Password:</label>
-            <input type="password" name="new_password" required>
+            <div class="password-wrapper">
+                <input type="password" name="new_password" id="new_password" required>
+                <button type="button" class="toggle-password" onclick="togglePassword('new_password')">Show</button>
+            </div>
             <div class="password-requirements">
                 Password must be at least 12 characters long and contain:
                 <ul>
@@ -176,12 +203,30 @@ $conn->close();
             </div>
 
             <label for="confirm_password">Confirm New Password:</label>
-            <input type="password" name="confirm_password" required>
+            <div class="password-wrapper">
+                <input type="password" name="confirm_password" id="confirm_password" required>
+                <button type="button" class="toggle-password" onclick="togglePassword('confirm_password')">Show</button>
+            </div>
 
             <input type="submit" value="Update Password">
         </form>
 
         <a href="profile_admin.php" class="back-link">← Back to Profile</a>
     </div>
+
+    <script>
+        function togglePassword(fieldId) {
+            const passwordField = document.getElementById(fieldId);
+            const toggleButton = passwordField.nextElementSibling;
+            
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                toggleButton.textContent = "Hide";
+            } else {
+                passwordField.type = "password";
+                toggleButton.textContent = "Show";
+            }
+        }
+    </script>
 </body>
 </html>
