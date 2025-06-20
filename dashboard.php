@@ -6,7 +6,18 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 
+// Add these headers to prevent page from being cached
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+
 if (!isset($_SESSION['admin_id'])) {
+    header("Location: login_admin.php");
+    exit;
+}
+
+// Check if user came from logout
+if (isset($_SESSION['logout_flag'])) {
+    unset($_SESSION['logout_flag']);
     header("Location: login_admin.php");
     exit;
 }
@@ -53,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
         $stmt->bind_param("sss", $searchTerm, $searchTerm, $searchTerm);
         $stmt->execute();
         $result = $stmt->get_result();
-        $searchResults['orders'] = $result->fetch_all(MQLI_ASSOC);
+        $searchResults['orders'] = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
         
         // Search in customers
@@ -67,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
         $stmt->bind_param("s", $searchTerm);
         $stmt->execute();
         $result = $stmt->get_result();
-        $searchResults['customers'] = $result->fetch_all(MQLI_ASSOC);
+        $searchResults['customers'] = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
     }
 }
@@ -562,7 +573,7 @@ $conn->close();
         </ul>
         <ul class="side-menu">
             <li>
-                <a href="login_admin.php" class="logout">
+                <a href="logout_admin.php" class="logout">
                     <i class='bx bxs-log-out-circle'></i>
                     <span class="text">Logout</span>
                 </a>
