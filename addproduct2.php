@@ -23,7 +23,7 @@ if (isset($_POST['add_product'])) {
                 VALUES ('$name', '$price', '$quantity', '$description', '$target_file', '$category')";
 
         if ($conn->query($sql) === TRUE) {
-            echo "<script>alert('Product added successfully!');</script>";
+            echo "<script>alert('Product added successfully');</script>";
         } else {
             echo "<script>alert('Error: " . $conn->error . "');</script>";
         }
@@ -45,6 +45,17 @@ $result = $conn->query("SELECT * FROM products");
    <title>Add Product</title>
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
    <link rel="stylesheet" href="newproduct.css" />
+   <script>
+      function validateQuantity(event) {
+         const charCode = event.which ? event.which : event.keyCode;
+         return (charCode >= 48 && charCode <= 57);
+      }
+      
+      function validatePrice(event) {
+         const charCode = event.which ? event.which : event.keyCode;
+         return (charCode >= 48 && charCode <= 57) || charCode === 46;
+      }
+   </script>
 </head>
 <body>
 
@@ -54,8 +65,10 @@ $result = $conn->query("SELECT * FROM products");
       <form action="" method="post" enctype="multipart/form-data">
          <h3>Add a new product</h3>
          <input type="text" placeholder="Enter product name" name="product_name" class="box" required />
-         <input type="number" placeholder="Enter product price" name="product_price" class="box" required />
-         <input type="number" placeholder="Enter product quantity" name="product_quantity" class="box" required />
+         <input type="number" placeholder="Enter product price" name="product_price" class="box" required 
+                min="0.01" step="0.01" onkeypress="return validatePrice(event)" />
+         <input type="number" placeholder="Enter product quantity" name="product_quantity" class="box" required 
+                min="1" step="1" onkeypress="return validateQuantity(event)" />
          <input type="text" placeholder="Enter description" name="product_description" class="box" required />
 
          <!-- Dynamic category dropdown -->
