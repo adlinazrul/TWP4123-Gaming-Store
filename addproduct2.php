@@ -23,7 +23,7 @@ if (isset($_POST['add_product'])) {
                 VALUES ('$name', '$price', '$quantity', '$description', '$target_file', '$category')";
 
         if ($conn->query($sql) === TRUE) {
-            echo "<script>alert('Product added successfully!');</script>";
+            echo "<script>alert('Product added successfully');</script>";
         } else {
             echo "<script>alert('Error: " . $conn->error . "');</script>";
         }
