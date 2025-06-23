@@ -21,8 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
     $product_id = intval($_POST['product_id']);
     $quantity = isset($_POST['quantity']) && is_numeric($_POST['quantity']) && $_POST['quantity'] > 0 ? intval($_POST['quantity']) : 1;
 
-    // Fetch product with stock information
-    $product_query = $conn->prepare("SELECT *, product_quantity as stock FROM products WHERE id = ?");
+    // Fetch product with stock information, INCLUDING product_image
+    // MODIFIED LINE: Added 'product_image' to the SELECT statement
+    $product_query = $conn->prepare("SELECT id, product_name, product_price, product_quantity as stock, product_image FROM products WHERE id = ?");
     $product_query->bind_param("i", $product_id);
     $product_query->execute();
     $product_result = $product_query->get_result();
@@ -42,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
 
     $product_name = $product['product_name'];
     $price_per_item = floatval($product['product_price']);
-    $product_image = $product['product_image'];
+    $product_image = $product['product_image']; // This variable correctly receives the image now
     $product_stock = $product['stock'];
 
     $subtotal = $price_per_item * $quantity;
@@ -78,7 +79,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
 <div class="container py-5">
     <h2 class="mb-4 text-center">Checkout</h2>
     <div class="row">
-        <!-- Cart Summary -->
         <div class="col-md-5 order-md-2 mb-4">
             <h4 class="d-flex justify-content-between align-items-center mb-3">
                 <span>Your Order</span>
@@ -122,7 +122,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
             </div>
         </div>
 
-        <!-- Form -->
         <div class="col-md-7 order-md-1">
             <h4 class="mb-3">Shipping Address</h4>
             <form method="POST" action="process_checkout.php" class="needs-validation" novalidate>

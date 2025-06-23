@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'db_connection.php';
+include 'db_connection.php'; // Ensure this file correctly connects to your database
 
 if (!isset($_SESSION['email'])) {
     header("Location: custlogin.php");
@@ -16,6 +16,7 @@ $customer_query->execute();
 $customer_result = $customer_query->get_result();
 $customer = $customer_result->fetch_assoc();
 $customer_id = $customer['id'];
+$customer_query->close(); // Close the prepared statement
 
 // Handle rating submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_rating'])) {
@@ -24,23 +25,62 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_rating'])) {
     $rating = intval($_POST['rating']);
     $review = $conn->real_escape_string($_POST['review']);
 
-    $verify_query = $conn->prepare("SELECT i.id FROM items_ordered i JOIN orders o ON i.order_id = o.id WHERE i.order_id = ? AND o.user_id = ? AND i.status_order = 'Delivered'");
-    $verify_query->bind_param("ii", $order_id, $customer_id);
-    $verify_query->execute();
-    $verify_result = $verify_query->get_result();
+    // Verify that the item in items_ordered is 'Delivered' for this specific order and product,
+    // and that the order belongs to the current user.
+    $verify_delivery_query = $conn->prepare("
+        SELECT io.id
+        FROM items_ordered io
+        JOIN orders o ON io.order_id = o.id
+        WHERE io.order_id = ?
+        AND io.product_id = ?
+        AND o.user_id = ?
+        AND io.status_order = 'Delivered'
+    ");
+    $verify_delivery_query->bind_param("iii", $order_id, $product_id, $customer_id);
+    $verify_delivery_query->execute();
+    $verify_delivery_result = $verify_delivery_query->get_result();
 
-    if ($verify_result->num_rows > 0) {
-        $rating_query = $conn->prepare("INSERT INTO rating (order_id, product_id, customer_id, rating, review) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE rating = VALUES(rating), review = VALUES(review)");
+    if ($verify_delivery_result->num_rows > 0) {
+        // Item is delivered and belongs to the user, proceed with rating insertion/update
+        $rating_query = $conn->prepare("
+            INSERT INTO rating (order_id, product_id, customer_id, rating, review)
+            VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE rating = VALUES(rating), review = VALUES(review)
+        ");
         $rating_query->bind_param("iiiis", $order_id, $product_id, $customer_id, $rating, $review);
-        $rating_query->execute();
+        if ($rating_query->execute()) {
+            header("Location: ORDERHISTORY.php?rating_success=1");
+        } else {
+            header("Location: ORDERHISTORY.php?rating_error=1&msg=db_error_rating");
+        }
+        $rating_query->close();
+    } else {
+        header("Location: ORDERHISTORY.php?rating_error=1&msg=not_delivered_or_not_yours");
     }
-
-    header("Location: ORDERHISTORY.php?rating_success=1");
+    $verify_delivery_query->close();
     exit();
 }
 
 // Fetch order history
-$orders_query = $conn->prepare("SELECT o.id as order_id, o.date, i.*, p.product_name, p.product_image FROM orders o JOIN items_ordered i ON o.id = i.order_id JOIN products p ON i.product_name = p.product_name WHERE o.user_id = ? ORDER BY o.date DESC");
+// Use product_id from items_ordered to join with products table
+$orders_query = $conn->prepare("
+    SELECT
+        o.id AS order_id,
+        o.date,
+        io.id AS item_ordered_id, -- Get the ID from items_ordered for status update
+        io.product_id,
+        io.quantity_items,
+        io.price_items,
+        io.image_items,
+        io.status_order,
+        p.product_name,
+        p.product_image
+    FROM orders o
+    JOIN items_ordered io ON o.id = io.order_id
+    JOIN products p ON io.product_id = p.id
+    WHERE o.user_id = ?
+    ORDER BY o.date DESC
+");
 $orders_query->bind_param("i", $customer_id);
 $orders_query->execute();
 $orders_result = $orders_query->get_result();
@@ -55,6 +95,7 @@ $orders_result = $orders_query->get_result();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* Your existing CSS styles go here */
         :root {
             --primary: #ff0000;
             --secondary: #d10000;
@@ -62,7 +103,7 @@ $orders_result = $orders_query->get_result();
             --light: #ffffff;
             --accent: #ff3333;
         }
-        
+
         body {
             font-family: 'Rubik', sans-serif;
             background-color: var(--dark);
@@ -71,7 +112,7 @@ $orders_result = $orders_query->get_result();
             padding: 0;
             overflow-x: hidden;
         }
-        
+
         header {
             background: var(--dark);
             padding: 15px 0;
@@ -80,7 +121,7 @@ $orders_result = $orders_query->get_result();
             z-index: 1000;
             box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
         }
-        
+
         .nav-menu {
             display: flex;
             justify-content: space-between;
@@ -89,7 +130,7 @@ $orders_result = $orders_query->get_result();
             margin: 0 auto;
             padding: 0 30px;
         }
-        
+
         .logo {
             font-family: 'Orbitron', sans-serif;
             font-size: 2rem;
@@ -97,12 +138,12 @@ $orders_result = $orders_query->get_result();
             color: var(--primary);
             text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
-        
+
         .nav-links {
             display: flex;
             gap: 30px;
         }
-        
+
         .nav-links a {
             color: var(--light);
             text-decoration: none;
@@ -111,7 +152,7 @@ $orders_result = $orders_query->get_result();
             transition: all 0.3s ease;
             position: relative;
         }
-        
+
         .nav-links a:hover {
             color: var(--primary);
         }
@@ -126,55 +167,55 @@ $orders_result = $orders_query->get_result();
             left: 0;
             transition: width 0.3s ease;
         }
-        
+
         .nav-links a:hover::after {
             width: 100%;
         }
-        
+
         .nav-links a.active {
             color: var(--primary);
         }
-        
+
         .nav-links a.active::after {
             width: 100%;
         }
-        
+
         .icons-left, .icons-right {
             display: flex;
             gap: 25px;
         }
-        
+
         .icons-left i, .icons-right i {
             font-size: 1.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
             color: var(--light);
         }
-        
+
         .icons-left i:hover, .icons-right i:hover {
             color: var(--primary);
         }
-        
+
         .order-container {
             max-width: 1400px;
             margin: 50px auto;
             padding: 0 30px;
         }
-        
+
         .order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
         }
-        
+
         .order-title {
             font-family: 'Orbitron', sans-serif;
             font-size: 2.5rem;
             color: var(--primary);
             text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
-        
+
         .order-card {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
@@ -182,7 +223,7 @@ $orders_result = $orders_query->get_result();
             margin-bottom: 30px;
             border-left: 4px solid var(--primary);
         }
-        
+
         .order-card-header {
             display: flex;
             justify-content: space-between;
@@ -190,17 +231,17 @@ $orders_result = $orders_query->get_result();
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 0, 0, 0.2);
         }
-        
+
         .order-id {
             font-family: 'Orbitron', sans-serif;
             color: var(--primary);
             font-size: 1.2rem;
         }
-        
+
         .order-date {
             color: rgba(255, 255, 255, 0.7);
         }
-        
+
         .order-status {
             background: var(--primary);
             color: white;
@@ -208,7 +249,7 @@ $orders_result = $orders_query->get_result();
             border-radius: 20px;
             font-size: 0.9rem;
         }
-        
+
         .order-item {
             display: flex;
             gap: 20px;
@@ -216,64 +257,64 @@ $orders_result = $orders_query->get_result();
             padding-bottom: 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .order-item:last-child {
             border-bottom: none;
             margin-bottom: 0;
             padding-bottom: 0;
         }
-        
+
         .order-item-img {
             width: 120px;
             height: 120px;
             object-fit: cover;
             border-radius: 5px;
         }
-        
+
         .order-item-details {
             flex: 1;
         }
-        
+
         .order-item-name {
             font-size: 1.2rem;
             margin-bottom: 5px;
             color: var(--light);
         }
-        
+
         .order-item-meta {
             color: rgba(255, 255, 255, 0.7);
             margin-bottom: 10px;
             font-size: 0.9rem;
         }
-        
+
         .order-item-price {
             font-weight: bold;
             color: var(--light);
         }
-        
+
         .rating-section {
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px dashed rgba(255, 255, 255, 0.2);
         }
-        
+
         .rating-title {
             font-family: 'Orbitron', sans-serif;
             color: var(--primary);
             margin-bottom: 10px;
         }
-        
+
         .rating-stars {
             margin-bottom: 10px;
         }
-        
+
         .rating-stars i {
             color: var(--primary);
             font-size: 1.5rem;
             cursor: pointer;
             margin-right: 5px;
         }
-        
+
         .rating-textarea {
             width: 100%;
             background: rgba(255, 255, 255, 0.1);
@@ -284,7 +325,7 @@ $orders_result = $orders_query->get_result();
             margin-bottom: 10px;
             resize: vertical;
         }
-        
+
         .rating-submit {
             background: var(--primary);
             color: white;
@@ -294,17 +335,17 @@ $orders_result = $orders_query->get_result();
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .rating-submit:hover {
             background: var(--accent);
         }
-        
+
         .no-orders {
             text-align: center;
             padding: 50px;
             color: rgba(255, 255, 255, 0.7);
         }
-        
+
         .btn-primary {
             background: var(--primary);
             border: none;
@@ -315,53 +356,53 @@ $orders_result = $orders_query->get_result();
             display: inline-block;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary:hover {
             background: var(--accent);
             color: white;
         }
-        
+
         footer {
             background: #0a0118;
             padding: 50px 30px 20px;
             text-align: center;
             margin-top: 50px;
         }
-        
+
         .footer-links {
             display: flex;
             justify-content: center;
             gap: 30px;
             margin-bottom: 30px;
         }
-        
+
         .footer-links a {
             color: var(--light);
             text-decoration: none;
             transition: all 0.3s ease;
         }
-        
+
         .footer-links a:hover {
             color: var(--primary);
         }
-        
+
         .social-icons {
             display: flex;
             justify-content: center;
             gap: 20px;
             margin-bottom: 30px;
         }
-        
+
         .social-icons a {
             color: var(--light);
             font-size: 1.5rem;
             transition: all 0.3s ease;
         }
-        
+
         .social-icons a:hover {
             color: var(--primary);
         }
-        
+
         .copyright {
             color: rgba(255, 255, 255, 0.5);
             font-size: 0.9rem;
@@ -379,20 +420,20 @@ $orders_result = $orders_query->get_result();
             align-items: center;
             gap: 10px;
         }
-        
+
         .continue-shopping:hover {
             color: var(--primary);
         }
-        
+
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
             }
-            
+
             .order-item {
                 flex-direction: column;
             }
-            
+
             .order-item-img {
                 width: 100%;
                 height: auto;
@@ -407,9 +448,9 @@ $orders_result = $orders_query->get_result();
                 <i class="fas fa-search"></i>
                 <i class="fas fa-bars" id="menuIcon"></i>
             </div>
-            
+
             <div class="logo">NEXUS</div>
-            
+
             <div class="nav-links">
                 <a href="index.php">HOME</a>
                 <a href="nintendo_user.php">NINTENDO</a>
@@ -418,7 +459,7 @@ $orders_result = $orders_query->get_result();
                 <a href="vr_user.php">VR</a>
                 <a href="other_categories_user.php">OTHERS</a>
             </div>
-            
+
             <div class="icons-right">
                 <a href="custeditprofile.php">
                     <i class="fas fa-user"></i>
@@ -433,6 +474,22 @@ $orders_result = $orders_query->get_result();
             <div class="alert alert-success" style="background: rgba(0, 200, 0, 0.2); color: #0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #0f0;">
                 Your rating has been submitted!
             </div>
+        <?php elseif (isset($_GET['rating_error'])): ?>
+            <div class="alert alert-danger" style="background: rgba(200, 0, 0, 0.2); color: #f00; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #f00;">
+                Error submitting rating.
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'not_delivered_or_not_yours') echo ' (Item is not yet delivered or you are not authorized to rate it).'; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['status_updated'])): ?>
+            <div class="alert alert-success" style="background: rgba(0, 200, 0, 0.2); color: #0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #0f0;">
+                Order status updated to Delivered!
+            </div>
+        <?php elseif (isset($_GET['status_error'])): ?>
+            <div class="alert alert-danger" style="background: rgba(200, 0, 0, 0.2); color: #f00; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #f00;">
+                Error updating status. Please try again.
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'not_eligible') echo ' (Item not eligible for delivery status update or not yours).'; ?>
+            </div>
         <?php endif; ?>
 
         <div class="order-header">
@@ -444,19 +501,9 @@ $orders_result = $orders_query->get_result();
 
         <?php if ($orders_result->num_rows > 0): ?>
             <?php while ($order = $orders_result->fetch_assoc()):
-                $product_name = $order['product_name'];
-                $product_id = null;
-                $prod_id_stmt = $conn->prepare("SELECT id FROM products WHERE product_name = ?");
-                $prod_id_stmt->bind_param("s", $product_name);
-                $prod_id_stmt->execute();
-                $prod_id_result = $prod_id_stmt->get_result();
-                if ($prod_row = $prod_id_result->fetch_assoc()) {
-                    $product_id = $prod_row['id'];
-                }
-                $prod_id_stmt->close();
-
+                // Retrieve existing rating if any for this product in this order by this customer
                 $rated_query = $conn->prepare("SELECT rating, review FROM rating WHERE order_id = ? AND product_id = ? AND customer_id = ?");
-                $rated_query->bind_param("iii", $order['order_id'], $product_id, $customer_id);
+                $rated_query->bind_param("iii", $order['order_id'], $order['product_id'], $customer_id);
                 $rated_query->execute();
                 $rated_result = $rated_query->get_result();
                 $rated = $rated_result->fetch_assoc();
@@ -470,36 +517,47 @@ $orders_result = $orders_query->get_result();
                         </div>
                         <span class="order-status"><?= $order['status_order'] ?></span>
                     </div>
-                    
+
                     <div class="order-item">
-                        <img src="uploads/<?= htmlspecialchars($order['product_image']) ?>" 
+                        <img src="uploads/<?= htmlspecialchars($order['product_image']) ?>"
                              onerror="this.src='uploads/default.png';"
-                             alt="<?= htmlspecialchars($order['product_name']) ?>" 
+                             alt="<?= htmlspecialchars($order['product_name']) ?>"
                              class="order-item-img">
                         <div class="order-item-details">
                             <h3 class="order-item-name"><?= htmlspecialchars($order['product_name']) ?></h3>
                             <div class="order-item-meta">
-                                <span>Quantity: <?= $order['quantity_items'] ?></span> | 
-                                <span>Price: RM <?= number_format($order['price_items'], 2) ?></span> | 
+                                <span>Quantity: <?= $order['quantity_items'] ?></span> |
+                                <span>Price: RM <?= number_format($order['price_items'], 2) ?></span> |
                                 <span class="order-item-price">Total: RM <?= number_format($order['price_items'] * $order['quantity_items'], 2) ?></span>
                             </div>
-                            
-                            <?php if ($order['status_order'] == 'Delivered' && $product_id !== null): ?>
+
+                            <?php
+                            // Allow marking as delivered if the status is 'Paid' (or 'Shipped' if you ever reintroduce it)
+                            if ($order['status_order'] == 'Paid'): ?>
+                                <form action="update_order_status.php" method="POST" style="margin-top: 15px;">
+                                    <input type="hidden" name="item_ordered_id" value="<?= $order['item_ordered_id'] ?>">
+                                    <button type="submit" name="mark_delivered" class="btn-primary" style="background: #28a745; margin-top:10px;">MARK AS DELIVERED</button>
+                                </form>
+                            <?php endif; ?>
+
+                            <?php
+                            // Check if the item is 'Delivered' and can be rated
+                            if ($order['status_order'] == 'Delivered'): ?>
                                 <div class="rating-section">
                                     <h4 class="rating-title">RATE THIS PRODUCT</h4>
                                     <form method="POST" action="">
                                         <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                                        <input type="hidden" name="product_id" value="<?= $product_id ?>">
-                                        <input type="hidden" name="rating" id="rating_input_<?= $order['order_id'] ?>_<?= $product_id ?>" value="<?= $rated ? $rated['rating'] : 0 ?>">
+                                        <input type="hidden" name="product_id" value="<?= $order['product_id'] ?>">
+                                        <input type="hidden" name="rating" id="rating_input_<?= $order['item_ordered_id'] ?>" value="<?= $rated ? $rated['rating'] : 0 ?>">
 
-                                        <div class="rating-stars" data-input-id="rating_input_<?= $order['order_id'] ?>_<?= $product_id ?>">
+                                        <div class="rating-stars" data-input-id="rating_input_<?= $order['item_ordered_id'] ?>">
                                             <?php for ($i = 1; $i <= 5; $i++): ?>
                                                 <i class="<?= ($rated && $i <= $rated['rating']) ? 'fas' : 'far' ?> fa-star" data-rating="<?= $i ?>"></i>
                                             <?php endfor; ?>
                                         </div>
 
                                         <textarea name="review" class="rating-textarea" placeholder="Your review (optional)"><?= $rated ? htmlspecialchars($rated['review']) : '' ?></textarea>
-                                        
+
                                         <button type="submit" name="submit_rating" class="rating-submit">
                                             <?= $rated ? 'UPDATE RATING' : 'SUBMIT RATING' ?>
                                         </button>
@@ -525,12 +583,12 @@ $orders_result = $orders_query->get_result();
             <a href="CONTACT.html">CONTACT</a>
             <a href="TOS.html">TERMS OF SERVICE</a>
         </div>
-        
+
         <div class="social-icons">
             <a href="#facebook"><i class="fab fa-facebook-f"></i></a>
             <a href="https://www.instagram.com/sojusprite"><i class="fab fa-instagram"></i></a>
         </div>
-        
+
         <div class="copyright">
             &copy; 2025 NEXUS GAMING STORE. ALL RIGHTS RESERVED.
         </div>
@@ -543,6 +601,13 @@ $orders_result = $orders_query->get_result();
                 const inputId = container.dataset.inputId;
                 const hiddenInput = document.getElementById(inputId);
                 const stars = container.querySelectorAll('i');
+
+                // Set initial star state
+                const initialRating = parseInt(hiddenInput.value);
+                stars.forEach((s, i) => {
+                    s.classList.toggle('fas', i < initialRating);
+                    s.classList.toggle('far', i >= initialRating);
+                });
 
                 stars.forEach(star => {
                     star.addEventListener('click', () => {
@@ -557,37 +622,20 @@ $orders_result = $orders_query->get_result();
                 });
             });
 
-            // Mobile menu toggle (same as index.php)
-            let menuOverlay = document.getElementById("menuOverlay");
-            let menuContainer = document.getElementById("menuContainer");
+            // Mobile menu toggle (assuming these elements exist in your header)
             let menuIcon = document.getElementById("menuIcon");
-            let closeMenu = document.getElementById("closeMenu");
-
-            menuIcon.addEventListener("click", function () {
-                menuOverlay.style.display = "block";
-                setTimeout(() => {
-                    menuOverlay.classList.add("active");
-                }, 10);
-            });
-
-            closeMenu.addEventListener("click", function (e) {
-                e.stopPropagation();
-                menuOverlay.classList.remove("active");
-                setTimeout(() => {
-                    menuOverlay.style.display = "none";
-                }, 300);
-            });
-
-            menuOverlay.addEventListener("click", function (e) {
-                if (e.target === menuOverlay) {
-                    menuOverlay.classList.remove("active");
-                    setTimeout(() => {
-                        menuOverlay.style.display = "none";
-                    }, 300);
-                }
-            });
+            if (menuIcon) {
+                // Placeholder for your actual mobile menu logic
+                // e.g., showing/hiding a sidebar or modal
+                menuIcon.addEventListener("click", function () {
+                    console.log("Mobile menu icon clicked!");
+                    // Example: document.getElementById("mobileMenu").classList.toggle("active");
+                });
+            }
+            // You might need to add actual HTML for menuOverlay, menuContainer, closeMenu
+            // if they are part of your mobile menu implementation.
         });
     </script>
 </body>
 </html>
-<?php $conn->close(); ?>
+<?php $orders_query->close(); $conn->close(); ?>
