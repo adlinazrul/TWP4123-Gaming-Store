@@ -349,6 +349,21 @@ if (isset($_GET['id'])) {
             transform: translateY(-3px);
             box-shadow: 0 10px 20px rgba(255, 0, 0, 0.3);
         }
+
+        .login-btn {
+            background: var(--primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
         
         .add-to-cart-lg:disabled {
             background: var(--gray);
@@ -577,6 +592,8 @@ if (isset($_GET['id'])) {
             color: var(--primary);
             padding-left: 10px;
         }
+
+
         
         @media (max-width: 1024px) {
             .nav-links {
@@ -659,13 +676,10 @@ if (isset($_GET['id'])) {
             </div>
             
             <div class="icons-right">
-                <a href="custlogin.html">
-                    <i class="fas fa-user"></i>
-                </a>
-                <div class="cart-icon-container">
-                    <a href="ADDTOCART.html"><i class="fas fa-shopping-cart"></i></a>
-                </div>
+                <a href="custlogin.html" class="login-btn">LOGIN</a>
             </div>
+
+
         </nav>
     </header>
 
