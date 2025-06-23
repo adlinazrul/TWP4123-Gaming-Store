@@ -482,6 +482,7 @@ $result = $conn->query($sql);
                 <a href="XBOX.php" >CONSOLES</a>
                 <a href="ACCESSORIES.php">ACCESSORIES</a>
                 <a href="VR.php">VR</a>
+                 <a href="other_categories.php">OTHERS</a>
             </div>
             
             <div class="icons-right">

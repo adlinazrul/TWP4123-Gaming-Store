@@ -532,6 +532,7 @@ $result = $conn->query($sql);
                 <a href="console_user.php" class="active">CONSOLES</a>
                 <a href="accessories_user.php">ACCESSORIES</a>
                 <a href="vr_user.php">VR</a>
+                <a href="other_categories_user.php">OTHERS</a>
             </div>
             
             <div class="icons-right">

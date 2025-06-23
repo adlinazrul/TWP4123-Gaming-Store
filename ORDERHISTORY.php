@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'db_connection.php'; // Ensure this file correctly connects to your database
+include 'db_connection.php';
 
 if (!isset($_SESSION['email'])) {
     header("Location: custlogin.php");
@@ -15,59 +15,66 @@ $customer_query->bind_param("s", $email);
 $customer_query->execute();
 $customer_result = $customer_query->get_result();
 $customer = $customer_result->fetch_assoc();
-$customer_id = $customer['id'];
-$customer_query->close(); // Close the prepared statement
 
-// Handle rating submission
+if (!$customer) {
+    echo "<script>alert('Customer not found. Please log in again.'); window.location.href='custlogin.php';</script>";
+    exit();
+}
+$customer_id = $customer['id'];
+$customer_query->close();
+
+// Generate CSRF token
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
+
+
+// Handle rating submission (no changes needed here from previous version)
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_rating'])) {
+    // Basic CSRF token validation for rating submission
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        header("Location: ORDERHISTORY.php?rating_error=1&msg=csrf_mismatch");
+        exit();
+    }
+
     $order_id = intval($_POST['order_id']);
     $product_id = intval($_POST['product_id']);
     $rating = intval($_POST['rating']);
     $review = $conn->real_escape_string($_POST['review']);
 
-    // Verify that the item in items_ordered is 'Delivered' for this specific order and product,
-    // and that the order belongs to the current user.
-    $verify_delivery_query = $conn->prepare("
-        SELECT io.id
-        FROM items_ordered io
-        JOIN orders o ON io.order_id = o.id
-        WHERE io.order_id = ?
-        AND io.product_id = ?
-        AND o.user_id = ?
-        AND io.status_order = 'Delivered'
-    ");
-    $verify_delivery_query->bind_param("iii", $order_id, $product_id, $customer_id);
-    $verify_delivery_query->execute();
-    $verify_delivery_result = $verify_delivery_query->get_result();
-
-    if ($verify_delivery_result->num_rows > 0) {
-        // Item is delivered and belongs to the user, proceed with rating insertion/update
-        $rating_query = $conn->prepare("
-            INSERT INTO rating (order_id, product_id, customer_id, rating, review)
-            VALUES (?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE rating = VALUES(rating), review = VALUES(review)
-        ");
-        $rating_query->bind_param("iiiis", $order_id, $product_id, $customer_id, $rating, $review);
-        if ($rating_query->execute()) {
-            header("Location: ORDERHISTORY.php?rating_success=1");
-        } else {
-            header("Location: ORDERHISTORY.php?rating_error=1&msg=db_error_rating");
-        }
-        $rating_query->close();
-    } else {
-        header("Location: ORDERHISTORY.php?rating_error=1&msg=not_delivered_or_not_yours");
+    if ($rating < 1 || $rating > 5) {
+        header("Location: ORDERHISTORY.php?rating_error=1&msg=invalid_rating");
+        exit();
     }
-    $verify_delivery_query->close();
+
+    $rating_query = $conn->prepare("
+        INSERT INTO rating (order_id, product_id, customer_id, rating, review)
+        VALUES (?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE rating = VALUES(rating), review = VALUES(review)
+    ");
+    if (!$rating_query) {
+        header("Location: ORDERHISTORY.php?rating_error=1&msg=db_prepare_error");
+        exit();
+    }
+    $rating_query->bind_param("iiiis", $order_id, $product_id, $customer_id, $rating, $review);
+    
+    if ($rating_query->execute()) {
+        header("Location: ORDERHISTORY.php?rating_success=1");
+    } else {
+        header("Location: ORDERHISTORY.php?rating_error=1&msg=db_error_rating");
+    }
+    $rating_query->close();
     exit();
 }
 
-// Fetch order history
-// Use product_id from items_ordered to join with products table
+// Fetch order history with product IDs, including the is_hidden status
 $orders_query = $conn->prepare("
     SELECT
         o.id AS order_id,
         o.date,
-        io.id AS item_ordered_id, -- Get the ID from items_ordered for status update
+        o.is_hidden,
+        io.id AS item_ordered_id,
         io.product_id,
         io.quantity_items,
         io.price_items,
@@ -79,7 +86,7 @@ $orders_query = $conn->prepare("
     JOIN items_ordered io ON o.id = io.order_id
     JOIN products p ON io.product_id = p.id
     WHERE o.user_id = ?
-    ORDER BY o.date DESC
+    ORDER BY o.date DESC, o.id DESC
 ");
 $orders_query->bind_param("i", $customer_id);
 $orders_query->execute();
@@ -222,34 +229,67 @@ $orders_result = $orders_query->get_result();
             padding: 20px;
             margin-bottom: 30px;
             border-left: 4px solid var(--primary);
+            position: relative; /* Needed for absolute positioning of overlay */
+        }
+
+        .order-card.hidden {
+            opacity: 0.6; /* Gray out the card */
+            border-left-color: rgba(255, 0, 0, 0.5);
+        }
+
+        /* NEW: Styles for the content to be hidden when the card is hidden */
+        .order-card.hidden .order-item,
+        .order-card.hidden .rating-section {
+            display: none; /* Hide these sections completely */
         }
 
         .order-card-header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+        }
+
+        .order-card.hidden .order-card-header {
+            /* Adjust padding/margin for header if needed when content is hidden */
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+
+        .order-info {
+            display: flex;
+            flex-direction: column;
         }
 
         .order-id {
             font-family: 'Orbitron', sans-serif;
             color: var(--primary);
             font-size: 1.2rem;
+            margin-bottom: 5px;
         }
 
         .order-date {
             color: rgba(255, 255, 255, 0.7);
-        }
-
-        .order-status {
-            background: var(--primary);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
             font-size: 0.9rem;
         }
 
+        .hide-order-btn {
+            color: var(--primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            margin-left: 20px;
+        }
+
+        .hide-order-btn:hover {
+            color: var(--accent);
+        }
+
+        /* The following .order-item and its children styles will apply only when the card is NOT hidden */
         .order-item {
             display: flex;
             gap: 20px;
@@ -430,9 +470,9 @@ $orders_result = $orders_query->get_result();
                 display: none;
             }
 
-            .order-item {
+            /* .order-item {
                 flex-direction: column;
-            }
+            } */ /* Re-enable if you want vertical stacking when not hidden */
 
             .order-item-img {
                 width: 100%;
@@ -476,19 +516,28 @@ $orders_result = $orders_query->get_result();
             </div>
         <?php elseif (isset($_GET['rating_error'])): ?>
             <div class="alert alert-danger" style="background: rgba(200, 0, 0, 0.2); color: #f00; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #f00;">
-                Error submitting rating.
-                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'not_delivered_or_not_yours') echo ' (Item is not yet delivered or you are not authorized to rate it).'; ?>
+                Error submitting rating. Please try again.
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'invalid_rating') echo ' (Invalid rating value provided).'; ?>
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'db_prepare_error') echo ' (Database prepare error).'; ?>
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'db_error_rating') echo ' (Database error during rating execution).'; ?>
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'csrf_mismatch') echo ' (Security token mismatch. Please try again).'; ?>
             </div>
-        <?php endif; ?>
-
-        <?php if (isset($_GET['status_updated'])): ?>
+        <?php elseif (isset($_GET['hide_success'])): ?>
             <div class="alert alert-success" style="background: rgba(0, 200, 0, 0.2); color: #0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #0f0;">
-                Order status updated to Delivered!
+                Order has been successfully hidden!
             </div>
-        <?php elseif (isset($_GET['status_error'])): ?>
+        <?php elseif (isset($_GET['unhide_success'])): ?>
+            <div class="alert alert-success" style="background: rgba(0, 200, 0, 0.2); color: #0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #0f0;">
+                Order has been successfully unhidden!
+            </div>
+        <?php elseif (isset($_GET['hide_error'])): ?>
             <div class="alert alert-danger" style="background: rgba(200, 0, 0, 0.2); color: #f00; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #f00;">
-                Error updating status. Please try again.
-                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'not_eligible') echo ' (Item not eligible for delivery status update or not yours).'; ?>
+                Error updating order visibility. Please try again.
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'invalid_request') echo ' (Invalid request).'; ?>
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'unauthorized') echo ' (Unauthorized access).'; ?>
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'db_error') echo ' (Database error during update).'; ?>
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'not_found') echo ' (Order not found).'; ?>
+                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'csrf_mismatch') echo ' (Security token mismatch. Please try again).'; ?>
             </div>
         <?php endif; ?>
 
@@ -500,74 +549,83 @@ $orders_result = $orders_query->get_result();
         </div>
 
         <?php if ($orders_result->num_rows > 0): ?>
-            <?php while ($order = $orders_result->fetch_assoc()):
-                // Retrieve existing rating if any for this product in this order by this customer
-                $rated_query = $conn->prepare("SELECT rating, review FROM rating WHERE order_id = ? AND product_id = ? AND customer_id = ?");
-                $rated_query->bind_param("iii", $order['order_id'], $order['product_id'], $customer_id);
-                $rated_query->execute();
-                $rated_result = $rated_query->get_result();
-                $rated = $rated_result->fetch_assoc();
-                $rated_query->close();
+            <?php
+            $grouped_orders = [];
+            while ($order_item = $orders_result->fetch_assoc()) {
+                $grouped_orders[$order_item['order_id']]['details'] = [
+                    'date' => $order_item['date'],
+                    'status_order' => $order_item['status_order'],
+                    'is_hidden' => $order_item['is_hidden']
+                ];
+                $grouped_orders[$order_item['order_id']]['items'][] = $order_item;
+            }
             ?>
-                <div class="order-card">
+
+            <?php foreach ($grouped_orders as $order_id => $order_data): ?>
+                <div class="order-card <?= $order_data['details']['is_hidden'] ? 'hidden' : '' ?>" id="order-card-<?= $order_id ?>">
                     <div class="order-card-header">
-                        <div>
-                            <span class="order-id">ORDER #<?= $order['order_id'] ?></span>
-                            <span class="order-date"><?= date('d M Y, h:i A', strtotime($order['date'])) ?></span>
-                        </div>
-                        <span class="order-status"><?= $order['status_order'] ?></span>
-                    </div>
-
-                    <div class="order-item">
-                        <img src="uploads/<?= htmlspecialchars($order['product_image']) ?>"
-                             onerror="this.src='uploads/default.png';"
-                             alt="<?= htmlspecialchars($order['product_name']) ?>"
-                             class="order-item-img">
-                        <div class="order-item-details">
-                            <h3 class="order-item-name"><?= htmlspecialchars($order['product_name']) ?></h3>
-                            <div class="order-item-meta">
-                                <span>Quantity: <?= $order['quantity_items'] ?></span> |
-                                <span>Price: RM <?= number_format($order['price_items'], 2) ?></span> |
-                                <span class="order-item-price">Total: RM <?= number_format($order['price_items'] * $order['quantity_items'], 2) ?></span>
-                            </div>
-
-                            <?php
-                            // Allow marking as delivered if the status is 'Paid' (or 'Shipped' if you ever reintroduce it)
-                            if ($order['status_order'] == 'Paid'): ?>
-                                <form action="update_order_status.php" method="POST" style="margin-top: 15px;">
-                                    <input type="hidden" name="item_ordered_id" value="<?= $order['item_ordered_id'] ?>">
-                                    <button type="submit" name="mark_delivered" class="btn-primary" style="background: #28a745; margin-top:10px;">MARK AS DELIVERED</button>
-                                </form>
+                        <div class="order-info">
+                            <span class="order-id">ORDER #<?= $order_id ?></span>
+                            <span class="order-date"><?= date('d M Y, h:i A', strtotime($order_data['details']['date'])) ?></span>
+                            <?php if ($order_data['details']['is_hidden']): ?>
+                                <span style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.5);"> (Hidden)</span>
                             <?php endif; ?>
-
-                            <?php
-                            // Check if the item is 'Delivered' and can be rated
-                            if ($order['status_order'] == 'Delivered'): ?>
+                        </div>
+                        <i class="fas hide-order-btn <?= $order_data['details']['is_hidden'] ? 'fa-eye-slash' : 'fa-eye' ?>"
+                           data-order-id="<?= $order_id ?>"
+                           data-is-hidden="<?= $order_data['details']['is_hidden'] ? '1' : '0' ?>"
+                           data-csrf-token="<?= $csrf_token ?>"
+                           title="<?= $order_data['details']['is_hidden'] ? 'Unhide Order' : 'Hide Order' ?>"></i>
+                    </div>
+                    
+                    <?php foreach ($order_data['items'] as $item):
+                        $rated_query = $conn->prepare("SELECT rating, review FROM rating WHERE order_id = ? AND product_id = ? AND customer_id = ?");
+                        $rated_query->bind_param("iii", $order_id, $item['product_id'], $customer_id);
+                        $rated_query->execute();
+                        $rated_result = $rated_query->get_result();
+                        $rated = $rated_result->fetch_assoc();
+                        $rated_query->close();
+                    ?>
+                        <div class="order-item">
+                            <img src="uploads/<?= htmlspecialchars($item['product_image']) ?>" 
+                                 onerror="this.src='uploads/default.png';"
+                                 alt="<?= htmlspecialchars($item['product_name']) ?>" 
+                                 class="order-item-img">
+                            <div class="order-item-details">
+                                <h3 class="order-item-name"><?= htmlspecialchars($item['product_name']) ?></h3>
+                                <div class="order-item-meta">
+                                    <span>Status: <span class="order-status" style="display: inline-block; padding: 2px 8px; border-radius: 10px; background-color: var(--primary); color: white; font-size: 0.8em;"><?= $item['status_order'] ?></span></span> |
+                                    <span>Quantity: <?= $item['quantity_items'] ?></span> | 
+                                    <span>Price: RM <?= number_format($item['price_items'], 2) ?></span> | 
+                                    <span class="order-item-price">Total: RM <?= number_format($item['price_items'] * $item['quantity_items'], 2) ?></span>
+                                </div>
+                                
                                 <div class="rating-section">
                                     <h4 class="rating-title">RATE THIS PRODUCT</h4>
                                     <form method="POST" action="">
-                                        <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                                        <input type="hidden" name="product_id" value="<?= $order['product_id'] ?>">
-                                        <input type="hidden" name="rating" id="rating_input_<?= $order['item_ordered_id'] ?>" value="<?= $rated ? $rated['rating'] : 0 ?>">
+                                        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+                                        <input type="hidden" name="order_id" value="<?= $order_id ?>">
+                                        <input type="hidden" name="product_id" value="<?= $item['product_id'] ?>">
+                                        <input type="hidden" name="rating" id="rating_input_<?= $order_id ?>_<?= $item['product_id'] ?>" value="<?= $rated ? $rated['rating'] : 0 ?>">
 
-                                        <div class="rating-stars" data-input-id="rating_input_<?= $order['item_ordered_id'] ?>">
+                                        <div class="rating-stars" data-input-id="rating_input_<?= $order_id ?>_<?= $item['product_id'] ?>">
                                             <?php for ($i = 1; $i <= 5; $i++): ?>
                                                 <i class="<?= ($rated && $i <= $rated['rating']) ? 'fas' : 'far' ?> fa-star" data-rating="<?= $i ?>"></i>
                                             <?php endfor; ?>
                                         </div>
 
                                         <textarea name="review" class="rating-textarea" placeholder="Your review (optional)"><?= $rated ? htmlspecialchars($rated['review']) : '' ?></textarea>
-
+                                        
                                         <button type="submit" name="submit_rating" class="rating-submit">
                                             <?= $rated ? 'UPDATE RATING' : 'SUBMIT RATING' ?>
                                         </button>
                                     </form>
                                 </div>
-                            <?php endif; ?>
+                            </div>
                         </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
-            <?php endwhile; ?>
+            <?php endforeach; ?>
         <?php else: ?>
             <div class="no-orders">
                 <h3>YOU HAVEN'T PLACED ANY ORDERS YET</h3>
@@ -583,12 +641,12 @@ $orders_result = $orders_query->get_result();
             <a href="CONTACT.html">CONTACT</a>
             <a href="TOS.html">TERMS OF SERVICE</a>
         </div>
-
+        
         <div class="social-icons">
             <a href="#facebook"><i class="fab fa-facebook-f"></i></a>
             <a href="https://www.instagram.com/sojusprite"><i class="fab fa-instagram"></i></a>
         </div>
-
+        
         <div class="copyright">
             &copy; 2025 NEXUS GAMING STORE. ALL RIGHTS RESERVED.
         </div>
@@ -596,17 +654,16 @@ $orders_result = $orders_query->get_result();
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Star rating logic
+            // Star rating logic (remains the same)
             document.querySelectorAll('.rating-stars').forEach(container => {
                 const inputId = container.dataset.inputId;
                 const hiddenInput = document.getElementById(inputId);
                 const stars = container.querySelectorAll('i');
 
-                // Set initial star state
-                const initialRating = parseInt(hiddenInput.value);
-                stars.forEach((s, i) => {
-                    s.classList.toggle('fas', i < initialRating);
-                    s.classList.toggle('far', i >= initialRating);
+                const currentRating = parseInt(hiddenInput.value) || 0;
+                stars.forEach((star, index) => {
+                    star.classList.toggle('fas', index < currentRating);
+                    star.classList.toggle('far', index >= currentRating);
                 });
 
                 stars.forEach(star => {
@@ -622,20 +679,79 @@ $orders_result = $orders_query->get_result();
                 });
             });
 
+            // Hide/Unhide Order Logic
+            document.querySelectorAll('.hide-order-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.dataset.orderId;
+                    const csrfToken = this.dataset.csrfToken;
+                    const isHidden = this.dataset.isHidden === '1'; // Convert string to boolean
+
+                    let action = isHidden ? 'unhide' : 'hide';
+                    let confirmationMessage = isHidden ?
+                        `Are you sure you want to unhide Order #${orderId}? It will reappear in your history.` :
+                        `Are you sure you want to hide Order #${orderId}? It will be hidden from your main history view.` ;
+
+                    if (confirm(confirmationMessage)) {
+                        fetch('toggle_order_visibility.php', { // This endpoint remains the same
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `order_id=${orderId}&action=${action}&csrf_token=${csrfToken}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message);
+                                const orderCard = document.getElementById(`order-card-${orderId}`);
+                                if (orderCard) {
+                                    // Toggle the 'hidden' class on the card
+                                    orderCard.classList.toggle('hidden', data.new_status === 'hidden');
+                                    
+                                    // Update the icon and data attribute
+                                    if (data.new_status === 'hidden') {
+                                        button.classList.remove('fa-eye');
+                                        button.classList.add('fa-eye-slash');
+                                        button.dataset.isHidden = '1';
+                                        button.title = 'Unhide Order';
+                                    } else {
+                                        button.classList.remove('fa-eye-slash');
+                                        button.classList.add('fa-eye');
+                                        button.dataset.isHidden = '0';
+                                        button.title = 'Hide Order';
+                                    }
+                                }
+                            } else {
+                                alert(`Error: ${data.message}`);
+                                window.location.href = `ORDERHISTORY.php?hide_error=1&msg=${data.error_code}`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred during visibility update. Please try again.');
+                            window.location.href = 'ORDERHISTORY.php?hide_error=1&msg=network_error';
+                        });
+                    }
+                });
+            });
+
             // Mobile menu toggle (assuming these elements exist in your header)
             let menuIcon = document.getElementById("menuIcon");
             if (menuIcon) {
-                // Placeholder for your actual mobile menu logic
-                // e.g., showing/hiding a sidebar or modal
                 menuIcon.addEventListener("click", function () {
-                    console.log("Mobile menu icon clicked!");
-                    // Example: document.getElementById("mobileMenu").classList.toggle("active");
+                    // Your mobile menu open logic here
                 });
             }
-            // You might need to add actual HTML for menuOverlay, menuContainer, closeMenu
-            // if they are part of your mobile menu implementation.
         });
     </script>
 </body>
 </html>
-<?php $orders_query->close(); $conn->close(); ?>
+<?php
+// Close the prepared statement and connection at the very end
+if (isset($orders_query) && $orders_query) {
+    $orders_query->close();
+}
+if (isset($conn) && $conn->ping()) {
+    $conn->close();
+}
+?>

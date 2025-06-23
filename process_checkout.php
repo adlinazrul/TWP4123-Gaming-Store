@@ -8,7 +8,6 @@ ini_set('error_log', __DIR__ . '/php_errors.log'); // Log errors to a file in th
 
 // Ensure the user is logged in
 if (!isset($_SESSION['email'])) {
-    // This redirect should ideally happen before any output to prevent "headers already sent"
     header("Location: custlogin.php");
     exit();
 }
@@ -114,7 +113,7 @@ try {
         }
 
         // Fetch product details for items_ordered table, including product_image
-        $product_query = $conn->prepare("SELECT product_name, product_price, product_quantity, product_image FROM products WHERE id = ? FOR UPDATE"); // MODIFIED LINE: Added product_image
+        $product_query = $conn->prepare("SELECT product_name, product_price, product_quantity, product_image FROM products WHERE id = ? FOR UPDATE");
         if (!$product_query) {
             throw new Exception("Failed to prepare product query: " . $conn->error);
         }
@@ -124,7 +123,7 @@ try {
         $product = $product_result->fetch_assoc();
         $product_query->close();
 
-        // Check if product exists (CRUCIAL ADDITION)
+        // Check if product exists
         if (!$product) {
             throw new Exception("Product with ID " . $product_id . " not found.");
         }
@@ -135,18 +134,18 @@ try {
         }
 
         // Prepare and execute insertion into items_ordered
-        $stmt_items = $conn->prepare("INSERT INTO items_ordered (order_id, product_id, product_name, price_items, quantity_items, image_items, status_order, was_in_stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"); // MODIFIED LINE: Added image_items
+        $stmt_items = $conn->prepare("INSERT INTO items_ordered (order_id, product_id, product_name, price_items, quantity_items, image_items, status_order, was_in_stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         if (!$stmt_items) {
             throw new Exception("Failed to prepare items_ordered insertion statement: " . $conn->error);
         }
 
-        $stmt_items->bind_param("iisdisii", // MODIFIED LINE: Added 's' for image_items
+        $stmt_items->bind_param("iisdisii",
             $order_id,
             $product_id,
             $product['product_name'],
             $product['product_price'],
             $quantity,
-            $product['product_image'], // MODIFIED LINE: Added product_image
+            $product['product_image'],
             $status_order,
             $was_in_stock
         );
@@ -168,26 +167,24 @@ try {
         $update_stock->close();
 
     } elseif ($order_type === 'cart') {
-        // --- THIS PART IS FOR CART CHECKOUT ---
-        // (Assuming you have a 'cart' session variable or similar)
-        // You'll need to adapt this based on how your cart items are stored
-        // Example: If cart items are stored in $_SESSION['cart'] as an array of product IDs and quantities
-        if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
-            throw new Exception("Your cart is empty. Cannot process order.");
+        // Retrieve cart items from the POST data submitted by checkout.php
+        $cart_items_from_post = $_POST['cart'] ?? [];
+
+        if (empty($cart_items_from_post)) {
+            throw new Exception("Your cart is empty or no items were submitted from the checkout form. Cannot process order.");
         }
 
-        foreach ($_SESSION['cart'] as $cart_item) {
+        foreach ($cart_items_from_post as $cart_item) {
             $product_id = intval($cart_item['product_id'] ?? 0);
             $quantity = intval($cart_item['quantity'] ?? 1);
 
             if ($product_id <= 0 || $quantity <= 0) {
-                // Skip invalid cart items, or throw error depending on desired behavior
-                error_log("Skipping invalid cart item: product_id=" . $product_id . ", quantity=" . $quantity);
-                continue;
+                error_log("Skipping invalid cart item during processing: product_id=" . $product_id . ", quantity=" . $quantity);
+                continue; // Skip to the next item
             }
 
             // Fetch product details for items_ordered table, including product_image
-            $product_query = $conn->prepare("SELECT product_name, product_price, product_quantity, product_image FROM products WHERE id = ? FOR UPDATE"); // MODIFIED LINE
+            $product_query = $conn->prepare("SELECT product_name, product_price, product_quantity, product_image FROM products WHERE id = ? FOR UPDATE");
             if (!$product_query) {
                 throw new Exception("Failed to prepare product query for cart item: " . $conn->error);
             }
@@ -197,29 +194,29 @@ try {
             $product = $product_result->fetch_assoc();
             $product_query->close();
 
-            // Check if product exists (CRUCIAL ADDITION)
+            // Check if product exists
             if (!$product) {
                 throw new Exception("Product with ID " . $product_id . " not found in cart processing.");
             }
 
-            // Re-check stock
+            // Re-check stock just before finalizing the order
             if ($product['product_quantity'] < $quantity) {
                 throw new Exception("Cart item " . htmlspecialchars($product['product_name']) . " is out of stock. Only " . $product['product_quantity'] . " available.");
             }
 
             // Prepare and execute insertion into items_ordered
-            $stmt_items = $conn->prepare("INSERT INTO items_ordered (order_id, product_id, product_name, price_items, quantity_items, image_items, status_order, was_in_stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"); // MODIFIED LINE
+            $stmt_items = $conn->prepare("INSERT INTO items_ordered (order_id, product_id, product_name, price_items, quantity_items, image_items, status_order, was_in_stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             if (!$stmt_items) {
                 throw new Exception("Failed to prepare items_ordered insertion statement for cart item: " . $conn->error);
             }
 
-            $stmt_items->bind_param("iisdisii", // MODIFIED LINE
+            $stmt_items->bind_param("iisdisii",
                 $order_id,
                 $product_id,
                 $product['product_name'],
                 $product['product_price'],
                 $quantity,
-                $product['product_image'], // MODIFIED LINE
+                $product['product_image'],
                 $status_order,
                 $was_in_stock
             );
@@ -240,14 +237,23 @@ try {
             }
             $update_stock->close();
         }
-        // Clear the cart after successful processing
-        unset($_SESSION['cart']);
+
+        // After successfully processing all cart items and updating stock, clear the user's cart from the database
+        $clear_cart_query = $conn->prepare("DELETE FROM cart_items WHERE email = ?");
+        if (!$clear_cart_query) {
+            throw new Exception("Failed to prepare clear cart query: " . $conn->error);
+        }
+        $clear_cart_query->bind_param("s", $email);
+        if (!$clear_cart_query->execute()) {
+            throw new Exception("Failed to clear cart after checkout: " . $clear_cart_query->error);
+        }
+        $clear_cart_query->close();
 
     } else {
-        throw new Exception("Invalid order type specified.");
+        throw new Exception("Invalid order type specified. Order type was: " . htmlspecialchars($order_type));
     }
 
-    // Update stock_updated status in orders table (now done after all items are processed)
+    // Update stock_updated status in orders table
     $update_order_status = $conn->prepare("UPDATE orders SET stock_updated = TRUE WHERE id = ?");
     if (!$update_order_status) {
         throw new Exception("Failed to prepare final order status update: " . $conn->error);

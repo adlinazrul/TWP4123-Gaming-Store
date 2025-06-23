@@ -496,6 +496,7 @@ $result = $conn->query($sql);
                 <a href="console_user.php">CONSOLES</a>
                 <a href="accessories_user.php">ACCESSORIES</a>
                 <a href="vr_user.php" class="active">VR</a>
+                <a href="other_categories_user.php">OTHERS</a>
             </div>
             
             <div class="icons-right">

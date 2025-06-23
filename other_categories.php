@@ -457,8 +457,9 @@ $categories_result = $conn->query($categories_sql);
         <div id="menuContainer">
             <span id="closeMenu">&times;</span>
             <div id="menuContent">
-                <div class="menu-item"><a href="custlogin.html">LOGIN</a></div>
+                <div class="menu-item"><a href="ORDERHISTORY.html">ORDER</a></div>
                 <div class="menu-item"><a href="custservice.html">HELP</a></div>
+                <div class="menu-item"><a href="login_admin.php">LOGIN ADMIN</a></div>
             </div>
         </div>
     </div>
@@ -502,5 +503,32 @@ $categories_result = $conn->query($categories_sql);
             NEXUS is not affiliated with Nintendo or any other game publishers.
         </div>
     </footer>
+    <script>
+    // Mobile menu functionality
+    const menuIcon = document.getElementById('menuIcon');
+    const closeMenu = document.getElementById('closeMenu');
+    const menuOverlay = document.getElementById('menuOverlay');
+    
+    if (menuIcon && closeMenu && menuOverlay) {
+        menuIcon.addEventListener('click', function() {
+            menuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
+        });
+        
+        closeMenu.addEventListener('click', function() {
+            menuOverlay.classList.remove('active');
+            document.body.style.overflow = ''; // Re-enable scrolling
+        });
+        
+        menuOverlay.addEventListener('click', function(e) {
+            if (e.target === menuOverlay) {
+                menuOverlay.classList.remove('active');
+                document.body.style.overflow = ''; // Re-enable scrolling
+            }
+        });
+    } else {
+        console.error('One or more mobile menu elements not found');
+    }
+</script>
 </body>
 </html>
