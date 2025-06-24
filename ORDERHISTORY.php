@@ -68,18 +68,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_rating'])) {
     exit();
 }
 
-// Fetch order history with product IDs, including the is_hidden status
+// Fetch order history with product IDs
 $orders_query = $conn->prepare("
     SELECT
         o.id AS order_id,
         o.date,
         o.is_hidden,
+        o.status_order AS overall_order_status, -- <<<--- THIS IS THE KEY CHANGE
         io.id AS item_ordered_id,
         io.product_id,
         io.quantity_items,
         io.price_items,
         io.image_items,
-        io.status_order,
         p.product_name,
         p.product_image
     FROM orders o
@@ -470,9 +470,9 @@ $orders_result = $orders_query->get_result();
                 display: none;
             }
 
-            /* .order-item {
-                flex-direction: column;
-            } */ /* Re-enable if you want vertical stacking when not hidden */
+            .order-item {
+                flex-direction: column; /* This makes items stack vertically on smaller screens */
+            }
 
             .order-item-img {
                 width: 100%;
@@ -552,12 +552,16 @@ $orders_result = $orders_query->get_result();
             <?php
             $grouped_orders = [];
             while ($order_item = $orders_result->fetch_assoc()) {
-                $grouped_orders[$order_item['order_id']]['details'] = [
-                    'date' => $order_item['date'],
-                    'status_order' => $order_item['status_order'],
-                    'is_hidden' => $order_item['is_hidden']
-                ];
-                $grouped_orders[$order_item['order_id']]['items'][] = $order_item;
+                $order_id = $order_item['order_id'];
+                if (!isset($grouped_orders[$order_id])) {
+                    $grouped_orders[$order_id]['details'] = [
+                        'date' => $order_item['date'],
+                        'is_hidden' => $order_item['is_hidden'],
+                        'overall_order_status' => $order_item['overall_order_status'] // Store the overall status here
+                    ];
+                    $grouped_orders[$order_id]['items'] = [];
+                }
+                $grouped_orders[$order_id]['items'][] = $order_item;
             }
             ?>
 
@@ -572,10 +576,10 @@ $orders_result = $orders_query->get_result();
                             <?php endif; ?>
                         </div>
                         <i class="fas hide-order-btn <?= $order_data['details']['is_hidden'] ? 'fa-eye-slash' : 'fa-eye' ?>"
-                           data-order-id="<?= $order_id ?>"
-                           data-is-hidden="<?= $order_data['details']['is_hidden'] ? '1' : '0' ?>"
-                           data-csrf-token="<?= $csrf_token ?>"
-                           title="<?= $order_data['details']['is_hidden'] ? 'Unhide Order' : 'Hide Order' ?>"></i>
+                            data-order-id="<?= $order_id ?>"
+                            data-is-hidden="<?= $order_data['details']['is_hidden'] ? '1' : '0' ?>"
+                            data-csrf-token="<?= $csrf_token ?>"
+                            title="<?= $order_data['details']['is_hidden'] ? 'Unhide Order' : 'Hide Order' ?>"></i>
                     </div>
                     
                     <?php foreach ($order_data['items'] as $item):
@@ -594,7 +598,7 @@ $orders_result = $orders_query->get_result();
                             <div class="order-item-details">
                                 <h3 class="order-item-name"><?= htmlspecialchars($item['product_name']) ?></h3>
                                 <div class="order-item-meta">
-                                    <span>Status: <span class="order-status" style="display: inline-block; padding: 2px 8px; border-radius: 10px; background-color: var(--primary); color: white; font-size: 0.8em;"><?= $item['status_order'] ?></span></span> |
+                                    <span>Status: <span class="order-status" style="display: inline-block; padding: 2px 8px; border-radius: 10px; background-color: var(--primary); color: white; font-size: 0.8em;"><?= htmlspecialchars($order_data['details']['overall_order_status']) ?></span></span> |
                                     <span>Quantity: <?= $item['quantity_items'] ?></span> | 
                                     <span>Price: RM <?= number_format($item['price_items'], 2) ?></span> | 
                                     <span class="order-item-price">Total: RM <?= number_format($item['price_items'] * $item['quantity_items'], 2) ?></span>
@@ -739,7 +743,8 @@ $orders_result = $orders_query->get_result();
             let menuIcon = document.getElementById("menuIcon");
             if (menuIcon) {
                 menuIcon.addEventListener("click", function () {
-                    // Your mobile menu open logic here
+                    // Your mobile menu open logic here (e.g., toggle a class on .nav-links for mobile view)
+                    document.querySelector('.nav-links').classList.toggle('active');
                 });
             }
         });
