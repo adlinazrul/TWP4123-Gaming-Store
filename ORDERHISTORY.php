@@ -29,10 +29,8 @@ if (empty($_SESSION['csrf_token'])) {
 }
 $csrf_token = $_SESSION['csrf_token'];
 
-
-// Handle rating submission (no changes needed here from previous version)
+// Handle rating submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_rating'])) {
-    // Basic CSRF token validation for rating submission
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         header("Location: ORDERHISTORY.php?rating_error=1&msg=csrf_mismatch");
         exit();
@@ -74,7 +72,7 @@ $orders_query = $conn->prepare("
         o.id AS order_id,
         o.date,
         o.is_hidden,
-        o.status_order AS overall_order_status, -- <<<--- THIS IS THE KEY CHANGE
+        o.status_order AS overall_order_status,
         io.id AS item_ordered_id,
         io.product_id,
         io.quantity_items,
@@ -102,7 +100,6 @@ $orders_result = $orders_query->get_result();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* Your existing CSS styles go here */
         :root {
             --primary: #ff0000;
             --secondary: #d10000;
@@ -510,6 +507,7 @@ $orders_result = $orders_query->get_result();
     </header>
 
     <div class="order-container">
+        <!-- Status messages remain the same -->
         <?php if (isset($_GET['rating_success'])): ?>
             <div class="alert alert-success" style="background: rgba(0, 200, 0, 0.2); color: #0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #0f0;">
                 Your rating has been submitted!
@@ -520,23 +518,6 @@ $orders_result = $orders_query->get_result();
                 <?php if (isset($_GET['msg']) && $_GET['msg'] == 'invalid_rating') echo ' (Invalid rating value provided).'; ?>
                 <?php if (isset($_GET['msg']) && $_GET['msg'] == 'db_prepare_error') echo ' (Database prepare error).'; ?>
                 <?php if (isset($_GET['msg']) && $_GET['msg'] == 'db_error_rating') echo ' (Database error during rating execution).'; ?>
-                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'csrf_mismatch') echo ' (Security token mismatch. Please try again).'; ?>
-            </div>
-        <?php elseif (isset($_GET['hide_success'])): ?>
-            <div class="alert alert-success" style="background: rgba(0, 200, 0, 0.2); color: #0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #0f0;">
-                Order has been successfully hidden!
-            </div>
-        <?php elseif (isset($_GET['unhide_success'])): ?>
-            <div class="alert alert-success" style="background: rgba(0, 200, 0, 0.2); color: #0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #0f0;">
-                Order has been successfully unhidden!
-            </div>
-        <?php elseif (isset($_GET['hide_error'])): ?>
-            <div class="alert alert-danger" style="background: rgba(200, 0, 0, 0.2); color: #f00; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #f00;">
-                Error updating order visibility. Please try again.
-                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'invalid_request') echo ' (Invalid request).'; ?>
-                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'unauthorized') echo ' (Unauthorized access).'; ?>
-                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'db_error') echo ' (Database error during update).'; ?>
-                <?php if (isset($_GET['msg']) && $_GET['msg'] == 'not_found') echo ' (Order not found).'; ?>
                 <?php if (isset($_GET['msg']) && $_GET['msg'] == 'csrf_mismatch') echo ' (Security token mismatch. Please try again).'; ?>
             </div>
         <?php endif; ?>
@@ -557,7 +538,7 @@ $orders_result = $orders_query->get_result();
                     $grouped_orders[$order_id]['details'] = [
                         'date' => $order_item['date'],
                         'is_hidden' => $order_item['is_hidden'],
-                        'overall_order_status' => $order_item['overall_order_status'] // Store the overall status here
+                        'overall_order_status' => $order_item['overall_order_status']
                     ];
                     $grouped_orders[$order_id]['items'] = [];
                 }
@@ -658,7 +639,7 @@ $orders_result = $orders_query->get_result();
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Star rating logic (remains the same)
+            // Star rating logic
             document.querySelectorAll('.rating-stars').forEach(container => {
                 const inputId = container.dataset.inputId;
                 const hiddenInput = document.getElementById(inputId);
@@ -683,67 +664,58 @@ $orders_result = $orders_query->get_result();
                 });
             });
 
-            // Hide/Unhide Order Logic
+            // Updated Hide/Unhide Order Logic - No confirmation popups
             document.querySelectorAll('.hide-order-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const orderId = this.dataset.orderId;
                     const csrfToken = this.dataset.csrfToken;
-                    const isHidden = this.dataset.isHidden === '1'; // Convert string to boolean
+                    const isHidden = this.dataset.isHidden === '1';
 
                     let action = isHidden ? 'unhide' : 'hide';
-                    let confirmationMessage = isHidden ?
-                        `Are you sure you want to unhide Order #${orderId}? It will reappear in your history.` :
-                        `Are you sure you want to hide Order #${orderId}? It will be hidden from your main history view.` ;
 
-                    if (confirm(confirmationMessage)) {
-                        fetch('toggle_order_visibility.php', { // This endpoint remains the same
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `order_id=${orderId}&action=${action}&csrf_token=${csrfToken}`
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert(data.message);
-                                const orderCard = document.getElementById(`order-card-${orderId}`);
-                                if (orderCard) {
-                                    // Toggle the 'hidden' class on the card
-                                    orderCard.classList.toggle('hidden', data.new_status === 'hidden');
-                                    
-                                    // Update the icon and data attribute
-                                    if (data.new_status === 'hidden') {
-                                        button.classList.remove('fa-eye');
-                                        button.classList.add('fa-eye-slash');
-                                        button.dataset.isHidden = '1';
-                                        button.title = 'Unhide Order';
-                                    } else {
-                                        button.classList.remove('fa-eye-slash');
-                                        button.classList.add('fa-eye');
-                                        button.dataset.isHidden = '0';
-                                        button.title = 'Hide Order';
-                                    }
+                    fetch('toggle_order_visibility.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `order_id=${orderId}&action=${action}&csrf_token=${csrfToken}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const orderCard = document.getElementById(`order-card-${orderId}`);
+                            if (orderCard) {
+                                // Toggle the 'hidden' class on the card
+                                orderCard.classList.toggle('hidden', data.new_status === 'hidden');
+                                
+                                // Update the icon and data attribute
+                                if (data.new_status === 'hidden') {
+                                    button.classList.remove('fa-eye');
+                                    button.classList.add('fa-eye-slash');
+                                    button.dataset.isHidden = '1';
+                                    button.title = 'Unhide Order';
+                                } else {
+                                    button.classList.remove('fa-eye-slash');
+                                    button.classList.add('fa-eye');
+                                    button.dataset.isHidden = '0';
+                                    button.title = 'Hide Order';
                                 }
-                            } else {
-                                alert(`Error: ${data.message}`);
-                                window.location.href = `ORDERHISTORY.php?hide_error=1&msg=${data.error_code}`;
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred during visibility update. Please try again.');
-                            window.location.href = 'ORDERHISTORY.php?hide_error=1&msg=network_error';
-                        });
-                    }
+                        } else {
+                            window.location.href = `ORDERHISTORY.php?hide_error=1&msg=${data.error_code}`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        window.location.href = 'ORDERHISTORY.php?hide_error=1&msg=network_error';
+                    });
                 });
             });
 
-            // Mobile menu toggle (assuming these elements exist in your header)
+            // Mobile menu toggle
             let menuIcon = document.getElementById("menuIcon");
             if (menuIcon) {
                 menuIcon.addEventListener("click", function () {
-                    // Your mobile menu open logic here (e.g., toggle a class on .nav-links for mobile view)
                     document.querySelector('.nav-links').classList.toggle('active');
                 });
             }
@@ -752,7 +724,7 @@ $orders_result = $orders_query->get_result();
 </body>
 </html>
 <?php
-// Close the prepared statement and connection at the very end
+// Close the prepared statement and connection
 if (isset($orders_query) && $orders_query) {
     $orders_query->close();
 }

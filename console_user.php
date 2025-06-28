@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 
 // Check if the user is logged in
@@ -21,8 +20,21 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Fetch Console products with optional search
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $sql = "SELECT * FROM products WHERE product_category = 'Consoles'";
-$result = $conn->query($sql);
+
+if (!empty($search)) {
+    $searchTerm = "%" . $conn->real_escape_string($search) . "%";
+    $sql .= " AND (product_name LIKE ? OR product_description LIKE ?)";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $searchTerm, $searchTerm);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    $result = $conn->query($sql);
+}
 ?>
 
 <!DOCTYPE html>
@@ -34,6 +46,7 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* [Previous CSS styles remain exactly the same] */
         :root {
             --primary: #ff0000;
             --secondary: #d10000;
@@ -107,12 +120,10 @@ $result = $conn->query($sql);
             bottom: -5px;
             left: 0;
             transition: width 0.3s ease;
-            
         }
         
         .nav-links a:hover::after {
             width: 100%;
-            
         }
         
         .nav-links a.active {
@@ -190,35 +201,6 @@ $result = $conn->query($sql);
             border-radius: 3px;
         }
         
-        .filter-section {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 30px;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .filter-section label {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--light);
-        }
-        
-        .filter-section select {
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--light);
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            border-radius: 5px;
-            font-family: 'Rubik', sans-serif;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        
-        .filter-section select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
-        }
-        
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -245,7 +227,7 @@ $result = $conn->query($sql);
             object-fit: contain;
             background-color: #000;
             transition: transform 0.5s ease;
-            flex-shrink: 0; /* Prevent image from shrinking */
+            flex-shrink: 0;
         }
         
         .product-card:hover .product-image {
@@ -309,12 +291,12 @@ $result = $conn->query($sql);
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: 'Orbitron', sans-serif;
-            width: calc(100% - 40px); /* Account for padding */
+            width: calc(100% - 40px);
             text-decoration: none;
             display: block;
             text-align: center;
-            margin: 0 auto; /* Center the button */
-    box-sizing: border-box; /* Include padding in width calculation */
+            margin: 0 auto;
+            box-sizing: border-box;
         }
         
         .view-product:hover {
@@ -464,6 +446,77 @@ $result = $conn->query($sql);
             color: var(--primary);
             padding-left: 10px;
         }
+
+        /* Search Overlay Styles */
+        #searchOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #searchContainer {
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+        }
+
+        #searchForm {
+            display: flex;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid var(--primary);
+            color: var(--light);
+            outline: none;
+            font-family: 'Rubik', sans-serif;
+        }
+
+        #searchForm button {
+            background: transparent;
+            border: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            position: absolute;
+            right: 60px;
+            top: 20px;
+            cursor: pointer;
+        }
+
+        #closeSearch {
+            position: absolute;
+            right: 10px;
+            top: 20px;
+            font-size: 2rem;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #closeSearch:hover {
+            color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .search-results-message {
+            grid-column: 1/-1;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+        }
         
         /* Responsive adjustments */
         @media (max-width: 1024px) {
@@ -485,11 +538,6 @@ $result = $conn->query($sql);
                 font-size: 2rem;
             }
             
-            .filter-section {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
             #menuContainer {
                 width: 100%;
                 max-width: 320px;
@@ -502,6 +550,20 @@ $result = $conn->query($sql);
             .footer-links {
                 gap: 15px;
             }
+
+            #searchInput {
+                font-size: 1.2rem;
+                padding: 15px;
+            }
+
+            #searchForm button {
+                right: 50px;
+                top: 15px;
+            }
+
+            #closeSearch {
+                top: 15px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -513,10 +575,37 @@ $result = $conn->query($sql);
                 flex-direction: column;
                 gap: 10px;
             }
+
+            #searchInput {
+                font-size: 1rem;
+                padding: 10px;
+            }
+
+            #searchForm button {
+                right: 40px;
+                top: 10px;
+                font-size: 1.2rem;
+            }
+
+            #closeSearch {
+                top: 10px;
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Search Overlay -->
+    <div id="searchOverlay" style="display: none;">
+        <div id="searchContainer">
+            <form id="searchForm" method="GET" action="">
+                <input type="text" name="search" id="searchInput" placeholder="Search console products..." autocomplete="off" value="<?php echo htmlspecialchars($search); ?>">
+                <button type="submit"><i class="fas fa-search"></i></button>
+                <span id="closeSearch">&times;</span>
+            </form>
+        </div>
+    </div>
+
     <header>
         <nav class="nav-menu">
             <div class="icons-left">
@@ -524,7 +613,7 @@ $result = $conn->query($sql);
                 <i class="fas fa-bars" id="menuIcon"></i>
             </div>
             
-            <div class="logo" onclick="window.location.href='index.html'">NEXUS</div>
+            <div class="logo" onclick="window.location.href='index.php'">NEXUS</div>
             
             <div class="nav-links">
                 <a href="index.php">HOME</a>
@@ -541,6 +630,9 @@ $result = $conn->query($sql);
                 </a>
                 <div class="cart-icon-container">
                     <a href="cart.php"><i class="fas fa-shopping-cart"></i></a>
+                    <?php if(isset($_SESSION['cart_count']) && $_SESSION['cart_count'] > 0): ?>
+                        <span class="cart-count"><?php echo $_SESSION['cart_count']; ?></span>
+                    <?php endif; ?>
                 </div>
             </div>
         </nav>
@@ -560,10 +652,16 @@ $result = $conn->query($sql);
 
     <!-- Product Listing Section -->
     <section class="product-listing">
-        <h2 class="section-title">CONSOLE</h2>
+        <h2 class="section-title">CONSOLES</h2>
         
         <div class="products-grid">
             <?php
+            if (!empty($search)) {
+                echo '<div class="search-results-message">';
+                echo 'Search results for : <strong>"' . htmlspecialchars($search) . '"</strong>';
+                echo '</div>';
+            }
+            
             if ($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) {
                     echo '<div class="product-card">';
@@ -573,21 +671,29 @@ $result = $conn->query($sql);
                     echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
                     echo '<div class="product-price">';
                     echo 'RM ' . number_format($row["product_price"], 2);
-                    // Add discount display if applicable
+                    
                     if (isset($row["original_price"]) && $row["original_price"] > $row["product_price"]) {
                         echo '<span class="original-price">RM ' . number_format($row["original_price"], 2) . '</span>';
                         $discount = round(($row["original_price"] - $row["product_price"]) / $row["original_price"] * 100);
                         echo '<span class="discount-badge">' . $discount . '% OFF</span>';
                     }
                     echo '</div>';
+                    
                     if ((int)$row["product_quantity"] <= 0) {
                         echo '<div class="out-of-stock">Out of Stock</div>';
                     }
+                    
                     echo '<a href="view_product_user.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
                     echo '</div></div>';
                 }
             } else {
-                echo "<p>No console products available.</p>";
+                if (!empty($search)) {
+                    echo '<div class="search-results-message" style="grid-column: 1/-1;">';
+                    echo 'No console products found matching : <strong>"' . htmlspecialchars($search) . '"</strong>';
+                    echo '</div>';
+                } else {
+                    echo "<p>No console products available at the moment.</p>";
+                }
             }
             $conn->close();
             ?>
@@ -616,10 +722,9 @@ $result = $conn->query($sql);
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Mobile menu functionality
-            let menuOverlay = document.getElementById("menuOverlay");
-            let menuContainer = document.getElementById("menuContainer");
-            let menuIcon = document.getElementById("menuIcon");
-            let closeMenu = document.getElementById("closeMenu");
+            const menuOverlay = document.getElementById("menuOverlay");
+            const menuIcon = document.getElementById("menuIcon");
+            const closeMenu = document.getElementById("closeMenu");
 
             // Open menu
             menuIcon.addEventListener("click", function () {
@@ -648,19 +753,32 @@ $result = $conn->query($sql);
                 }
             });
 
-            // Cart icon click
-            document.getElementById("cartIcon").addEventListener("click", function() {
-                alert("Your cart will be displayed here. This is a demo.");
+            // Search functionality
+            const searchIcon = document.getElementById("searchIcon");
+            const searchOverlay = document.getElementById("searchOverlay");
+            const closeSearch = document.getElementById("closeSearch");
+
+            // Open search
+            searchIcon.addEventListener("click", function() {
+                searchOverlay.style.display = "flex";
+                document.getElementById("searchInput").focus();
             });
 
-            // Search icon click
-            document.getElementById("searchIcon").addEventListener("click", function() {
-                alert("Search functionality would appear here. This is a demo.");
+            // Close search
+            closeSearch.addEventListener("click", function() {
+                searchOverlay.style.display = "none";
             });
 
-            // Sort functionality
-            document.getElementById("sort").addEventListener("change", function() {
-                alert("Products would be sorted by " + this.value + ". This is a demo.");
+            // Close search when clicking outside
+            searchOverlay.addEventListener("click", function(e) {
+                if (e.target === searchOverlay) {
+                    searchOverlay.style.display = "none";
+                }
+            });
+
+            // Prevent form from closing when clicking inside
+            document.getElementById("searchContainer").addEventListener("click", function(e) {
+                e.stopPropagation();
             });
 
             // Add hover effect to all buttons

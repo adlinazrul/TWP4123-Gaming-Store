@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 
 // Check if the user is logged in
@@ -21,8 +20,21 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Fetch Accessories products with optional search
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $sql = "SELECT * FROM products WHERE product_category = 'Accessories'";
-$result = $conn->query($sql);
+
+if (!empty($search)) {
+    $searchTerm = "%" . $conn->real_escape_string($search) . "%";
+    $sql .= " AND (product_name LIKE ? OR product_description LIKE ?)";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $searchTerm, $searchTerm);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    $result = $conn->query($sql);
+}
 ?>
 
 <!DOCTYPE html>
@@ -43,7 +55,7 @@ $result = $conn->query($sql);
             --gray: #7a7a7a;
         }
         
-        body {
+body {
             font-family: 'Rubik', sans-serif;
             background-color: var(--dark);
             color: var(--light);
@@ -478,9 +490,91 @@ $result = $conn->query($sql);
                 gap: 10px;
             }
         }
+        
+        /* Search Overlay Styles */
+        #searchOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #searchContainer {
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+        }
+
+        #searchForm {
+            display: flex;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid var(--primary);
+            color: var(--light);
+            outline: none;
+            font-family: 'Rubik', sans-serif;
+        }
+
+        #searchForm button {
+            background: transparent;
+            border: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            position: absolute;
+            right: 60px;
+            top: 20px;
+            cursor: pointer;
+        }
+
+        #closeSearch {
+            position: absolute;
+            right: 10px;
+            top: 20px;
+            font-size: 2rem;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #closeSearch:hover {
+            color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .search-results-message {
+            grid-column: 1/-1;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
+    <!-- Search Overlay -->
+    <div id="searchOverlay" style="display: none;">
+        <div id="searchContainer">
+            <form id="searchForm" method="GET" action="">
+                <input type="text" name="search" id="searchInput" placeholder="Search gaming accessories..." autocomplete="off" value="<?php echo htmlspecialchars($search); ?>">
+                <button type="submit"><i class="fas fa-search"></i></button>
+                <span id="closeSearch">&times;</span>
+            </form>
+        </div>
+    </div>
+
     <header>
         <nav class="nav-menu">
             <div class="icons-left">
@@ -496,7 +590,7 @@ $result = $conn->query($sql);
                 <a href="console_user.php">CONSOLES</a>
                 <a href="accessories_user.php" class="active">ACCESSORIES</a>
                 <a href="vr_user.php">VR</a>
-                 <a href="other_categories_user.php">OTHERS</a>
+                <a href="other_categories_user.php">OTHERS</a>
             </div>
             
             <div class="icons-right">
@@ -505,6 +599,9 @@ $result = $conn->query($sql);
                 </a>
                 <div class="cart-icon-container">
                     <a href="cart.php"><i class="fas fa-shopping-cart"></i></a>
+                    <?php if(isset($_SESSION['cart_count']) && $_SESSION['cart_count'] > 0): ?>
+                        <span class="cart-count"><?php echo $_SESSION['cart_count']; ?></span>
+                    <?php endif; ?>
                 </div>
             </div>
         </nav>
@@ -528,6 +625,12 @@ $result = $conn->query($sql);
         
         <div class="products-grid">
             <?php
+            if (!empty($search)) {
+                echo '<div class="search-results-message">';
+                echo 'Search results for : <strong>"' . htmlspecialchars($search) . '"</strong>';
+                echo '</div>';
+            }
+            
             if ($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) {
                     echo '<div class="product-card">';
@@ -537,21 +640,29 @@ $result = $conn->query($sql);
                     echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
                     echo '<div class="product-price">';
                     echo 'RM ' . number_format($row["product_price"], 2);
-                    // Add discount display if applicable
+                    
                     if (isset($row["original_price"]) && $row["original_price"] > $row["product_price"]) {
                         echo '<span class="original-price">RM ' . number_format($row["original_price"], 2) . '</span>';
                         $discount = round(($row["original_price"] - $row["product_price"]) / $row["original_price"] * 100);
                         echo '<span class="discount-badge">' . $discount . '% OFF</span>';
                     }
                     echo '</div>';
+                    
                     if ((int)$row["product_quantity"] <= 0) {
                         echo '<div class="out-of-stock">Out of Stock</div>';
                     }
+                    
                     echo '<a href="view_product_user.php?id=' . urlencode($row['id']) . '" class="view-product">VIEW PRODUCT</a>';
                     echo '</div></div>';
                 }
             } else {
-                echo "<p>No accessories available at the moment.</p>";
+                if (!empty($search)) {
+                    echo '<div class="search-results-message" style="grid-column: 1/-1;">';
+                    echo 'No accessories found matching : <strong>"' . htmlspecialchars($search) . '"</strong>';
+                    echo '</div>';
+                } else {
+                    echo "<p>No accessories available at the moment.</p>";
+                }
             }
             $conn->close();
             ?>
@@ -580,10 +691,9 @@ $result = $conn->query($sql);
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Mobile menu functionality
-            let menuOverlay = document.getElementById("menuOverlay");
-            let menuContainer = document.getElementById("menuContainer");
-            let menuIcon = document.getElementById("menuIcon");
-            let closeMenu = document.getElementById("closeMenu");
+            const menuOverlay = document.getElementById("menuOverlay");
+            const menuIcon = document.getElementById("menuIcon");
+            const closeMenu = document.getElementById("closeMenu");
 
             // Open menu
             menuIcon.addEventListener("click", function () {
@@ -612,14 +722,32 @@ $result = $conn->query($sql);
                 }
             });
 
-            // Cart icon click
-            document.getElementById("cartIcon").addEventListener("click", function() {
-                alert("Your cart will be displayed here. This is a demo.");
+            // Search functionality
+            const searchIcon = document.getElementById("searchIcon");
+            const searchOverlay = document.getElementById("searchOverlay");
+            const closeSearch = document.getElementById("closeSearch");
+
+            // Open search
+            searchIcon.addEventListener("click", function() {
+                searchOverlay.style.display = "flex";
+                document.getElementById("searchInput").focus();
             });
 
-            // Search icon click
-            document.getElementById("searchIcon").addEventListener("click", function() {
-                alert("Search functionality would appear here. This is a demo.");
+            // Close search
+            closeSearch.addEventListener("click", function() {
+                searchOverlay.style.display = "none";
+            });
+
+            // Close search when clicking outside
+            searchOverlay.addEventListener("click", function(e) {
+                if (e.target === searchOverlay) {
+                    searchOverlay.style.display = "none";
+                }
+            });
+
+            // Prevent form from closing when clicking inside
+            document.getElementById("searchContainer").addEventListener("click", function(e) {
+                e.stopPropagation();
             });
 
             // Add hover effect to all buttons
