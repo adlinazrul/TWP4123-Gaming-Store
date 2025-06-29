@@ -87,7 +87,7 @@ $result = $conn->query("SELECT * FROM products");
 
          <input type="file" accept="image/png, image/jpeg, image/jpg" name="product_image" class="box" required />
          <input type="submit" class="btn" name="add_product" value="Add Product" />
-         <a href="manageproduct.php" class="back-link">← Back to Product List</a>
+         <center><a href="manageproduct.php" class="back-link">← Back to Product List</a></center>
       </form>
    </div>
 
