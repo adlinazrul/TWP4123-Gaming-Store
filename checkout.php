@@ -554,9 +554,7 @@ if (!empty($out_of_stock_items)) {
             
             <?php foreach ($cart_items as $item): ?>
                 <div class="order-item">
-                    <img src="uploads/<?= htmlspecialchars($item['product_image']) ?>" 
-                         alt="<?= htmlspecialchars($item['product_name']) ?>" 
-                         class="order-item-img">
+                    <img src="<?= htmlspecialchars($item['product_image']) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>" class="order-item-img">
                     <div class="order-item-details">
                         <div class="order-item-name">
                             <?= htmlspecialchars($item['product_name']) ?> (x<?= $item['quantity'] ?>)

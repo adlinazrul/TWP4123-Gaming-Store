@@ -16,6 +16,8 @@ if ($conn->connect_error) {
 }
 
 $product = null;
+$average_rating = 0;
+$reviews = [];
 
 if (isset($_GET['id'])) {
     $id = intval($_GET['id']);
@@ -31,6 +33,26 @@ if (isset($_GET['id'])) {
             'quantity' => 1,
             'image' => $product['product_image']
         ];
+
+        // Get average rating and reviews
+        $rating_sql = "SELECT AVG(rating) as avg_rating, COUNT(*) as review_count FROM rating WHERE product_id = $id";
+        $rating_result = $conn->query($rating_sql);
+        if ($rating_result->num_rows > 0) {
+            $rating_data = $rating_result->fetch_assoc();
+            $average_rating = round($rating_data['avg_rating'], 1);
+        }
+
+        // Get individual reviews
+        $reviews_sql = "SELECT r.*, c.username FROM rating r 
+                        JOIN customers c ON r.customer_id = c.id 
+                        WHERE r.product_id = $id 
+                        ORDER BY r.created_at DESC";
+        $reviews_result = $conn->query($reviews_sql);
+        if ($reviews_result->num_rows > 0) {
+            while ($row = $reviews_result->fetch_assoc()) {
+                $reviews[] = $row;
+            }
+        }
     } else {
         die("Product not found.");
     }
@@ -442,6 +464,107 @@ if (isset($_GET['id'])) {
             width: 30%;
         }
         
+        /* Review Section Styles */
+        .reviews-section {
+            margin-top: 50px;
+            width: 100%;
+        }
+        
+        .reviews-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .reviews-section h2::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 3px;
+            background: var(--primary);
+            bottom: -10px;
+            left: 0;
+            border-radius: 3px;
+        }
+        
+        .average-rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .average-rating-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-right: 20px;
+            color: var(--primary);
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .average-rating-stars {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stars {
+            color: gold;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+        }
+        
+        .rating-count {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .review-list {
+            margin-top: 30px;
+        }
+        
+        .review-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 0;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .reviewer-name {
+            font-weight: bold;
+            color: var(--light);
+        }
+        
+        .review-date {
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+        
+        .review-rating {
+            color: gold;
+            margin-bottom: 10px;
+        }
+        
+        .review-content {
+            color: var(--light);
+            line-height: 1.6;
+        }
+        
+        .no-reviews {
+            color: var(--gray);
+            font-style: italic;
+            padding: 20px 0;
+        }
+        
         footer {
             background: #0a0118;
             padding: 50px 30px 20px;
@@ -623,6 +746,15 @@ if (isset($_GET['id'])) {
             .footer-links {
                 gap: 15px;
             }
+            
+            .average-rating {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .average-rating-value {
+                margin-bottom: 10px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -746,22 +878,11 @@ if (isset($_GET['id'])) {
 
     <div class="product-detail-container">
         <div class="product-gallery">
-            <img src="uploads/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="main-image" id="mainImage">
-            <div class="thumbnail-container">
-                <img loading="lazy" src="uploads/<?= htmlspecialchars($product['product_image']) ?>" alt="Main view" class="thumbnail active" onclick="changeImage(this)">
-            </div>
+            <img src="<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="main-image" id="mainImage">
         </div>
 
         <div class="product-info">
             <h1 class="product-title"><?= htmlspecialchars($product['product_name']) ?></h1>
-            <div class="product-rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
-                <span>(124 reviews)</span>
-            </div>
 
             <div class="product-price">RM <?= number_format($product['product_price'], 2) ?></div>
             
@@ -811,6 +932,68 @@ if (isset($_GET['id'])) {
                 <tr><th>Stock</th><td><?= $product['product_quantity'] ?> units</td></tr>
                 <tr><th>Price</th><td>RM <?= number_format($product['product_price'], 2) ?></td></tr>
             </table>
+        </div>
+
+        <div class="reviews-section">
+            <h2>CUSTOMER REVIEWS</h2>
+            
+            <div class="average-rating">
+                <div class="average-rating-value"><?= $average_rating ?>/5</div>
+                <div class="average-rating-stars">
+                    <div class="stars">
+                        <?php
+                        $full_stars = floor($average_rating);
+                        $half_star = ($average_rating - $full_stars) >= 0.5;
+                        $empty_stars = 5 - $full_stars - ($half_star ? 1 : 0);
+                        
+                        for ($i = 0; $i < $full_stars; $i++) {
+                            echo '<i class="fas fa-star"></i>';
+                        }
+                        if ($half_star) {
+                            echo '<i class="fas fa-star-half-alt"></i>';
+                        }
+                        for ($i = 0; $i < $empty_stars; $i++) {
+                            echo '<i class="far fa-star"></i>';
+                        }
+                        ?>
+                    </div>
+                    <div class="rating-count">
+                        <?php 
+                        $review_count = count($reviews);
+                        echo $review_count . ' review' . ($review_count != 1 ? 's' : '');
+                        ?>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="review-list">
+                <?php if (!empty($reviews)): ?>
+                    <?php foreach ($reviews as $review): ?>
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="reviewer-name"><?= htmlspecialchars($review['username']) ?></div>
+                                <div class="review-date"><?= date('F j, Y', strtotime($review['created_at'])) ?></div>
+                            </div>
+                            <div class="review-rating">
+                                <?php
+                                for ($i = 1; $i <= 5; $i++) {
+                                    if ($i <= $review['rating']) {
+                                        echo '<i class="fas fa-star"></i>';
+                                    } else {
+                                        echo '<i class="far fa-star"></i>';
+                                    }
+                                }
+                                ?>
+                            </div>
+                            <div class="review-content">
+                                <?= nl2br(htmlspecialchars($review['review'])) ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="no-reviews">No reviews yet. Be the first to review this product!</div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 

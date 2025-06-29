@@ -47,8 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
     $min_stock_threshold = $product['min_stock_threshold']; // Get the min_stock_threshold
 
     $subtotal = $price_per_item * $quantity;
-    $tax = $subtotal * 0.06; // Tax is back for buy now
-    $grand_total = $subtotal + $tax;
+    $grand_total = $subtotal;
 } else {
     die("Invalid access.");
 }
@@ -441,7 +440,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                 <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
                 <input type="hidden" name="order_type" value="buy_now">
                 <input type="hidden" name="total_price" value="<?php echo $grand_total; ?>">
-                <input type="hidden" name="tax_fee" value="<?php echo $tax; ?>">
 
                 <div class="row">
                     <div class="col">
@@ -543,7 +541,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
             <h2 class="section-title">YOUR ORDER</h2>
             
             <div class="order-item">
-                <img src="uploads/<?php echo htmlspecialchars($product_image); ?>" 
+                <img src="<?php echo htmlspecialchars($product_image); ?>" 
                      alt="<?php echo htmlspecialchars($product_name); ?>" 
                      class="order-item-img">
                 <div class="order-item-details">
@@ -563,10 +561,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
             <div class="summary-row">
                 <span>Subtotal</span>
                 <span>RM <?php echo number_format($subtotal, 2); ?></span>
-            </div>
-            <div class="summary-row">
-                <span>Tax (6%)</span>
-                <span>RM <?php echo number_format($tax, 2); ?></span>
             </div>
             <div class="summary-row">
                 <span>Shipping</span>
