@@ -572,10 +572,10 @@ $orders_result = $orders_query->get_result();
                         $rated_query->close();
                     ?>
                         <div class="order-item">
-                            <img src="uploads/<?= htmlspecialchars($item['product_image']) ?>" 
-                                 onerror="this.src='uploads/default.png';"
-                                 alt="<?= htmlspecialchars($item['product_name']) ?>" 
-                                 class="order-item-img">
+                           <img src="<?= htmlspecialchars($item['product_image']) ?>" 
+     onerror="this.src='images/default-product.png';"
+     alt="<?= htmlspecialchars($item['product_name']) ?>" 
+     class="order-item-img">
                             <div class="order-item-details">
                                 <h3 class="order-item-name"><?= htmlspecialchars($item['product_name']) ?></h3>
                                 <div class="order-item-meta">

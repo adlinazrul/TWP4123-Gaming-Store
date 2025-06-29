@@ -706,7 +706,7 @@ while ($row = $result->fetch_assoc()) {
             <?php if (count($cart_items) > 0): ?>
                 <?php foreach ($cart_items as $item): ?>
                     <div class="cart-item" data-product-id="<?= $item['product_id'] ?>">
-                        <img src="images/<?= htmlspecialchars($item['product_image']) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
+<img src="<?= htmlspecialchars($item['product_image']) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
                         <div class="cart-item-details">
                             <h3><?= htmlspecialchars($item['product_name']) ?>
                                 <span class="stock-status <?= strtolower(str_replace(' ', '-', $item['stock_status'])) ?>">

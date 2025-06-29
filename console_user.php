@@ -34,6 +34,11 @@ if (!empty($search)) {
     $result = $stmt->get_result();
 } else {
     $result = $conn->query($sql);
+    
+    // Debugging: Check if query returns results
+    if (!$result) {
+        die("Query failed: " . $conn->error);
+    }
 }
 ?>
 
@@ -46,8 +51,8 @@ if (!empty($search)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* [Previous CSS styles remain exactly the same] */
-        :root {
+        
+:root {
             --primary: #ff0000;
             --secondary: #d10000;
             --dark: #0d0221;
@@ -592,6 +597,7 @@ if (!empty($search)) {
                 font-size: 1.5rem;
             }
         }
+
     </style>
 </head>
 <body>
@@ -665,7 +671,8 @@ if (!empty($search)) {
             if ($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) {
                     echo '<div class="product-card">';
-                    echo '<img class="product-image" src="uploads/' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
+                    // Modified image path to match add product form
+                    echo '<img class="product-image" src="' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
                     echo '<div class="product-info">';
                     echo '<h3>' . htmlspecialchars($row["product_name"]) . '</h3>';
                     echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
@@ -720,6 +727,7 @@ if (!empty($search)) {
     </footer>
 
     <script>
+        // [Keep all your existing JavaScript exactly the same]
         document.addEventListener("DOMContentLoaded", function () {
             // Mobile menu functionality
             const menuOverlay = document.getElementById("menuOverlay");

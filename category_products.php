@@ -660,7 +660,7 @@ $products_result = $products_stmt->get_result();
             if ($products_result->num_rows > 0) {
                 while($row = $products_result->fetch_assoc()) {
                     echo '<div class="product-card">';
-                    echo '<img class="product-image" src="uploads/' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
+                    echo '<img class="product-image" src="' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
                     echo '<div class="product-info">';
                     echo '<h3>' . htmlspecialchars($row["product_name"]) . '</h3>';
                     echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
