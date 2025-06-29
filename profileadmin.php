@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($stmt->execute()) {
-        echo "<script>alert('Profile updated successfully'); window.location.href='admindashboard.php';</script>";
+        echo "<script>alert('Profile updated successfully'); window.location.href='dashboard.php';</script>";
     } else {
         echo "Error updating profile: " . $stmt->error;
     }
