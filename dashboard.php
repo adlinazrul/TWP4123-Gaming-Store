@@ -29,7 +29,6 @@ if (isset($_GET['logout'])) {
     
     // Redirect to login with no-cache headers
     header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-    header("Cache-Control: post-check=0, pre-check=0", false);
     header("Pragma: no-cache");
     header("Location: login_admin.php?logout=1");
     exit;
@@ -63,6 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
         $searchTerm = "%{$searchQuery}%";
         
         // Search in orders
+        // Note: The 'orders' table structure has changed in admindashboard.php, 
+        // assuming similar changes are needed here for consistency if 'items_ordered' is deprecated.
+        // For now, retaining 'items_ordered' as per the provided dashboard.php.
         $stmt = $conn->prepare("
             SELECT 
                 order_id,
@@ -807,7 +809,8 @@ $conn->close();
                             onClick: (event, elements) => {
                                 if (elements.length > 0) {
                                     const status = ['pending', 'completed'][elements[0].index];
-                                    alert(`Viewing ${status} orders: ${chart.data.datasets[0].data[elements[0].index]} orders`);
+                                    // Use console.log or a custom modal instead of alert()
+                                    console.log(`Viewing ${status} orders: ${chart.data.datasets[0].data[elements[0].index]} orders`);
                                     // Uncomment to redirect to filtered orders page:
                                     // window.location.href = `order_admin.php?status=${status}`;
                                 }
@@ -880,7 +883,7 @@ $conn->close();
                                             </div>
                                             <div class="customer-info">
                                                 <div class="customer-name"><?php echo htmlspecialchars($cust); ?></div>
-                                                <div class="customer-activity">Recently purchased</div>
+                                                <div class="customer-activity">Customer</div>
                                             </div>
                                             <button class="customer-action">
                                                 <i class='bx bxs-envelope'></i>
