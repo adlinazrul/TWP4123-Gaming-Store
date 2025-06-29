@@ -588,8 +588,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </form>
         
         <div class="footer">
-            <a href="index.html" class="cancel-btn"><i class="fas fa-times"></i> Cancel</a>
-    
+            <a href="index.html" class="back-link">Cancel</a>   
         </div>
     </div>
 
