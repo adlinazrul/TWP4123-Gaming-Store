@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'db_connection.php';
+include 'db_connection.php'; // Ensure this file handles database connection
 
 if (!isset($_SESSION['email'])) {
     header("Location: custlogin.php");
@@ -9,7 +9,7 @@ if (!isset($_SESSION['email'])) {
 
 $email = $_SESSION['email'];
 
-// Fetch customer info
+// Fetch customer info including state
 $user_query = $conn->prepare("SELECT * FROM customers WHERE email = ?");
 $user_query->bind_param("s", $email);
 $user_query->execute();
@@ -44,12 +44,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
     $price_per_item = floatval($product['product_price']);
     $product_image = $product['product_image'];
     $product_stock = $product['stock'];
-    $min_stock_threshold = $product['min_stock_threshold']; // Get the min_stock_threshold
+    $min_stock_threshold = $product['min_stock_threshold'];
 
     $subtotal = $price_per_item * $quantity;
-    $grand_total = $subtotal;
+    $tax = 0; // Tax removed as per request
+    $grand_total = $subtotal + $tax;
 } else {
-    die("Invalid access.");
+    die("Invalid access."); // Prevent direct access to checkout.php
 }
 ?>
 <!DOCTYPE html>
@@ -209,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 5px;
-            color: var(--light);
+            color: var(--light); /* Default for most inputs */
             font-family: 'Rubik', sans-serif;
             transition: all 0.3s ease;
         }
@@ -218,6 +219,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.2);
+        }
+        
+        /* State dropdown specific styling */
+        #state {
+            color: var(--light); /* Color of the selected state text when dropdown is closed */
+            /* Ensure the background is dark enough for white text to be readable */
+            background-color: rgba(255, 255, 255, 0.1); 
+        }
+
+        #state option {
+            /* Color for the individual options in the dropdown list when it's open */
+            color: #000;
+        }
+
+        /* Specific style for the "Select State" option if it's visible, ensuring it's black */
+        #state option[value=""] {
+            color: #000;
         }
 
         .row {
@@ -326,7 +344,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
             color: #ffc107;
         }
 
-        /* Specific styles for card number and expiry */
         input.card-number { letter-spacing: 2px; }
         
         footer {
@@ -440,6 +457,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                 <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
                 <input type="hidden" name="order_type" value="buy_now">
                 <input type="hidden" name="total_price" value="<?php echo $grand_total; ?>">
+                <!-- Removed tax_fee hidden input as tax is now 0 -->
 
                 <div class="row">
                     <div class="col">
@@ -482,11 +500,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                         <div class="form-group">
                             <label for="state" class="form-label">State</label>
                             <select class="form-control" id="state" name="state" required>
-                                <option value="">Select State</option>
+                                <option value="" disabled <?php echo (!isset($user['state']) || $user['state'] === '') ? 'selected' : ''; ?>>Select State</option>
                                 <?php
                                 $states = ["Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Perak", "Perlis", "Pulau Pinang", "Sabah", "Sarawak", "Selangor", "Terengganu", "Kuala Lumpur", "Labuan", "Putrajaya"];
                                 foreach ($states as $state) {
-                                    $selected = ($user['state'] ?? '') === $state ? 'selected' : '';
+                                    // Use 'selected' attribute to pre-select the user's state
+                                    $selected = (isset($user['state']) && $user['state'] === $state) ? 'selected' : '';
                                     echo "<option value=\"$state\" $selected>$state</option>";
                                 }
                                 ?>
@@ -542,8 +561,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
             
             <div class="order-item">
                 <img src="<?php echo htmlspecialchars($product_image); ?>" 
-                     alt="<?php echo htmlspecialchars($product_name); ?>" 
-                     class="order-item-img">
+                    alt="<?php echo htmlspecialchars($product_name); ?>" 
+                    class="order-item-img">
                 <div class="order-item-details">
                     <div class="order-item-name">
                         <?php echo htmlspecialchars($product_name); ?> (x<?php echo $quantity; ?>)
@@ -561,6 +580,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
             <div class="summary-row">
                 <span>Subtotal</span>
                 <span>RM <?php echo number_format($subtotal, 2); ?></span>
+            </div>
+            <div class="summary-row">
+                <span>Tax (0%)</span> <!-- Updated to reflect 0 tax -->
+                <span>RM <?php echo number_format($tax, 2); ?></span>
             </div>
             <div class="summary-row">
                 <span>Shipping</span>
@@ -622,13 +645,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
 
         // Mobile menu toggle (add if you have a menu icon to implement this)
         let menuIcon = document.getElementById("menuIcon");
+        // Ensure menuIcon exists before adding event listener
         if (menuIcon) {
             menuIcon.addEventListener("click", function () {
-                // Implement your mobile menu toggle logic here
-                // For example, toggling a class on .nav-links or body
-                const navLinks = document.querySelector('.nav-links');
-                if (navLinks) {
-                    navLinks.classList.toggle('show-mobile-menu'); // You'd need CSS for this class
+                // Assuming you have a mobile menu overlay/container logic in place from previous code
+                let menuOverlay = document.getElementById("menuOverlay");
+                let menuContainer = document.getElementById("menuContainer");
+
+                if (menuOverlay && menuContainer) {
+                    menuOverlay.style.display = "block";
+                    setTimeout(() => {
+                        menuOverlay.classList.add("active");
+                    }, 10);
+                }
+            });
+        }
+        
+        // Ensure closeMenu exists and works if the menuIcon is also present
+        let closeMenu = document.getElementById("closeMenu");
+        if (closeMenu) {
+            closeMenu.addEventListener("click", function (e) {
+                e.stopPropagation();
+                let menuOverlay = document.getElementById("menuOverlay");
+                if (menuOverlay) {
+                    menuOverlay.classList.remove("active");
+                    setTimeout(() => {
+                        menuOverlay.style.display = "none";
+                    }, 300);
+                }
+            });
+        }
+
+        // Close menu when clicking outside of menu container
+        let menuOverlay = document.getElementById("menuOverlay"); // Re-get for consistency
+        if (menuOverlay) {
+            menuOverlay.addEventListener("click", function (e) {
+                if (e.target === menuOverlay) {
+                    menuOverlay.classList.remove("active");
+                    setTimeout(() => {
+                        menuOverlay.style.display = "none";
+                    }, 300);
                 }
             });
         }
