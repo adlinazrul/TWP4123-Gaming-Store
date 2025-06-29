@@ -666,6 +666,7 @@ document.querySelectorAll('.toggle-password').forEach(function(icon) {
         }
     });
 });
+
 // Sidebar toggle
 let sidebar = document.querySelector("#sidebar");
 let sidebarBtn = document.querySelector("nav .bx-menu");
