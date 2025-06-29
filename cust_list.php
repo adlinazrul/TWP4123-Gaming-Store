@@ -151,7 +151,7 @@ if ($admin_id) {
             </div>
         </form>
 
-        <a href="profile_admin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
+        <a href="profileadmin.php" class="profile"><img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture"></a>
     </nav>
 
     <main>
