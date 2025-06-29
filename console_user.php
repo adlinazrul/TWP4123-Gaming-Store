@@ -22,7 +22,7 @@ if ($conn->connect_error) {
 
 // Fetch Console products with optional search
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$sql = "SELECT * FROM products WHERE product_category = 'Consoles'";
+$sql = "SELECT * FROM products WHERE product_category = 'Console'";
 
 if (!empty($search)) {
     $searchTerm = "%" . $conn->real_escape_string($search) . "%";
