@@ -29,7 +29,6 @@ if (isset($_GET['logout'])) {
     
     // Redirect to login with no-cache headers
     header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-    header("Cache-Control: post-check=0, pre-check=0", false);
     header("Pragma: no-cache");
     header("Location: login_admin.php?logout=1");
     exit;
@@ -47,14 +46,14 @@ $admin_id = $_SESSION['admin_id'];
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "gaming_store";
+$dbname = "gaming_store"; // Ensure this is your database name
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle search functionality
+// Handle search functionality for 'orders' table
 $searchResults = [];
 $searchQuery = "";
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
@@ -62,39 +61,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
     if (!empty($searchQuery)) {
         $searchTerm = "%{$searchQuery}%";
         
-        // Search in orders
+        // Search in 'orders' table
         $stmt = $conn->prepare("
             SELECT 
-                order_id,
-                name_cust,
-                date,
-                status_order,
-                SUM(price_items * quantity_items) AS total_price,
-                COUNT(*) AS items_count
-            FROM items_ordered
+                id AS order_id, 
+                CONCAT(first_name, ' ', last_name) AS name_cust, 
+                date, 
+                status_order, 
+                total_price
+            FROM orders
             WHERE 
-                order_id LIKE ? OR 
-                name_cust LIKE ? OR 
-                status_order LIKE ?
-            GROUP BY order_id, name_cust, date, status_order
+                id LIKE ? OR 
+                first_name LIKE ? OR 
+                last_name LIKE ? OR 
+                status_order LIKE ? OR
+                email LIKE ? OR
+                phone_number LIKE ? OR
+                street_address LIKE ? OR
+                city LIKE ? OR
+                state LIKE ? OR
+                postcode LIKE ? OR
+                country LIKE ? OR
+                cardholder_name LIKE ?
             ORDER BY date DESC
             LIMIT 10
         ");
-        $stmt->bind_param("sss", $searchTerm, $searchTerm, $searchTerm);
+        $stmt->bind_param("ssssssssssss", $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
         $stmt->execute();
         $result = $stmt->get_result();
         $searchResults['orders'] = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
         
-        // Search in customers
+        // Search in customers (using orders table for customer names)
         $stmt = $conn->prepare("
-            SELECT DISTINCT name_cust 
-            FROM items_ordered
-            WHERE name_cust LIKE ?
+            SELECT DISTINCT CONCAT(first_name, ' ', last_name) AS name_cust
+            FROM orders
+            WHERE CONCAT(first_name, ' ', last_name) LIKE ? OR email LIKE ? OR phone_number LIKE ?
             ORDER BY date DESC
             LIMIT 10
         ");
-        $stmt->bind_param("s", $searchTerm);
+        $stmt->bind_param("sss", $searchTerm, $searchTerm, $searchTerm);
         $stmt->execute();
         $result = $stmt->get_result();
         $searchResults['customers'] = $result->fetch_all(MYSQLI_ASSOC);
@@ -115,7 +121,7 @@ if ($stmt->fetch() && !empty($image)) {
 }
 $stmt->close();
 
-// Fetch only Pending and Completed order counts from items_ordered table
+// Fetch only Pending and Completed order counts from 'orders' table
 $statusCounts = [
     'pending' => 0,
     'completed' => 0
@@ -124,7 +130,7 @@ $statusCounts = [
 $statusQuery = "SELECT 
                 SUM(CASE WHEN LOWER(status_order) = 'pending' THEN 1 ELSE 0 END) as pending_count,
                 SUM(CASE WHEN LOWER(status_order) = 'completed' THEN 1 ELSE 0 END) as completed_count
-                FROM items_ordered";
+                FROM orders"; // Changed to 'orders' table
 $result = $conn->query($statusQuery);
 if ($result) {
     $row = $result->fetch_assoc();
@@ -132,37 +138,54 @@ if ($result) {
     $statusCounts['completed'] = (int)$row['completed_count'];
 }
 
-// Fetch recent 5 orders grouped by order_id
+// Fetch recent 5 orders from the 'orders' table
 $recentOrders = [];
 $sql = "
     SELECT 
-        order_id,
-        name_cust,
-        date,
-        status_order,
-        SUM(price_items * quantity_items) AS total_price,
-        COUNT(*) AS items_count
-    FROM items_ordered
-    GROUP BY order_id, name_cust, date, status_order
+        id AS order_id, 
+        CONCAT(first_name, ' ', last_name) AS name_cust, 
+        date, 
+        status_order, 
+        total_price
+    FROM orders
     ORDER BY date DESC
     LIMIT 5
-";
+"; // Changed to 'orders' table
 $result = $conn->query($sql);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
+        // Add a placeholder for items_count if needed for consistency with original structure,
+        // although 'orders' table itself doesn't contain this specific count per order line.
+        $row['items_count'] = 1; 
         $recentOrders[] = $row;
     }
 }
 
-// Fetch recent 5 distinct customers
+// Fetch total orders count from 'orders' table
+$totalOrdersQuery = "SELECT COUNT(*) AS total_orders FROM orders";
+$totalOrdersResult = $conn->query($totalOrdersQuery);
+$totalOrders = 0;
+if ($totalOrdersResult && $row = $totalOrdersResult->fetch_assoc()) {
+    $totalOrders = $row['total_orders'];
+}
+
+// Fetch total sales from 'orders' table where status is 'completed'
+$totalSales = 0;
+$salesResult = $conn->query("SELECT SUM(total_price) AS total_sales FROM orders WHERE status_order = 'completed'"); // Changed to 'orders' table
+if ($salesResult && $salesRow = $salesResult->fetch_assoc()) {
+    $totalSales = $salesRow['total_sales'] ?? 0;
+}
+
+
+// Fetch recent 5 distinct customers from 'orders' table
 $recentCustomers = [];
 $sqlCust = "
-    SELECT DISTINCT name_cust 
-    FROM items_ordered
-    WHERE name_cust IS NOT NULL AND name_cust != ''
+    SELECT DISTINCT CONCAT(first_name, ' ', last_name) AS name_cust 
+    FROM orders
+    WHERE first_name IS NOT NULL AND first_name != ''
     ORDER BY date DESC
     LIMIT 5
-";
+"; // Changed to 'orders' table
 $resultCust = $conn->query($sqlCust);
 if ($resultCust) {
     while ($row = $resultCust->fetch_assoc()) {
@@ -613,7 +636,7 @@ $conn->close();
                 </div>
             </form>
             
-            <a href="profile_admin.php" class="profile">
+            <a href="profileadmin.php" class="profile">
                 <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture" />
             </a>
         </nav>
@@ -652,7 +675,9 @@ $conn->close();
                                         </div>
                                         <?php
                                             $statusClass = strtolower($order['status_order']);
-                                            if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled'])) {
+                                            // The status classes here should match the general statuses you expect to display.
+                                            // Ensure 'paid' and 'processing' are included if they are valid statuses in your 'orders' table
+                                            if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled', 'paid'])) {
                                                 $statusClass = 'pending';
                                             }
                                         ?>
@@ -714,7 +739,7 @@ $conn->close();
                             <i class='bx bxs-calendar-check'></i>
                         </div>
                         <span class="text">
-                            <h3><?php echo array_sum($statusCounts); ?></h3>
+                            <h3><?php echo $totalOrders; ?></h3> <!-- Changed to use $totalOrders -->
                             <p>Total Orders</p>
                         </span>
                     </li>
@@ -734,14 +759,7 @@ $conn->close();
                         <span class="text">
                             <h3>RM 
                                 <?php 
-                                    $conn2 = new mysqli($servername, $username, $password, $dbname);
-                                    $salesResult = $conn2->query("SELECT SUM(price_items * quantity_items) AS total_sales FROM items_ordered WHERE status_order = 'completed'");
-                                    $totalSales = 0;
-                                    if ($salesResult && $salesRow = $salesResult->fetch_assoc()) {
-                                        $totalSales = $salesRow['total_sales'] ?? 0;
-                                    }
-                                    $conn2->close();
-                                    echo number_format($totalSales, 2);
+                                    echo number_format($totalSales, 2); // Changed to use $totalSales
                                 ?>
                             </h3>
                             <p>Total Sales</p>
@@ -807,7 +825,8 @@ $conn->close();
                             onClick: (event, elements) => {
                                 if (elements.length > 0) {
                                     const status = ['pending', 'completed'][elements[0].index];
-                                    alert(`Viewing ${status} orders: ${chart.data.datasets[0].data[elements[0].index]} orders`);
+                                    // Use console.log or a custom modal instead of alert()
+                                    console.log(`Viewing ${status} orders: ${chart.data.datasets[0].data[elements[0].index]} orders`);
                                     // Uncomment to redirect to filtered orders page:
                                     // window.location.href = `order_admin.php?status=${status}`;
                                 }
@@ -844,7 +863,7 @@ $conn->close();
                                         </div>
                                         <?php
                                             $statusClass = strtolower($order['status_order']);
-                                            if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled'])) {
+                                            if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled', 'paid'])) {
                                                 $statusClass = 'pending';
                                             }
                                         ?>
@@ -880,7 +899,7 @@ $conn->close();
                                             </div>
                                             <div class="customer-info">
                                                 <div class="customer-name"><?php echo htmlspecialchars($cust); ?></div>
-                                                <div class="customer-activity">Recently purchased</div>
+                                                <div class="customer-activity">Customer</div>
                                             </div>
                                             <button class="customer-action">
                                                 <i class='bx bxs-envelope'></i>

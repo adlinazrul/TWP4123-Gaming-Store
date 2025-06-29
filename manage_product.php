@@ -229,7 +229,7 @@ $result = mysqli_query($conn, $sql);
             </div>
         </form>
         
-        <a href="profile_admin.php" class="profile">
+        <a href="profileadmin.php" class="profile">
             <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture">
         </a>
     </nav>
