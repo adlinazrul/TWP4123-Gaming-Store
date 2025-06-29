@@ -45,15 +45,16 @@ while ($item = $cart_result->fetch_assoc()) {
     $item_count += $item['quantity'];
 }
 
-if ($item_count === 0) {
-    $_SESSION['out_of_stock'] = $out_of_stock_items;
-    header("Location: cart.php?error=out_of_stock");
+if ($item_count === 0 && empty($out_of_stock_items)) { // Added check for empty out_of_stock_items
+    $_SESSION['out_of_stock'] = $out_of_stock_items; // Still pass this for potential messaging
+    header("Location: cart.php?error=empty_cart"); // Changed error message for clarity
     exit();
 }
 
-$tax = $subtotal * 0.06;
+// Exclude tax calculation
+$tax = 0.00; // Set tax to zero
 $shipping = 0.00;
-$grand_total = $subtotal + $tax;
+$grand_total = $subtotal; // Grand total is now just the subtotal
 
 if (!empty($out_of_stock_items)) {
     $_SESSION['partial_out_of_stock'] = $out_of_stock_items;
@@ -586,10 +587,6 @@ if (!empty($out_of_stock_items)) {
             <div class="summary-row">
                 <span>Subtotal</span>
                 <span>RM <?= number_format($subtotal, 2) ?></span>
-            </div>
-            <div class="summary-row">
-                <span>Tax (6%)</span>
-                <span>RM <?= number_format($tax, 2) ?></span>
             </div>
             <div class="summary-row">
                 <span>Shipping</span>

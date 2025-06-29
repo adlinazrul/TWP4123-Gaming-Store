@@ -1,0 +1,4 @@
+[23-Jun-2025 17:54:43 Europe/Berlin] Order processing failed: Your cart is empty. Cannot process order. in C:\xampp\htdocs\TWP4123-Gaming-Store\process_checkout.php on line 176
+[23-Jun-2025 17:55:31 Europe/Berlin] Order processing failed: Your cart is empty. Cannot process order. in C:\xampp\htdocs\TWP4123-Gaming-Store\process_checkout.php on line 176
+[23-Jun-2025 17:57:08 Europe/Berlin] Order processing failed: Missing essential order details. Please fill in all required fields. in C:\xampp\htdocs\TWP4123-Gaming-Store\process_checkout.php on line 61
+[23-Jun-2025 17:59:15 Europe/Berlin] Order processing failed: Missing essential order details. Please fill in all required fields. in C:\xampp\htdocs\TWP4123-Gaming-Store\process_checkout.php on line 61

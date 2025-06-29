@@ -64,10 +64,10 @@ if (isset($_POST['reset'])) {
         .auth-header {
             text-align: center;
             margin-bottom: 2rem;
-            color: #00ffff;
+            color:rgb(255, 0, 0);
         }
         .btn-nexus {
-            background-color: #00ffff;
+            background-color:rgb(255, 0, 0);
             color: #1a1a2e;
             border: none;
             font-weight: bold;
@@ -80,7 +80,7 @@ if (isset($_POST['reset'])) {
             color: #fff;
         }
         .form-label {
-            color: #00ffff;
+            color:rgb(255, 0, 0);
         }
     </style>
 </head>
