@@ -215,7 +215,7 @@ $conn->close();
         <?php endif; ?>
 
         <form method="POST">
-            <label for="old_password">Old Password:</label>
+            <label for="old_password">Current Password:</label>
             <div class="password-input-group">
                 <input type="password" name="old_password" id="old_password" required>
                 <button type="button" class="password-toggle" onclick="togglePassword('old_password', this)">
