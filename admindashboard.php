@@ -787,38 +787,26 @@ $conn->close();
                     new Chart(ctx, {
                         type: 'bar',
                         data: {
-                            labels: ['Pending', 'Processing', 'Paid', 'Completed', 'Cancelled'], // Updated labels
+                            labels: ['Pending', 'Completed'], // Updated labels to only show Pending and Completed
                             datasets: [{
                                 label: 'Order Status',
                                 data: [
                                     <?php echo $statusCounts['pending']; ?>,
-                                    <?php echo $statusCounts['processing']; ?>, // Added processing
-                                    <?php echo $statusCounts['paid']; ?>,       // Added paid
-                                    <?php echo $statusCounts['completed']; ?>,
-                                    <?php echo $statusCounts['cancelled']; ?>
+                                    <?php echo $statusCounts['completed']; ?>
                                 ],
                                 backgroundColor: [
                                     'rgba(255, 193, 7, 0.7)',  // Pending (Yellow)
-                                    'rgba(253, 114, 56, 0.7)', // Processing (Orange)
-                                    'rgba(0, 123, 255, 0.7)',  // Paid (Blue) - new color
-                                    'rgba(40, 167, 69, 0.7)',  // Completed (Green)
-                                    'rgba(169, 50, 38, 0.7)'   // Cancelled (Red)
+                                    'rgba(40, 167, 69, 0.7)'   // Completed (Green)
                                 ],
                                 borderColor: [
                                     'rgba(255, 193, 7, 1)',
-                                    'rgba(253, 114, 56, 1)',
-                                    'rgba(0, 123, 255, 1)',
-                                    'rgba(40, 167, 69, 1)',
-                                    'rgba(169, 50, 38, 1)'
+                                    'rgba(40, 167, 69, 1)'
                                 ],
                                 borderWidth: 1,
                                 borderRadius: 8,
                                 hoverBackgroundColor: [
                                     'rgba(255, 193, 7, 1)',
-                                    'rgba(253, 114, 56, 1)',
-                                    'rgba(0, 123, 255, 1)',
-                                    'rgba(40, 167, 69, 1)',
-                                    'rgba(169, 50, 38, 1)'
+                                    'rgba(40, 167, 69, 1)'
                                 ]
                             }]
                         },
