@@ -588,8 +588,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </form>
         
         <div class="footer">
-            <button type="button" class="cancel-btn"><a href="index.html"><i class="fas fa-times"></i> Cancel</button>
-            <p>© 2023 Gaming Store. All rights reserved.</p>
+            <a href="index.html" class="cancel-btn"><i class="fas fa-times"></i> Cancel</a>
+    
         </div>
     </div>
 
