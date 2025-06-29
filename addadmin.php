@@ -627,6 +627,7 @@ function validatePassword() {
         alert('Passwords do not match');
         return false;
     }
+
     
     // Check password requirements
     if (password.length < 12) {
@@ -652,6 +653,19 @@ function validatePassword() {
     
     return true;
 }
+
+document.querySelectorAll('.toggle-password').forEach(function(icon) {
+    icon.addEventListener('click', function() {
+        const input = this.previousElementSibling;
+        if (input.type === 'password') {
+            input.type = 'text';
+            this.classList.replace('bx-hide', 'bx-show');
+        } else {
+            input.type = 'password';
+            this.classList.replace('bx-show', 'bx-hide');
+        }
+    });
+});
 
 // Sidebar toggle
 let sidebar = document.querySelector("#sidebar");

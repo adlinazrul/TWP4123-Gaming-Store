@@ -43,7 +43,7 @@ $admin_id = $_SESSION['admin_id'];
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "gaming_store";
+$dbname = "gaming_store"; // Ensure this is your database name
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
@@ -63,47 +63,66 @@ if ($stmt->fetch() && !empty($image)) {
 }
 $stmt->close();
 
-// Handle search functionality
+// --- START: Database changes for 'orders' table ---
+
+// Handle search functionality for 'orders' table
 $searchQuery = isset($_GET['query']) ? trim($_GET['query']) : '';
 $searchResults = [];
 $showSearchResults = false;
 
 if (!empty($searchQuery)) {
     $showSearchResults = true;
-    $searchTerm = $conn->real_escape_string($searchQuery);
+    $searchTerm = '%' . $conn->real_escape_string($searchQuery) . '%'; // Prepare for LIKE query
     
-    // Search in orders
+    // Search in 'orders' table
     $searchSql = "
         SELECT 
-            order_id,
-            name_cust,
-            date,
-            status_order,
-            SUM(price_items * quantity_items) AS total_price,
-            COUNT(*) AS items_count
-        FROM items_ordered
+            id AS order_id, 
+            CONCAT(first_name, ' ', last_name) AS name_cust, 
+            date, 
+            status_order, 
+            total_price
+        FROM orders
         WHERE 
-            order_id LIKE '%$searchTerm%' OR 
-            name_cust LIKE '%$searchTerm%' OR
-            status_order LIKE '%$searchTerm%'
-        GROUP BY order_id, name_cust, date, status_order
+            id LIKE ? OR 
+            first_name LIKE ? OR 
+            last_name LIKE ? OR 
+            status_order LIKE ? OR
+            email LIKE ? OR
+            phone_number LIKE ? OR
+            street_address LIKE ? OR
+            city LIKE ? OR
+            state LIKE ? OR
+            postcode LIKE ? OR
+            country LIKE ? OR
+            cardholder_name LIKE ?
         ORDER BY date DESC
         LIMIT 10
     ";
     
-    $searchResult = $conn->query($searchSql);
-    if ($searchResult) {
-        while ($row = $searchResult->fetch_assoc()) {
+    $stmt = $conn->prepare($searchSql);
+    // Bind parameters for each LIKE clause
+    $stmt->bind_param("ssssssssssss", $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            // For search results, we don't have 'items_count' directly from 'orders' table.
+            // You might need to adjust your display logic or fetch this separately if needed.
+            $row['items_count'] = 1; // Placeholder, as 'orders' table doesn't have individual item counts
             $searchResults[] = $row;
         }
     }
+    $stmt->close();
 }
 
-// Fetch order status counts for the chart
+
+// Fetch order status counts for the chart from 'orders' table
 $statusCounts = [];
 
-// Query and normalize status_order values
-$statusQuery = "SELECT LOWER(status_order) as status, COUNT(DISTINCT order_id) as count FROM items_ordered GROUP BY status";
+// Query and normalize status_order values from the 'orders' table
+$statusQuery = "SELECT LOWER(status_order) as status, COUNT(*) as count FROM orders GROUP BY status_order";
 $result = $conn->query($statusQuery);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
@@ -120,43 +139,62 @@ foreach ($allStatuses as $status) {
     }
 }
 
-// Fetch recent 5 orders grouped by order_id
+
+// Fetch total orders count
+$totalOrdersQuery = "SELECT COUNT(*) AS total_orders FROM orders";
+$totalOrdersResult = $conn->query($totalOrdersQuery);
+$totalOrders = 0;
+if ($totalOrdersResult && $row = $totalOrdersResult->fetch_assoc()) {
+    $totalOrders = $row['total_orders'];
+}
+
+
+// Fetch recent 5 orders from the 'orders' table
 $recentOrders = [];
 $sql = "
     SELECT 
-        order_id,
-        name_cust,
-        date,
-        status_order,
-        SUM(price_items * quantity_items) AS total_price,
-        COUNT(*) AS items_count
-    FROM items_ordered
-    GROUP BY order_id, name_cust, date, status_order
+        id AS order_id, 
+        CONCAT(first_name, ' ', last_name) AS name_cust, 
+        date, 
+        status_order, 
+        total_price
+    FROM orders
     ORDER BY date DESC
     LIMIT 5
 ";
 $result = $conn->query($sql);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
+        // Add a placeholder for items_count, as 'orders' table doesn't track this directly
+        $row['items_count'] = 1; 
         $recentOrders[] = $row;
     }
 }
 
-// Fetch recent 5 distinct customers
+// Fetch total sales from 'orders' table where status is 'completed'
+$totalSales = 0;
+$salesResult = $conn->query("SELECT SUM(total_price) AS total_sales FROM orders WHERE status_order = 'completed'");
+if ($salesResult && $salesRow = $salesResult->fetch_assoc()) {
+    $totalSales = $salesRow['total_sales'] ?? 0;
+}
+
+// Fetch recent 5 distinct customers from 'orders' table
 $recentCustomers = [];
 $sqlCust = "
-    SELECT DISTINCT name_cust 
-    FROM items_ordered
-    WHERE name_cust IS NOT NULL AND name_cust != ''
+    SELECT DISTINCT CONCAT(first_name, ' ', last_name) AS customer_name
+    FROM orders
+    WHERE first_name IS NOT NULL AND first_name != ''
     ORDER BY date DESC
     LIMIT 5
 ";
 $resultCust = $conn->query($sqlCust);
 if ($resultCust) {
     while ($row = $resultCust->fetch_assoc()) {
-        $recentCustomers[] = $row['name_cust'];
+        $recentCustomers[] = $row['customer_name'];
     }
 }
+
+// --- END: Database changes for 'orders' table ---
 
 $conn->close();
 ?>
@@ -664,7 +702,7 @@ $conn->close();
                                         </div>
                                         <?php
                                             $statusClass = strtolower($order['status_order']);
-                                            if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled'])) {
+                                            if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled', 'paid'])) { // Added 'paid'
                                                 $statusClass = 'pending';
                                             }
                                             // Highlight search term in status
@@ -711,7 +749,7 @@ $conn->close();
                             <i class='bx bxs-calendar-check'></i>
                         </div>
                         <span class="text">
-                            <h3><?php echo array_sum($statusCounts); ?></h3>
+                            <h3><?php echo $totalOrders; ?></h3> <!-- Changed to use $totalOrders -->
                             <p>Total Orders</p>
                         </span>
                     </li>
@@ -731,14 +769,7 @@ $conn->close();
                         <span class="text">
                             <h3>RM 
                                 <?php 
-                                    $conn2 = new mysqli($servername, $username, $password, $dbname);
-                                    $salesResult = $conn2->query("SELECT SUM(price_items * quantity_items) AS total_sales FROM items_ordered WHERE status_order = 'completed'");
-                                    $totalSales = 0;
-                                    if ($salesResult && $salesRow = $salesResult->fetch_assoc()) {
-                                        $totalSales = $salesRow['total_sales'] ?? 0;
-                                    }
-                                    $conn2->close();
-                                    echo number_format($totalSales, 2);
+                                    echo number_format($totalSales, 2); // Changed to use $totalSales
                                 ?>
                             </h3>
                             <p>Total Sales</p>
@@ -756,26 +787,26 @@ $conn->close();
                     new Chart(ctx, {
                         type: 'bar',
                         data: {
-                            labels: ['Pending', 'Completed'],
+                            labels: ['Pending', 'Completed'], // Updated labels to only show Pending and Completed
                             datasets: [{
                                 label: 'Order Status',
                                 data: [
                                     <?php echo $statusCounts['pending']; ?>,
-                                    <?php echo $statusCounts['completed']; ?>,
+                                    <?php echo $statusCounts['completed']; ?>
                                 ],
                                 backgroundColor: [
-                                    'rgba(255, 193, 7, 0.7)',
-                                    'rgba(40, 167, 69, 0.7)',
+                                    'rgba(255, 193, 7, 0.7)',  // Pending (Yellow)
+                                    'rgba(40, 167, 69, 0.7)'   // Completed (Green)
                                 ],
                                 borderColor: [
                                     'rgba(255, 193, 7, 1)',
-                                    'rgba(40, 167, 69, 1)',
+                                    'rgba(40, 167, 69, 1)'
                                 ],
                                 borderWidth: 1,
                                 borderRadius: 8,
                                 hoverBackgroundColor: [
                                     'rgba(255, 193, 7, 1)',
-                                    'rgba(40, 167, 69, 1)',
+                                    'rgba(40, 167, 69, 1)'
                                 ]
                             }]
                         },
@@ -833,7 +864,7 @@ $conn->close();
                                         </div>
                                         <?php
                                             $statusClass = strtolower($order['status_order']);
-                                            if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled'])) {
+                                            if (!in_array($statusClass, ['pending', 'processing', 'completed', 'cancelled', 'paid'])) {
                                                 $statusClass = 'pending';
                                             }
                                         ?>
