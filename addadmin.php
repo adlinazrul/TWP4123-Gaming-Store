@@ -101,8 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    $password = password_hash($password_raw, PASSWORD_BCRYPT);
-
+    $password = $password_raw;
     $target_dir = "uploads/";
     $image_name = basename($_FILES["image"]["name"]);
     $target_file = $target_dir . $image_name;
