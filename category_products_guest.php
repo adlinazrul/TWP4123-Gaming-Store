@@ -22,10 +22,20 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch products for the selected category
+// Fetch products for the selected category with optional search
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $products_sql = "SELECT * FROM products WHERE product_category = ?";
-$products_stmt = $conn->prepare($products_sql);
-$products_stmt->bind_param("s", $category_name);
+
+if (!empty($search)) {
+    $searchTerm = "%" . $conn->real_escape_string($search) . "%";
+    $products_sql .= " AND (product_name LIKE ? OR product_description LIKE ?)";
+    $products_stmt = $conn->prepare($products_sql);
+    $products_stmt->bind_param("sss", $category_name, $searchTerm, $searchTerm);
+} else {
+    $products_stmt = $conn->prepare($products_sql);
+    $products_stmt->bind_param("s", $category_name);
+}
+
 $products_stmt->execute();
 $products_result = $products_stmt->get_result();
 ?>
@@ -39,9 +49,7 @@ $products_result = $products_stmt->get_result();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rubik:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* [Previous CSS styles remain exactly the same] */
-        /* ... (all the existing CSS content) ... */
-          :root {
+        :root {
             --primary: #ff0000;
             --secondary: #d10000;
             --dark: #0d0221;
@@ -500,9 +508,127 @@ $products_result = $products_stmt->get_result();
                 gap: 10px;
             }
         }
+        
+        /* Add these new styles for the search overlay */
+        #searchOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #searchContainer {
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+        }
+
+        #searchForm {
+            display: flex;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid var(--primary);
+            color: var(--light);
+            outline: none;
+            font-family: 'Rubik', sans-serif;
+        }
+
+        #searchForm button {
+            background: transparent;
+            border: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            position: absolute;
+            right: 60px;
+            top: 20px;
+            cursor: pointer;
+        }
+
+        #closeSearch {
+            position: absolute;
+            right: 10px;
+            top: 20px;
+            font-size: 2rem;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #closeSearch:hover {
+            color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .search-results-message {
+            grid-column: 1/-1;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+        }
+        
+        /* Responsive adjustments for search */
+        @media (max-width: 768px) {
+            #searchInput {
+                font-size: 1.2rem;
+                padding: 15px;
+            }
+
+            #searchForm button {
+                right: 50px;
+                top: 15px;
+            }
+
+            #closeSearch {
+                top: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #searchInput {
+                font-size: 1rem;
+                padding: 10px;
+            }
+
+            #searchForm button {
+                right: 40px;
+                top: 10px;
+                font-size: 1.2rem;
+            }
+
+            #closeSearch {
+                top: 10px;
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Search Overlay -->
+    <div id="searchOverlay">
+        <div id="searchContainer">
+            <form id="searchForm" method="GET" action="">
+                <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_name); ?>">
+                <input type="text" name="search" id="searchInput" placeholder="Search <?php echo htmlspecialchars($category_name); ?> products..." autocomplete="off" value="<?php echo htmlspecialchars($search); ?>">
+                <button type="submit"><i class="fas fa-search"></i></button>
+                <span id="closeSearch">&times;</span>
+            </form>
+        </div>
+    </div>
+
     <header>
         <nav class="nav-menu">
             <div class="icons-left">
@@ -544,10 +670,16 @@ $products_result = $products_stmt->get_result();
         
         <div class="products-grid">
             <?php
+            if (!empty($search)) {
+                echo '<div class="search-results-message">';
+                echo 'Search results for: <strong>"' . htmlspecialchars($search) . '"</strong>';
+                echo '</div>';
+            }
+            
             if ($products_result->num_rows > 0) {
                 while($row = $products_result->fetch_assoc()) {
                     echo '<div class="product-card">';
-                    echo '<img class="product-image" src="uploads/' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
+                    echo '<img class="product-image" src="' . htmlspecialchars($row["product_image"]) . '" alt="' . htmlspecialchars($row["product_name"]) . '">';
                     echo '<div class="product-info">';
                     echo '<h3>' . htmlspecialchars($row["product_name"]) . '</h3>';
                     echo '<p class="product-description">' . htmlspecialchars($row["product_description"]) . '</p>';
@@ -569,7 +701,13 @@ $products_result = $products_stmt->get_result();
                     echo '</div></div>';
                 }
             } else {
-                echo "<p style='grid-column: 1/-1; text-align: center;'>No products available in this category at the moment.</p>";
+                if (!empty($search)) {
+                    echo '<div class="search-results-message" style="grid-column: 1/-1;">';
+                    echo 'No products found matching: <strong>"' . htmlspecialchars($search) . '"</strong>';
+                    echo '</div>';
+                } else {
+                    echo '<p style="grid-column: 1/-1; text-align: center;">No products available in this category at the moment.</p>';
+                }
             }
             $conn->close();
             ?>
@@ -629,9 +767,32 @@ $products_result = $products_stmt->get_result();
                 }
             });
 
-            // Search icon click
-            document.getElementById("searchIcon").addEventListener("click", function() {
-                alert("Search functionality would appear here. This is a demo.");
+            // Search functionality
+            const searchIcon = document.getElementById("searchIcon");
+            const searchOverlay = document.getElementById("searchOverlay");
+            const closeSearch = document.getElementById("closeSearch");
+
+            // Open search
+            searchIcon.addEventListener("click", function() {
+                searchOverlay.style.display = "flex";
+                document.getElementById("searchInput").focus();
+            });
+
+            // Close search
+            closeSearch.addEventListener("click", function() {
+                searchOverlay.style.display = "none";
+            });
+
+            // Close search when clicking outside
+            searchOverlay.addEventListener("click", function(e) {
+                if (e.target === searchOverlay) {
+                    searchOverlay.style.display = "none";
+                }
+            });
+
+            // Prevent form from closing when clicking inside
+            document.getElementById("searchContainer").addEventListener("click", function(e) {
+                e.stopPropagation();
             });
 
             // Add hover effect to all buttons

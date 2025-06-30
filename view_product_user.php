@@ -884,6 +884,25 @@ if (isset($_GET['id'])) {
         <div class="product-info">
             <h1 class="product-title"><?= htmlspecialchars($product['product_name']) ?></h1>
 
+            <div class="product-rating">
+        <?php
+        $full_stars = floor($average_rating);
+        $half_star = ($average_rating - $full_stars) >= 0.5;
+        $empty_stars = 5 - $full_stars - ($half_star ? 1 : 0);
+        
+        for ($i = 0; $i < $full_stars; $i++) {
+            echo '<i class="fas fa-star"></i>';
+        }
+        if ($half_star) {
+            echo '<i class="fas fa-star-half-alt"></i>';
+        }
+        for ($i = 0; $i < $empty_stars; $i++) {
+            echo '<i class="far fa-star"></i>';
+        }
+        ?>
+        <span>(<?= count($reviews) ?> reviews)</span>
+    </div>
+
             <div class="product-price">RM <?= number_format($product['product_price'], 2) ?></div>
             
             <div class="stock-status <?= $product['product_quantity'] > $product['min_stock_threshold'] ? 'in-stock' : ($product['product_quantity'] > 0 ? 'low-stock' : 'out-of-stock') ?>">

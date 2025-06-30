@@ -14,17 +14,28 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch all categories EXCEPT the ones shown in the image
+// Fetch all categories EXCEPT the ones shown in the image with optional search
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $categories_sql = "SELECT * FROM product_categories 
                   WHERE category_name NOT IN ('NINTENDO', 'CONSOLE', 'ACCESSORIES', 'VR')";
-$categories_result = $conn->query($categories_sql);
+
+if (!empty($search)) {
+    $searchTerm = "%" . $conn->real_escape_string($search) . "%";
+    $categories_sql .= " AND category_name LIKE ?";
+    $stmt = $conn->prepare($categories_sql);
+    $stmt->bind_param("s", $searchTerm);
+} else {
+    $stmt = $conn->prepare($categories_sql);
+}
+
+$stmt->execute();
+$categories_result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- [Previous head content remains exactly the same] -->
-     <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXUS | All Categories</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -425,9 +436,126 @@ $categories_result = $conn->query($categories_sql);
                 gap: 10px;
             }
         }
+        
+        /* Add these new styles for the search overlay */
+        #searchOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #searchContainer {
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+        }
+
+        #searchForm {
+            display: flex;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid var(--primary);
+            color: var(--light);
+            outline: none;
+            font-family: 'Rubik', sans-serif;
+        }
+
+        #searchForm button {
+            background: transparent;
+            border: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            position: absolute;
+            right: 60px;
+            top: 20px;
+            cursor: pointer;
+        }
+
+        #closeSearch {
+            position: absolute;
+            right: 10px;
+            top: 20px;
+            font-size: 2rem;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #closeSearch:hover {
+            color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .search-results-message {
+            grid-column: 1/-1;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+        }
+        
+        /* Responsive adjustments for search */
+        @media (max-width: 768px) {
+            #searchInput {
+                font-size: 1.2rem;
+                padding: 15px;
+            }
+
+            #searchForm button {
+                right: 50px;
+                top: 15px;
+            }
+
+            #closeSearch {
+                top: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #searchInput {
+                font-size: 1rem;
+                padding: 10px;
+            }
+
+            #searchForm button {
+                right: 40px;
+                top: 10px;
+                font-size: 1.2rem;
+            }
+
+            #closeSearch {
+                top: 10px;
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Search Overlay -->
+    <div id="searchOverlay">
+        <div id="searchContainer">
+            <form id="searchForm" method="GET" action="">
+                <input type="text" name="search" id="searchInput" placeholder="Search categories..." autocomplete="off" value="<?php echo htmlspecialchars($search); ?>">
+                <button type="submit"><i class="fas fa-search"></i></button>
+                <span id="closeSearch">&times;</span>
+            </form>
+        </div>
+    </div>
+
     <header>
         <nav class="nav-menu">
             <div class="icons-left">
@@ -470,6 +598,12 @@ $categories_result = $conn->query($categories_sql);
         
         <div class="categories-grid">
             <?php
+            if (!empty($search)) {
+                echo '<div class="search-results-message">';
+                echo 'Search results for: <strong>"' . htmlspecialchars($search) . '"</strong>';
+                echo '</div>';
+            }
+            
             if ($categories_result->num_rows > 0) {
                 while($category = $categories_result->fetch_assoc()) {
                     echo '<div class="category-card" onclick="window.location.href=\'category_products_guest.php?category=' . urlencode($category['category_name']) . '\'">';
@@ -477,16 +611,21 @@ $categories_result = $conn->query($categories_sql);
                     echo '</div>';
                 }
             } else {
-                echo "<p style='grid-column: 1/-1; text-align: center;'>No categories available at the moment.</p>";
+                if (!empty($search)) {
+                    echo '<div class="search-results-message" style="grid-column: 1/-1;">';
+                    echo 'No categories found matching: <strong>"' . htmlspecialchars($search) . '"</strong>';
+                    echo '</div>';
+                } else {
+                    echo '<p style="grid-column: 1/-1; text-align: center;">No categories available at the moment.</p>';
+                }
             }
             $conn->close();
             ?>
         </div>
     </section>
 
-    <!-- Footer and script sections remain exactly the same -->
-    <!-- ... -->
-     <footer>
+    <!-- Footer -->
+    <footer>
         <div class="footer-links">
             <a href="ABOUTUS.html">ABOUT US</a>
             <a href="CONTACT.html">CONTACT</a>
@@ -503,32 +642,86 @@ $categories_result = $conn->query($categories_sql);
             NEXUS is not affiliated with Nintendo or any other game publishers.
         </div>
     </footer>
+
     <script>
-    // Mobile menu functionality
-    const menuIcon = document.getElementById('menuIcon');
-    const closeMenu = document.getElementById('closeMenu');
-    const menuOverlay = document.getElementById('menuOverlay');
-    
-    if (menuIcon && closeMenu && menuOverlay) {
-        menuIcon.addEventListener('click', function() {
-            menuOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
+        document.addEventListener("DOMContentLoaded", function () {
+            // Mobile menu functionality
+            const menuOverlay = document.getElementById("menuOverlay");
+            const menuIcon = document.getElementById("menuIcon");
+            const closeMenu = document.getElementById("closeMenu");
+
+            // Open menu
+            menuIcon.addEventListener("click", function () {
+                menuOverlay.style.display = "block";
+                setTimeout(() => {
+                    menuOverlay.classList.add("active");
+                }, 10);
+                document.body.style.overflow = "hidden";
+            });
+
+            // Close menu when clicking "X"
+            closeMenu.addEventListener("click", function (e) {
+                e.stopPropagation();
+                menuOverlay.classList.remove("active");
+                setTimeout(() => {
+                    menuOverlay.style.display = "none";
+                }, 300);
+                document.body.style.overflow = "";
+            });
+
+            // Close menu when clicking outside of menu container
+            menuOverlay.addEventListener("click", function (e) {
+                if (e.target === menuOverlay) {
+                    menuOverlay.classList.remove("active");
+                    setTimeout(() => {
+                        menuOverlay.style.display = "none";
+                    }, 300);
+                    document.body.style.overflow = "";
+                }
+            });
+
+            // Search functionality
+            const searchIcon = document.getElementById("searchIcon");
+            const searchOverlay = document.getElementById("searchOverlay");
+            const closeSearch = document.getElementById("closeSearch");
+
+            // Open search
+            searchIcon.addEventListener("click", function() {
+                searchOverlay.style.display = "flex";
+                document.getElementById("searchInput").focus();
+            });
+
+            // Close search
+            closeSearch.addEventListener("click", function() {
+                searchOverlay.style.display = "none";
+            });
+
+            // Close search when clicking outside
+            searchOverlay.addEventListener("click", function(e) {
+                if (e.target === searchOverlay) {
+                    searchOverlay.style.display = "none";
+                }
+            });
+
+            // Prevent form from closing when clicking inside
+            document.getElementById("searchContainer").addEventListener("click", function(e) {
+                e.stopPropagation();
+            });
+
+            // Add click functionality to category cards
+            const cards = document.querySelectorAll(".category-card");
+            cards.forEach(card => {
+                card.addEventListener("mouseenter", function() {
+                    this.style.transform = "translateY(-5px)";
+                    this.style.boxShadow = "0 10px 20px rgba(255, 0, 0, 0.15)";
+                });
+                
+                card.addEventListener("mouseleave", function() {
+                    this.style.transform = "translateY(0)";
+                    this.style.boxShadow = "none";
+                });
+            });
         });
-        
-        closeMenu.addEventListener('click', function() {
-            menuOverlay.classList.remove('active');
-            document.body.style.overflow = ''; // Re-enable scrolling
-        });
-        
-        menuOverlay.addEventListener('click', function(e) {
-            if (e.target === menuOverlay) {
-                menuOverlay.classList.remove('active');
-                document.body.style.overflow = ''; // Re-enable scrolling
-            }
-        });
-    } else {
-        console.error('One or more mobile menu elements not found');
-    }
-</script>
+    </script>
 </body>
 </html>
